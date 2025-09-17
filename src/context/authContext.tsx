@@ -3,9 +3,11 @@ import { createContext, useContext, useState, ReactNode } from 'react';
 
 interface User {
   id: string;
-  orgId: string;
-  projId: string;
   name: string;
+  email?: string;
+  role?: string;
+  orgId: string;
+  projectId: string;
 }
 
 interface AuthContextType {
