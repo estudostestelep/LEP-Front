@@ -8,6 +8,8 @@ import Menu from '@/pages/menu/menu';
 //import Orders from '@/pages/orders/list';
 import Users from '@/pages/users/list';
 import Products from '@/pages/products/list';
+import Customers from '@/pages/customers/list';
+import Tables from '@/pages/tables/list';
 import Login from '@/pages/login/login';
 
 function PrivateRoute({ children }: { children: React.ReactElement }) {
@@ -27,6 +29,8 @@ export default function AppRoutes() {
         {/* <Route path="/orders" element={<PrivateRoute><Orders /></PrivateRoute>} /> */}
         <Route path="/users" element={<PrivateRoute><Users /></PrivateRoute>} />
         <Route path="/products" element={<PrivateRoute><Products /></PrivateRoute>} />
+        <Route path="/customers" element={<PrivateRoute><Customers /></PrivateRoute>} />
+        <Route path="/tables" element={<PrivateRoute><Tables /></PrivateRoute>} />
       </Routes>
     </>
   );

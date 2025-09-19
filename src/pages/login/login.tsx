@@ -4,38 +4,47 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import AnimatedGradientText from "@/components/magicui/animated-gradient-text";
 import ShimmerButton from "@/components/magicui/shimmer-button";
-import { LogIn, Utensils, Users, Building, Folder } from "lucide-react";
+import { LogIn, Utensils, Users, Building, Folder, AlertCircle } from "lucide-react";
 import { mockUsers } from "@/lib/mock-data";
 
 export default function Login() {
-  const { login } = useAuth();
+  const { login, loading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
 
     if (email && password) {
-      login({
-        id: "dev-user",
-        name: "Usuário Teste",
-        email: email,
-        role: "admin",
-        orgId: "org-123",
-        projectId: "proj-456"
-      });
+      try {
+        await login({ email, password });
+        // Login bem-sucedido - o redirect será tratado pelo contexto/router
+      } catch (err: any) {
+        setError(
+          err.response?.data?.error ||
+          err.response?.data?.message ||
+          "Erro ao fazer login. Verifique suas credenciais."
+        );
+      }
     }
   };
 
-  const handleQuickLogin = (user: typeof mockUsers[0]) => {
-    login({
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      orgId: "org-123",
-      projectId: "proj-456"
-    });
+  const handleQuickLogin = async (user: typeof mockUsers[0]) => {
+    setError("");
+    try {
+      await login({
+        email: user.email,
+        password: "123456" // Senha padrão para desenvolvimento
+      });
+    } catch (err: any) {
+      setError(
+        err.response?.data?.error ||
+        err.response?.data?.message ||
+        "Erro ao fazer login rápido."
+      );
+    }
   };
 
   return (
@@ -107,6 +116,13 @@ export default function Login() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
+              {error && (
+                <div className="p-3 rounded-md bg-destructive/10 border border-destructive/20 flex items-center space-x-2">
+                  <AlertCircle className="h-4 w-4 text-destructive" />
+                  <span className="text-sm text-destructive">{error}</span>
+                </div>
+              )}
+
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">
                   Email
@@ -116,6 +132,7 @@ export default function Login() {
                   placeholder="seu.email@restaurant.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  disabled={loading}
                   required
                 />
               </div>
@@ -129,6 +146,7 @@ export default function Login() {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  disabled={loading}
                   required
                 />
               </div>
@@ -136,10 +154,10 @@ export default function Login() {
               <ShimmerButton
                 type="submit"
                 className="w-full bg-primary hover:bg-primary/90"
-                disabled={!email || !password}
+                disabled={!email || !password || loading}
               >
                 <LogIn className="h-4 w-4 mr-2" />
-                Entrar no Sistema
+                {loading ? "Entrando..." : "Entrar no Sistema"}
               </ShimmerButton>
             </form>
           </CardContent>
