@@ -57,7 +57,7 @@ export const notificationService = {
     api.post("/notification/send", data),
 
   // Processar evento
-  processEvent: (data: any) =>
+  processEvent: (data: Record<string, unknown>) =>
     api.post("/notification/event", data),
 
   // Logs

@@ -18,6 +18,7 @@ import { tableService, Table, CreateTableRequest } from "@/api/tableService";
 import { useAuth } from "@/context/authContext";
 import FormModal from "@/components/formModal";
 import ConfirmModal from "@/components/confirmModal";
+import { AxiosError } from "axios";
 
 export default function TablesPage() {
   const { user: currentUser } = useAuth();
@@ -35,7 +36,7 @@ export default function TablesPage() {
 
   const filteredTables = tables.filter(table => {
     const matchesSearch = table.number.toString().includes(searchTerm) ||
-                         (table.location?.toLowerCase().includes(searchTerm.toLowerCase()));
+      (table.location?.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesStatus = selectedStatus === "all" || table.status === selectedStatus;
     return matchesSearch && matchesStatus;
   });
@@ -46,17 +47,18 @@ export default function TablesPage() {
       setError("");
       const response = await tableService.getAll();
       setTables(response.data);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const axiosErr = err as AxiosError<{ error?: string; message?: string }>;
       setError(
-        err.response?.data?.error ||
-        err.response?.data?.message ||
+        axiosErr.response?.data?.error ||
+        axiosErr.response?.data?.message ||
         "Erro ao carregar mesas"
       );
     } finally {
       setLoading(false);
     }
   };
-
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleCreateOrUpdate = async (values: any) => {
     try {
       if (editing) {
@@ -75,10 +77,11 @@ export default function TablesPage() {
       await fetchTables();
       setOpen(false);
       setEditing(null);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const axiosErr = err as AxiosError<{ error?: string; message?: string }>;
       alert(
-        err.response?.data?.error ||
-        err.response?.data?.message ||
+        axiosErr.response?.data?.error ||
+        axiosErr.response?.data?.message ||
         "Erro ao salvar mesa"
       );
     }
@@ -91,10 +94,11 @@ export default function TablesPage() {
       setConfirmOpen(false);
       setToDelete(null);
       await fetchTables();
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const axiosErr = err as AxiosError<{ error?: string; message?: string }>;
       alert(
-        err.response?.data?.error ||
-        err.response?.data?.message ||
+        axiosErr.response?.data?.error ||
+        axiosErr.response?.data?.message ||
         "Erro ao excluir mesa"
       );
     }

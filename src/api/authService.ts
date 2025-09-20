@@ -13,6 +13,8 @@ export interface LoginResponse {
     email: string;
     role: string;
     permissions: string[];
+    orgId?: string;
+    projectId?: string;
   };
 }
 
@@ -22,8 +24,8 @@ export interface User {
   email: string;
   role: string;
   permissions: string[];
-  orgId?: string;
-  projectId?: string;
+  orgId: string;
+  projectId: string;
 }
 
 export const authService = {

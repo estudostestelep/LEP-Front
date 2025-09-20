@@ -1,16 +1,18 @@
 import { useEffect, useState } from "react";
 import { productService } from "../../api/productService";
 import type { Product } from "../../api/productService";
-import { Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, AlertCircle, Package, Plus, Edit, Trash2, Clock } from "lucide-react";
+import { ProtectedAction } from "@/components/ProtectedFeature";
+import { usePermissions } from "@/hooks/usePermissions";
 
 export default function ProductList() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const permissions = usePermissions();
 
   const fetchProducts = async () => {
     try {
@@ -18,10 +20,11 @@ export default function ProductList() {
       setError("");
       const response = await productService.getAll();
       setProducts(response.data);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { error?: string; message?: string } } };
       setError(
-        err.response?.data?.error ||
-        err.response?.data?.message ||
+        error.response?.data?.error ||
+        error.response?.data?.message ||
         "Erro ao carregar produtos"
       );
     } finally {
@@ -34,10 +37,11 @@ export default function ProductList() {
       try {
         await productService.remove(productId);
         setProducts(products.filter(p => p.id !== productId));
-      } catch (err: any) {
+      } catch (err: unknown) {
+        const error = err as { response?: { data?: { error?: string; message?: string } } };
         alert(
-          err.response?.data?.error ||
-          err.response?.data?.message ||
+          error.response?.data?.error ||
+          error.response?.data?.message ||
           "Erro ao excluir produto"
         );
       }
@@ -64,20 +68,39 @@ export default function ProductList() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
-          <div>
+          <div className="flex-1">
             <h1 className="text-3xl font-bold text-foreground flex items-center space-x-2">
               <Package className="h-8 w-8" />
               <span>Gerenciar Produtos</span>
             </h1>
-            <p className="text-muted-foreground mt-2">
-              Gerencie os produtos do cardápio
-            </p>
+            <div className="flex items-center space-x-4 mt-2">
+              <p className="text-muted-foreground">
+                Gerencie os produtos do cardápio
+              </p>
+              {permissions.usage && permissions.limits && (
+                <div className="flex items-center space-x-2 text-sm">
+                  <span className="text-muted-foreground">
+                    Produtos: {permissions.usage.products_count} / {permissions.limits.max_products}
+                  </span>
+                  {permissions.isNearLimit('products') && (
+                    <Badge variant="outline" className="text-orange-600 border-orange-300">
+                      Próximo ao limite
+                    </Badge>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
 
-          <Button size="lg" className="flex items-center space-x-2">
-            <Plus className="h-4 w-4" />
-            <span>Novo Produto</span>
-          </Button>
+          <ProtectedAction
+            action="createProduct"
+            onUpgrade={() => console.log('Redirect to subscription page')}
+          >
+            <Button size="lg" className="flex items-center space-x-2">
+              <Plus className="h-4 w-4" />
+              <span>Novo Produto</span>
+            </Button>
+          </ProtectedAction>
         </div>
 
         {/* Error State */}
@@ -175,10 +198,15 @@ export default function ProductList() {
               <p className="text-muted-foreground mb-4">
                 Comece cadastrando seu primeiro produto do cardápio.
               </p>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Novo Produto
-              </Button>
+              <ProtectedAction
+                action="createProduct"
+                onUpgrade={() => console.log('Redirect to subscription page')}
+              >
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Novo Produto
+                </Button>
+              </ProtectedAction>
             </CardContent>
           </Card>
         )}

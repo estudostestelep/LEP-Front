@@ -1,7 +1,7 @@
 import api from "./api";
 
 export interface Product {
-  id?: string;
+  id: string;
   organization_id?: string;
   project_id?: string;
   name: string;
@@ -9,6 +9,8 @@ export interface Product {
   price: number;
   available: boolean;
   prep_time_minutes?: number;
+  category: string;
+  image_url?: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -21,6 +23,8 @@ export interface CreateProductRequest {
   price: number;
   available: boolean;
   prep_time_minutes?: number;
+  category: string;
+  image_url?: string;
 }
 
 export const productService = {
@@ -29,4 +33,15 @@ export const productService = {
   create: (data: CreateProductRequest) => api.post<Product>("/product", data),
   update: (id: string, data: Partial<Product>) => api.put<Product>(`/product/${id}`, data),
   remove: (id: string) => api.delete(`/product/${id}`),
+
+  // Upload de imagem
+  uploadImage: (file: File) => {
+    const formData = new FormData();
+    formData.append('image', file);
+    return api.post<{ url: string }>("/product/upload-image", formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
 };

@@ -16,10 +16,10 @@ import {
   AlertCircle
 } from "lucide-react";
 import { userService, User } from "@/api/userService";
-import { useAuth } from "@/context/authContext";
+import { AxiosError } from "axios";
+
 
 export default function UsersList() {
-  const { user: currentUser } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -30,7 +30,7 @@ export default function UsersList() {
 
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.email.toLowerCase().includes(searchTerm.toLowerCase());
+      user.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesRole = selectedRole === "all" || user.role === selectedRole;
     return matchesSearch && matchesRole;
   });
@@ -41,10 +41,11 @@ export default function UsersList() {
       setError("");
       const response = await userService.getAll();
       setUsers(response.data);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const axiosErr = err as AxiosError<{ error?: string; message?: string }>;
       setError(
-        err.response?.data?.error ||
-        err.response?.data?.message ||
+        axiosErr.response?.data?.error ||
+        axiosErr.response?.data?.message ||
         "Erro ao carregar usuários"
       );
     } finally {
@@ -57,10 +58,11 @@ export default function UsersList() {
       try {
         await userService.remove(userId);
         setUsers(users.filter(u => u.id !== userId));
-      } catch (err: any) {
+      } catch (err: unknown) {
+        const axiosErr = err as AxiosError<{ error?: string; message?: string }>;
         alert(
-          err.response?.data?.error ||
-          err.response?.data?.message ||
+          axiosErr.response?.data?.error ||
+          axiosErr.response?.data?.message ||
           "Erro ao excluir usuário"
         );
       }

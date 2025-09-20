@@ -1,6 +1,5 @@
-import * as React from 'react';
-import { createContext, useContext, useState, ReactNode } from 'react';
-import { authService, LoginRequest, LoginResponse } from '@/api/authService';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { authService, LoginRequest } from '@/api/authService';
 
 interface User {
   id: string;
@@ -8,8 +7,8 @@ interface User {
   email: string;
   role: string;
   permissions: string[];
-  orgId?: string;
-  projectId?: string;
+  orgId: string;
+  projectId: string;
 }
 
 interface AuthContextType {
@@ -35,12 +34,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const response = await authService.login(credentials);
       const { token: authToken, user: userData } = response.data;
 
+      // Precisa definir orgId e projectId - por enquanto usando valores padrão
+      const userWithOrgData: User = {
+        ...userData,
+        orgId: userData.orgId || 'default-org',
+        projectId: userData.projectId || 'default-project'
+      };
+
       // Armazena token e dados do usuário
       setToken(authToken);
-      setUser(userData);
+      setUser(userWithOrgData);
       localStorage.setItem('token', authToken);
-      localStorage.setItem('user', JSON.stringify(userData));
+      localStorage.setItem('user', JSON.stringify(userWithOrgData));
     } catch (error) {
+      console.error('Erro no login:', error);
       throw error;
     } finally {
       setLoading(false);
@@ -65,22 +72,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const checkAuth = async (): Promise<boolean> => {
     const storedToken = localStorage.getItem('token');
     if (!storedToken) {
-      setLoading(false);
       return false;
     }
 
     try {
       await authService.checkToken();
       return true;
-    } catch (error) {
+    } catch {
       // Token inválido - limpa dados
       setUser(null);
       setToken(null);
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       return false;
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -93,7 +97,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   // Inicialização - verifica autenticação ao carregar
-  React.useEffect(() => {
+  useEffect(() => {
     const initAuth = async () => {
       const storedToken = localStorage.getItem('token');
       const storedUser = localStorage.getItem('user');
@@ -105,18 +109,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setUser(userData);
 
           // Verifica se o token ainda é válido
-          await checkAuth();
+          const isValid = await checkAuth();
+          if (!isValid) {
+            // Se token inválido, limpa dados (já feito no checkAuth)
+            console.warn('Token inválido durante inicialização');
+          }
         } catch (error) {
           console.warn('Erro ao recuperar sessão:', error);
-          setLoading(false);
+          // Em caso de erro, limpa dados
+          setUser(null);
+          setToken(null);
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
         }
-      } else {
-        setLoading(false);
       }
+      setLoading(false);
     };
 
     initAuth();
-  }, []);
+  }, []); // Dependências vazias para executar apenas uma vez
 
   return (
     <AuthContext.Provider value={{

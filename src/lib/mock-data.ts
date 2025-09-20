@@ -87,49 +87,65 @@ export const mockTables: Table[] = [
 ];
 
 export const mockProducts: Product[] = [
+  
   {
     id: '1',
+    organization_id: 'org1',
+    project_id: 'proj1',
     name: 'Pizza Margherita',
     description: 'Massa fina, molho de tomate, manjericão fresco e mussarela',
     price: 45.90,
     available: true,
     prep_time_minutes: 25,
+    category: 'main_course',
     created_at: '2024-01-01T08:00:00Z'
   },
   {
     id: '2',
+        organization_id: 'org1',
+    project_id: 'proj1',
     name: 'Hambúrguer Artesanal',
     description: 'Pão brioche, carne 180g, queijo cheddar, bacon e batata rústica',
     price: 38.50,
     available: true,
     prep_time_minutes: 20,
+    category: 'main_course',
     created_at: '2024-01-01T08:00:00Z'
   },
   {
     id: '3',
+    organization_id: 'org1',
+    project_id: 'proj1',
     name: 'Salmão Grelhado',
     description: 'Filé de salmão grelhado com risotto de limão siciliano',
     price: 68.90,
     available: true,
     prep_time_minutes: 30,
+    category: 'main_course',
     created_at: '2024-01-01T08:00:00Z'
   },
   {
     id: '4',
+    organization_id: 'org1',
+    project_id: 'proj1',
     name: 'Cerveja Artesanal IPA',
     description: 'Cerveja artesanal India Pale Ale 500ml',
     price: 18.90,
     available: true,
     prep_time_minutes: 2,
+    category: 'beverage',
     created_at: '2024-01-01T08:00:00Z'
   },
   {
     id: '5',
+    organization_id: 'org1',
+    project_id: 'proj1',
     name: 'Tiramisu',
     description: 'Sobremesa italiana tradicional com café e mascarpone',
     price: 22.90,
     available: false,
     prep_time_minutes: 15,
+    category: 'dessert',
     created_at: '2024-01-01T08:00:00Z'
   }
 ];

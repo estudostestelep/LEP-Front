@@ -4,8 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import AnimatedGradientText from "@/components/magicui/animated-gradient-text";
 import ShimmerButton from "@/components/magicui/shimmer-button";
-import { LogIn, Utensils, Users, Building, Folder, AlertCircle } from "lucide-react";
-import { mockUsers } from "@/lib/mock-data";
+import { LogIn, Utensils, AlertCircle } from "lucide-react";
+import { AxiosError } from "axios";
 
 export default function Login() {
   const { login, loading } = useAuth();
@@ -21,38 +21,20 @@ export default function Login() {
       try {
         await login({ email, password });
         // Login bem-sucedido - o redirect será tratado pelo contexto/router
-      } catch (err: any) {
+      } catch (err: unknown) {
+        const axiosErr = err as AxiosError<{ error?: string; message?: string }>;
         setError(
-          err.response?.data?.error ||
-          err.response?.data?.message ||
+          axiosErr.response?.data?.error ||
+          axiosErr.response?.data?.message ||
           "Erro ao fazer login. Verifique suas credenciais."
         );
       }
     }
   };
 
-  const handleQuickLogin = async (user: typeof mockUsers[0]) => {
-    setError("");
-    try {
-      await login({
-        email: user.email,
-        password: "123456" // Senha padrão para desenvolvimento
-      });
-    } catch (err: any) {
-      setError(
-        err.response?.data?.error ||
-        err.response?.data?.message ||
-        "Erro ao fazer login rápido."
-      );
-    }
-  };
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      {/* TEST: This should show as a bright red box if Tailwind is working */}
-      <div className="fixed top-4 right-4 w-20 h-20 bg-red-500 text-white flex items-center justify-center rounded-lg z-50">
-        CSS TEST
-      </div>
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
@@ -71,37 +53,6 @@ export default function Login() {
           </p>
         </div>
 
-        {/* Quick Login Cards */}
-        <div className="space-y-4 mb-6">
-          <h3 className="text-sm font-medium text-muted-foreground text-center">
-            Login Rápido (Desenvolvimento)
-          </h3>
-
-          <div className="grid gap-3">
-            {mockUsers.map((user) => (
-              <Card
-                key={user.id}
-                className="cursor-pointer hover:shadow-md transition-shadow border-2 hover:border-primary/20"
-                onClick={() => handleQuickLogin(user)}
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                        <Users className="h-5 w-5 text-primary" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-sm">{user.name}</p>
-                        <p className="text-xs text-muted-foreground capitalize">{user.role}</p>
-                      </div>
-                    </div>
-                    <LogIn className="h-4 w-4 text-muted-foreground" />
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
 
         {/* Traditional Login Form */}
         <Card>
@@ -163,27 +114,6 @@ export default function Login() {
           </CardContent>
         </Card>
 
-        {/* Development Info */}
-        <Card className="mt-6 bg-muted/50">
-          <CardContent className="p-4">
-            <div className="flex items-start space-x-2">
-              <Building className="h-4 w-4 text-muted-foreground mt-0.5" />
-              <div className="text-xs text-muted-foreground">
-                <p className="font-medium mb-1">Ambiente de Desenvolvimento</p>
-                <div className="space-y-1">
-                  <div className="flex items-center space-x-1">
-                    <Folder className="h-3 w-3" />
-                    <span>Org ID: org-123</span>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <Folder className="h-3 w-3" />
-                    <span>Project ID: proj-456</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );

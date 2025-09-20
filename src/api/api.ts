@@ -17,17 +17,13 @@ api.interceptors.request.use((config) => {
 
     // Adiciona headers multi-tenant
     const user = JSON.parse(localStorage.getItem("user") || "null");
-    if (user) {
-      if (user.orgId) {
-        config.headers["X-Lpe-Organization-Id"] = user.orgId;
-      }
-      if (user.projectId || user.projId) {
-        config.headers["X-Lpe-Project-Id"] = user.projectId || user.projId;
-      }
+    if (user && user.orgId && user.projectId) {
+      config.headers["X-Lpe-Organization-Id"] = user.orgId;
+      config.headers["X-Lpe-Project-Id"] = user.projectId;
     }
   } catch (err) {
-    // ignora se não tiver user válido
-    void err;
+    // ignora se não tiver user válido ou dados corrompidos
+    console.warn("Erro ao adicionar headers de autenticação:", err);
   }
   return config;
 });
@@ -42,8 +38,15 @@ api.interceptors.response.use(
       localStorage.removeItem("user");
       // Redireciona para login se não estiver já na página de login
       if (window.location.pathname !== "/login") {
+        console.warn("Token inválido, redirecionando para login");
         window.location.href = "/login";
       }
+    } else if (error.response?.status === 403) {
+      // Sem permissão - pode mostrar mensagem ao usuário
+      console.warn("Acesso negado para esta operação");
+    } else if (error.response?.status >= 500) {
+      // Erro do servidor
+      console.error("Erro interno do servidor:", error.response?.data);
     }
     return Promise.reject(error);
   }

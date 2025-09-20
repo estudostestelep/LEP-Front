@@ -573,3 +573,282 @@ Para dúvidas sobre a integração:
 **Base URL:** `http://localhost:8080`
 **Documentação da API:** Em desenvolvimento (OpenAPI/Swagger)
 **Versão da API:** v1.0
+
+## API Endpoints
+
+### Autenticação
+```bash
+POST   /login          # Login do usuário
+POST   /logout         # Logout do usuário
+POST   /checkToken     # Validar token JWT
+```
+
+### Usuários (Headers obrigatórios: X-Lpe-Organization-Id, X-Lpe-Project-Id)
+```bash
+GET    /user/:id       # Buscar usuário por ID
+GET    /user/group/:id # Buscar usuários por grupo
+POST   /user           # Criar usuário (público)
+PUT    /user/:id       # Atualizar usuário
+DELETE /user/:id       # Deletar usuário (soft delete)
+```
+
+### Produtos (Headers obrigatórios: X-Lpe-Organization-Id, X-Lpe-Project-Id)
+```bash
+GET    /product/:id           # Buscar produto por ID
+GET    /product/purchase/:id  # Buscar produtos por compra
+POST   /product              # Criar produto
+PUT    /product/:id          # Atualizar produto
+DELETE /product/:id          # Deletar produto
+```
+
+### Compras (Headers obrigatórios: X-Lpe-Organization-Id, X-Lpe-Project-Id)
+```bash
+GET    /purchase/:id       # Buscar compra por ID
+GET    /purchase/group/:id # Buscar compras por grupo
+POST   /purchase           # Criar compra
+PUT    /purchase/:id       # Atualizar compra
+DELETE /purchase/:id       # Deletar compra
+```
+
+### Pedidos (Headers obrigatórios: X-Lpe-Organization-Id, X-Lpe-Project-Id)
+```bash
+GET    /order/:id    # Buscar pedido por ID
+GET    /orders       # Listar pedidos
+POST   /order        # Criar pedido
+PUT    /order/:id    # Atualizar pedido
+DELETE /order/:id    # Deletar pedido
+```
+
+### Mesas (Headers obrigatórios: X-Lpe-Organization-Id, X-Lpe-Project-Id)
+```bash
+GET    /table/:id    # Buscar mesa por ID
+GET    /table        # Listar mesas
+POST   /table        # Criar mesa
+PUT    /table/:id    # Atualizar mesa
+DELETE /table/:id    # Deletar mesa
+```
+
+### Lista de Espera (Headers obrigatórios: X-Lpe-Organization-Id, X-Lpe-Project-Id)
+```bash
+GET    /waitlist/:id # Buscar entrada na lista por ID
+GET    /waitlist     # Listar entradas da lista de espera
+POST   /waitlist     # Criar entrada na lista de espera
+PUT    /waitlist/:id # Atualizar entrada na lista de espera
+DELETE /waitlist/:id # Remover da lista de espera
+```
+
+### Reservas (Headers obrigatórios: X-Lpe-Organization-Id, X-Lpe-Project-Id)
+```bash
+GET    /reservation/:id # Buscar reserva por ID
+GET    /reservation     # Listar reservas
+POST   /reservation     # Criar reserva
+PUT    /reservation/:id # Atualizar reserva
+DELETE /reservation/:id # Cancelar reserva
+```
+
+### Clientes (Headers obrigatórios: X-Lpe-Organization-Id, X-Lpe-Project-Id)
+```bash
+GET    /customer/:id # Buscar cliente por ID
+GET    /customer     # Listar clientes
+POST   /customer     # Criar cliente
+PUT    /customer/:id # Atualizar cliente
+DELETE /customer/:id # Deletar cliente
+```
+
+### Notificações (Headers obrigatórios: X-Lpe-Organization-Id, X-Lpe-Project-Id)
+```bash
+# Configuração de Notificações
+POST   /notification/config          # Criar/atualizar configuração de evento
+GET    /notification/config/:event   # Buscar configuração por evento
+
+# Templates de Notificação
+POST   /notification/template        # Criar template
+PUT    /notification/template/:id    # Atualizar template
+GET    /notification/templates       # Listar templates
+
+# Envio Manual de Notificações
+POST   /notification/send           # Enviar notificação manual
+
+# Logs e Histórico
+GET    /notification/logs           # Buscar logs de notificações
+GET    /notification/logs/:id       # Buscar log específico
+
+# Webhooks (para integração com Twilio)
+POST   /notification/webhook/twilio/status    # Status de entrega SMS/WhatsApp
+POST   /notification/webhook/twilio/inbound   # Mensagens recebidas
+```
+
+### Relatórios (Headers obrigatórios: X-Lpe-Organization-Id, X-Lpe-Project-Id)
+```bash
+# Relatórios Analíticos
+GET    /reports/occupancy          # Relatório de ocupação de mesas
+GET    /reports/reservations       # Relatório de reservas
+GET    /reports/waitlist           # Relatório de lista de espera
+GET    /reports/leads              # Relatório de leads (futuro)
+
+# Exportação
+GET    /reports/export/csv         # Exportar relatório em CSV
+```
+
+### Headers Obrigatórios (exceto /login e POST /user)
+```bash
+X-Lpe-Organization-Id: <organization-uuid>
+X-Lpe-Project-Id: <project-uuid>
+Authorization: Bearer <jwt-token>
+```
+
+---
+
+## Sistema de Notificações
+
+### Visão Geral
+
+O LEP System inclui um sistema completo de notificações automatizadas que suporta:
+- **SMS** via Twilio
+- **WhatsApp Business** via Twilio API
+- **Email** via SMTP (Gmail, Outlook, etc.)
+
+### Configuração de Notificações
+
+#### 1. Configuração de Eventos
+
+Para configurar quais eventos irão disparar notificações:
+
+```bash
+POST /notification/config
+```
+
+**Payload:**
+```json
+{
+  "event_type": "reservation_create",
+  "enabled": true,
+  "channels": ["sms", "whatsapp", "email"],
+  "delay_minutes": 0
+}
+```
+
+**Eventos Disponíveis:**
+- `reservation_create` - Nova reserva criada
+- `reservation_update` - Reserva atualizada
+- `reservation_cancel` - Reserva cancelada
+- `table_available` - Mesa disponível (waitlist)
+- `confirmation_24h` - Confirmação 24h antes (automático)
+
+#### 2. Criação de Templates
+
+Para criar templates personalizados para cada canal:
+
+```bash
+POST /notification/template
+```
+
+**Payload:**
+```json
+{
+  "channel": "sms",
+  "event_type": "reservation_create",
+  "subject": "Reserva Confirmada",
+  "body": "Olá {{nome}}! Sua reserva para {{pessoas}} pessoas na mesa {{mesa}} está confirmada para {{data_hora}}. Até breve!"
+}
+```
+
+**Variáveis Disponíveis:**
+- `{{nome}}` ou `{{cliente}}` - Nome do cliente
+- `{{mesa}}` ou `{{numero_mesa}}` - Número da mesa
+- `{{data}}` - Data (DD/MM/YYYY)
+- `{{hora}}` - Hora (HH:MM)
+- `{{data_hora}}` - Data e hora completa
+- `{{pessoas}}` - Quantidade de pessoas
+- `{{tempo_espera}}` - Tempo estimado de espera
+- `{{status}}` - Status da reserva
+
+#### 3. Envio Manual de Notificações
+
+Para enviar notificações pontuais:
+
+```bash
+POST /notification/send
+```
+
+**Payload:**
+```json
+{
+  "event_type": "reservation_create",
+  "entity_type": "reservation",
+  "entity_id": "uuid-da-reserva",
+  "recipient": "+5511999999999",
+  "channel": "sms",
+  "variables": {
+    "nome": "João Silva",
+    "mesa": "5",
+    "data_hora": "25/12/2023 às 19:30"
+  }
+}
+```
+
+### Configuração de Webhooks
+
+#### Twilio Webhooks
+
+Para receber atualizações de status e mensagens inbound, configure os webhooks no Twilio:
+
+**Status de Entrega:**
+```
+URL: https://seu-dominio.com/notification/webhook/twilio/status
+Método: POST
+```
+
+**Mensagens Recebidas:**
+```
+URL: https://seu-dominio.com/notification/webhook/twilio/inbound
+Método: POST
+```
+
+### Configuração do Projeto
+
+Para habilitar notificações em um projeto específico, utilize as configurações:
+
+```json
+{
+  "notify_reservation_create": true,
+  "notify_reservation_update": true,
+  "notify_reservation_cancel": true,
+  "notify_table_available": true,
+  "notify_confirmation_24h": true
+}
+```
+
+### Logs e Monitoramento
+
+Para acompanhar o envio de notificações:
+
+```bash
+GET /notification/logs?limit=50
+```
+
+**Resposta:**
+```json
+{
+  "logs": [
+    {
+      "id": "uuid",
+      "event_type": "reservation_create",
+      "channel": "sms",
+      "recipient": "+5511999999999",
+      "status": "sent",
+      "external_id": "twilio-message-id",
+      "created_at": "2023-12-25T10:00:00Z",
+      "delivered_at": "2023-12-25T10:00:05Z"
+    }
+  ]
+}
+```
+
+**Status Possíveis:**
+- `sent` - Enviado com sucesso
+- `delivered` - Entregue ao destinatário
+- `failed` - Falha no envio
+- `pending` - Aguardando processamento
+
+---
