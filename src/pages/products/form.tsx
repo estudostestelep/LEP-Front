@@ -62,7 +62,7 @@ export default function ProductForm({ initialData, onSuccess, onCancel }: Props)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!user?.orgId || !user?.projectId) {
+    if (!user?.organization_id || !user?.project_id) {
       alert("Erro: dados de organização não encontrados");
       return;
     }
@@ -76,10 +76,9 @@ export default function ProductForm({ initialData, onSuccess, onCancel }: Props)
       } else {
         // Criar novo produto
         const createData: CreateProductRequest = {
-          organization_id: user.orgId,
-          project_id: user.projectId,
           ...form
         };
+        console.log("Creating product with data:", createData);
         await productService.create(createData);
       }
 

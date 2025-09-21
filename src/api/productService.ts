@@ -2,8 +2,6 @@ import api from "./api";
 
 export interface Product {
   id: string;
-  organization_id?: string;
-  project_id?: string;
   name: string;
   description: string;
   price: number;
@@ -16,8 +14,6 @@ export interface Product {
 }
 
 export interface CreateProductRequest {
-  organization_id: string;
-  project_id: string;
   name: string;
   description: string;
   price: number;

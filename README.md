@@ -121,7 +121,7 @@ interface AuthContextType {
   login: (credentials: LoginRequest) => Promise<void>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<boolean>;
-  setOrgAndProject: (orgId: string, projectId: string) => void;
+  setOrgAndProject: (organization_id: string, project_id: string) => void;
 }
 
 interface User {
@@ -130,8 +130,8 @@ interface User {
   email: string;
   role: string;
   permissions: string[];
-  orgId?: string;
-  projectId?: string;
+  organization_id?: string;
+  project_id?: string;
 }
 ```
 
@@ -436,8 +436,8 @@ Origin: http://localhost:5173
 
 #### 3. Headers Multi-tenant Ausentes
 ```typescript
-// Verificar se user tem orgId e projectId
-console.log(user.orgId, user.projectId);
+// Verificar se user tem organization_id e project_id
+console.log(user.organization_id, user.project_id);
 
 // Headers devem aparecer como:
 // X-Lpe-Organization-Id: uuid

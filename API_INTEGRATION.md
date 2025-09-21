@@ -406,8 +406,8 @@ const authSlice = createSlice({
   initialState: {
     token: localStorage.getItem('token'),
     user: null,
-    organizationId: localStorage.getItem('organizationId'),
-    projectId: localStorage.getItem('projectId')
+    organization_id: localStorage.getItem('organization_id'),
+    project_id: localStorage.getItem('project_id')
   }
 });
 ```
@@ -417,13 +417,13 @@ const authSlice = createSlice({
 // Axios interceptor example
 axios.interceptors.request.use((config) => {
   const token = store.getState().auth.token;
-  const orgId = store.getState().auth.organizationId;
-  const projectId = store.getState().auth.projectId;
+  const organization_id = store.getState().auth.organization_id;
+  const project_id = store.getState().auth.project_id;
 
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
-    config.headers['X-Lpe-Organization-Id'] = orgId;
-    config.headers['X-Lpe-Project-Id'] = projectId;
+    config.headers['X-Lpe-Organization-Id'] = organization_id;
+    config.headers['X-Lpe-Project-Id'] = project_id;
   }
 
   return config;

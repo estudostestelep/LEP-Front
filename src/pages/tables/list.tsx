@@ -65,8 +65,8 @@ export default function TablesPage() {
         await tableService.update(editing.id!, values);
       } else {
         const createRequest: CreateTableRequest = {
-          organization_id: currentUser?.orgId || "",
-          project_id: currentUser?.projectId || "",
+          organization_id: currentUser?.organization_id || "",
+          project_id: currentUser?.project_id || "",
           number: parseInt(values.number),
           capacity: parseInt(values.capacity),
           location: values.location,
@@ -82,7 +82,7 @@ export default function TablesPage() {
       alert(
         axiosErr.response?.data?.error ||
         axiosErr.response?.data?.message ||
-        "Erro ao salvar mesa"
+        "Erro ao excluir mesa"
       );
     }
   };
@@ -332,7 +332,12 @@ export default function TablesPage() {
               ]
             },
           ]}
-          initialValues={editing ?? { status: 'livre' }}
+          initialValues={editing ? {
+            number: editing.number,
+            capacity: editing.capacity,
+            location: editing.location,
+            status: editing.status
+          } : { status: 'livre' }}
           onSubmit={handleCreateOrUpdate}
         />
 

@@ -42,7 +42,7 @@ export function usePermissions(): Permissions {
   const [error, setError] = useState<string | null>(null);
 
   const fetchData = async () => {
-    if (!user?.orgId) return;
+    if (!user?.organization_id) return;
 
     try {
       setLoading(true);
@@ -65,7 +65,7 @@ export function usePermissions(): Permissions {
 
   useEffect(() => {
     fetchData();
-  }, [user?.orgId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [user?.organization_id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const canCreateTable = (): PermissionCheck => {
     if (!limits || !usage) return { allowed: false, reason: 'Dados não carregados' };

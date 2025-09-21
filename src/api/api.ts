@@ -1,8 +1,15 @@
 import axios from "axios";
 
 // cria uma instância axios centralizada
+const baseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+console.log('API Configuration:', {
+  VITE_API_BASE_URL: import.meta.env.VITE_API_BASE_URL,
+  baseURL,
+  env: import.meta.env
+});
+
 const api = axios.create({
-  baseURL: "http://localhost:8080", // Backend LEP-Back na porta 8080
+  baseURL, // Backend LEP-Back
   headers: { "Content-Type": "application/json" }
 });
 
@@ -17,9 +24,23 @@ api.interceptors.request.use((config) => {
 
     // Adiciona headers multi-tenant
     const user = JSON.parse(localStorage.getItem("user") || "null");
-    if (user && user.orgId && user.projectId) {
-      config.headers["X-Lpe-Organization-Id"] = user.orgId;
-      config.headers["X-Lpe-Project-Id"] = user.projectId;
+    console.log('AuthContext - Current user for request:', user);
+    if (user && user.organization_id && user.project_id) {
+      config.headers["X-Lpe-Organization-Id"] = user.organization_id;
+      config.headers["X-Lpe-Project-Id"] = user.project_id;
+      console.log('Adding multi-tenant headers:', {
+        organization_id: user.organization_id,
+        project_id: user.project_id,
+        url: config.url
+      });
+    } else {
+      console.warn('Missing organization_id or project_id for request:', {
+        user,
+        url: config.url,
+        hasUser: !!user,
+        hasorganization_id: !!(user?.organization_id),
+        hasproject_id: !!(user?.project_id)
+      });
     }
   } catch (err) {
     // ignora se não tiver user válido ou dados corrompidos
@@ -30,8 +51,24 @@ api.interceptors.request.use((config) => {
 
 // intercepta respostas para tratar erros de autenticação
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log('API Response Success:', {
+      url: response.config.url,
+      status: response.status,
+      data: response.data
+    });
+    return response;
+  },
   (error) => {
+    console.error('API Response Error:', {
+      url: error.config?.url,
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      message: error.message,
+      code: error.code
+    });
+
     if (error.response?.status === 401) {
       // Token expirado ou inválido - limpa dados de autenticação
       localStorage.removeItem("token");

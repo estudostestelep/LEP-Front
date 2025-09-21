@@ -56,8 +56,8 @@ export default function CustomersPage() {
         await customerService.update(editing.id!, values);
       } else {
         const createRequest: CreateCustomerRequest = {
-          organization_id: currentUser?.orgId || "",
-          project_id: currentUser?.projectId || "",
+          organization_id: currentUser?.organization_id || "",
+          project_id: currentUser?.project_id || "",
           name: values.name,
           email: values.email,
           phone: values.phone,
@@ -261,7 +261,12 @@ export default function CustomersPage() {
           { name: 'phone', label: 'Telefone', type: 'tel', required: true },
           { name: 'birth_date', label: 'Data de Nascimento', type: 'date' },
         ]}
-        initialValues={editing ?? {}}
+        initialValues={editing ? {
+          name: editing.name,
+          email: editing.email,
+          phone: editing.phone,
+          birth_date: editing.birth_date
+        } : {}}
         onSubmit={handleCreateOrUpdate}
       />
 

@@ -45,8 +45,8 @@ export const notificationService = {
   updateConfig: (data: NotificationConfig) => api.put<NotificationConfig>("/notification/config", data),
 
   // Templates
-  getTemplates: (orgId: string, projectId: string) =>
-    api.get<NotificationTemplate[]>(`/notification/templates/${orgId}/${projectId}`),
+  getTemplates: (organization_id: string, project_id: string) =>
+    api.get<NotificationTemplate[]>(`/notification/templates/${organization_id}/${project_id}`),
   createTemplate: (data: NotificationTemplate) =>
     api.post<NotificationTemplate>("/notification/template", data),
   updateTemplate: (data: NotificationTemplate) =>
@@ -61,6 +61,6 @@ export const notificationService = {
     api.post("/notification/event", data),
 
   // Logs
-  getLogs: (orgId: string, projectId: string, params?: { limit?: number; offset?: number }) =>
-    api.get<{ logs: NotificationLog[]; total: number }>(`/notification/logs/${orgId}/${projectId}`, { params }),
+  getLogs: (organization_id: string, project_id: string, params?: { limit?: number; offset?: number }) =>
+    api.get<{ logs: NotificationLog[]; total: number }>(`/notification/logs/${organization_id}/${project_id}`, { params }),
 };

@@ -18,20 +18,20 @@ type Props = {
   open: boolean;
   onClose: () => void;
   fields: Field[];
-  initialValues?: Record<string, any>;
-  onSubmit: (values: Record<string, any>) => Promise<void> | void;
+  initialValues?: Record<string, unknown>;
+  onSubmit: (values: Record<string, unknown>) => Promise<void> | void;
 };
 
 
 export default function FormModal({ title, open, onClose, fields, initialValues = {}, onSubmit }: Props) {
-  const [values, setValues] = React.useState<Record<string, any>>(initialValues);
+  const [values, setValues] = React.useState<Record<string, unknown>>(initialValues);
   const [loading, setLoading] = React.useState(false);
 
 
   React.useEffect(() => setValues(initialValues), [initialValues, open]);
 
 
-  const handleChange = (name: string, v: any) => setValues(prev => ({ ...prev, [name]: v }));
+  const handleChange = (name: string, v: unknown) => setValues(prev => ({ ...prev, [name]: v }));
 
 
   const submit = async (e: React.FormEvent) => {
@@ -42,7 +42,7 @@ export default function FormModal({ title, open, onClose, fields, initialValues 
       onClose();
     } catch (err) {
       console.error(err);
-      alert((err as any)?.message || "Error");
+      alert(err instanceof Error ? err.message : "Error");
     } finally {
       setLoading(false);
     }
@@ -70,7 +70,7 @@ export default function FormModal({ title, open, onClose, fields, initialValues 
 
                 {f.type === 'select' ? (
                     <select
-                    value={values[f.name] ?? ''}
+                    value={String(values[f.name] ?? '')}
                     onChange={e => handleChange(f.name, e.target.value)}
                     className="border rounded px-3 py-2"
                     required={f.required}
@@ -88,7 +88,7 @@ export default function FormModal({ title, open, onClose, fields, initialValues 
                 ) : (
                   <input
                     type={f.type ?? 'text'}
-                    value={values[f.name] ?? ''}
+                    value={String(values[f.name] ?? '')}
                     onChange={e => handleChange(f.name, e.target.value)}
                     className="border rounded px-3 py-2"
                     required={f.required}

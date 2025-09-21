@@ -7,8 +7,8 @@ interface User {
   email: string;
   role: string;
   permissions: string[];
-  orgId: string;
-  projectId: string;
+  organization_id: string;
+  project_id: string;
 }
 
 interface AuthContextType {
@@ -18,7 +18,7 @@ interface AuthContextType {
   login: (credentials: LoginRequest) => Promise<void>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<boolean>;
-  setOrgAndProject: (orgId: string, projectId: string) => void;
+  setOrgAndProject: (organization_id: string, project_id: string) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -31,15 +31,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = async (credentials: LoginRequest) => {
     try {
       setLoading(true);
+
+
       const response = await authService.login(credentials);
       const { token: authToken, user: userData } = response.data;
 
-      // Precisa definir orgId e projectId - por enquanto usando valores padrão
+      console.log('Login response from backend:', response.data);
+      console.log('User data received:', userData);
+
+      // Verifica se o backend retornou organization_id e project_id, senão usa valores baseados no usuário
       const userWithOrgData: User = {
         ...userData,
-        orgId: userData.orgId || 'default-org',
-        projectId: userData.projectId || 'default-project'
+        organization_id: userData.organization_id,
+        project_id: userData.project_id
       };
+
+      console.log('User with org data:', userWithOrgData);
 
       // Armazena token e dados do usuário
       setToken(authToken);
@@ -88,9 +95,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const setOrgAndProject = (orgId: string, projectId: string) => {
+  const setOrgAndProject = (organization_id: string, project_id: string) => {
     if (user) {
-      const updatedUser = { ...user, orgId, projectId };
+      const updatedUser = { ...user, organization_id, project_id };
       setUser(updatedUser);
       localStorage.setItem('user', JSON.stringify(updatedUser));
     }
@@ -144,6 +151,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
+
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error('useAuth must be used inside AuthProvider');

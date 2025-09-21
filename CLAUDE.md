@@ -78,8 +78,8 @@ interface User {
   name: string;
   email?: string;
   role?: string;
-  orgId: string;      # ID da organização multi-tenant
-  projectId: string;  # ID do projeto multi-tenant
+  organization_id: string;      # ID da organização multi-tenant
+  project_id: string;  # ID do projeto multi-tenant
 }
 ```
 
@@ -99,7 +99,7 @@ interface User {
 
 ### Lógica de Negócio Principal
 
-1. **Arquitetura Multi-tenant**: Cada requisição inclui orgId/projectId para isolamento de tenant
+1. **Arquitetura Multi-tenant**: Cada requisição inclui organization_id/project_id para isolamento de tenant
 2. **Cardápio Digital Público**: Clientes podem visualizar o menu sem autenticação
 3. **Interface Administrativa**: Operações CRUD protegidas para gestão do restaurante
 4. **Persistência de Sessão**: Dados do usuário armazenados no localStorage com hidratação automática do contexto

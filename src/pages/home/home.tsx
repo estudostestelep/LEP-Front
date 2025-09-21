@@ -17,7 +17,7 @@ import {
   AlertCircle
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { customerService } from "@/api/customerService";
 import { orderService } from "@/api/ordersService";
 import { reservationService } from "@/api/bookingService";
@@ -35,7 +35,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -68,17 +68,17 @@ export default function Home() {
           .filter(o => o.created_at?.startsWith(today))
           .reduce((sum, order) => sum + (order.total_amount || 0), 0)
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError("Erro ao carregar estatísticas");
       console.error('Error fetching stats:', err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     fetchStats();
-  }, [user]);
+  }, [fetchStats]);
 
   return (
     <div className="min-h-screen bg-background">

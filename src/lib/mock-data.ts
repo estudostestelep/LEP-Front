@@ -30,6 +30,8 @@ export const mockUsers: User[] = [
     email: 'joao@restaurant.com',
     role: 'admin',
     permissions: ['all'],
+    organization_id: 'org1',
+    project_id: 'proj1',
     created_at: '2024-01-15T08:00:00Z'
   },
   {
@@ -38,6 +40,8 @@ export const mockUsers: User[] = [
     email: 'maria@restaurant.com',
     role: 'waiter',
     permissions: ['view_orders', 'create_reservation'],
+    organization_id: 'org1',
+    project_id: 'proj1',
     created_at: '2024-02-10T09:30:00Z'
   },
   {
@@ -46,6 +50,8 @@ export const mockUsers: User[] = [
     email: 'carlos@restaurant.com',
     role: 'chef',
     permissions: ['view_orders', 'update_orders'],
+    organization_id: 'org1',
+    project_id: 'proj1',
     created_at: '2024-01-20T07:15:00Z'
   }
 ];
@@ -90,8 +96,6 @@ export const mockProducts: Product[] = [
   
   {
     id: '1',
-    organization_id: 'org1',
-    project_id: 'proj1',
     name: 'Pizza Margherita',
     description: 'Massa fina, molho de tomate, manjericão fresco e mussarela',
     price: 45.90,
@@ -102,9 +106,7 @@ export const mockProducts: Product[] = [
   },
   {
     id: '2',
-        organization_id: 'org1',
-    project_id: 'proj1',
-    name: 'Hambúrguer Artesanal',
+        name: 'Hambúrguer Artesanal',
     description: 'Pão brioche, carne 180g, queijo cheddar, bacon e batata rústica',
     price: 38.50,
     available: true,
@@ -114,8 +116,6 @@ export const mockProducts: Product[] = [
   },
   {
     id: '3',
-    organization_id: 'org1',
-    project_id: 'proj1',
     name: 'Salmão Grelhado',
     description: 'Filé de salmão grelhado com risotto de limão siciliano',
     price: 68.90,
@@ -126,8 +126,6 @@ export const mockProducts: Product[] = [
   },
   {
     id: '4',
-    organization_id: 'org1',
-    project_id: 'proj1',
     name: 'Cerveja Artesanal IPA',
     description: 'Cerveja artesanal India Pale Ale 500ml',
     price: 18.90,
@@ -138,8 +136,6 @@ export const mockProducts: Product[] = [
   },
   {
     id: '5',
-    organization_id: 'org1',
-    project_id: 'proj1',
     name: 'Tiramisu',
     description: 'Sobremesa italiana tradicional com café e mascarpone',
     price: 22.90,

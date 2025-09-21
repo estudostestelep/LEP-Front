@@ -33,7 +33,7 @@ export default function UserForm({ initialData, onSuccess, onCancel }: Props) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!user?.orgId || !user?.projectId) {
+    if (!user?.organization_id || !user?.project_id) {
       alert("Erro: dados de organização não encontrados");
       return;
     }
@@ -42,8 +42,8 @@ export default function UserForm({ initialData, onSuccess, onCancel }: Props) {
       await userService.update(initialData.id, form);
     } else {
       const createData: CreateUserRequest = {
-        organization_id: user.orgId,
-        project_id: user.projectId,
+        organization_id: user.organization_id,
+        project_id: user.project_id,
         name: form.name,
         email: form.email,
         password: form.password || "123456", // Senha padrão

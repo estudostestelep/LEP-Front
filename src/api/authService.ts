@@ -13,8 +13,8 @@ export interface LoginResponse {
     email: string;
     role: string;
     permissions: string[];
-    orgId?: string;
-    projectId?: string;
+    organization_id: string;
+    project_id: string;
   };
 }
 
@@ -24,13 +24,22 @@ export interface User {
   email: string;
   role: string;
   permissions: string[];
-  orgId: string;
-  projectId: string;
+  organization_id: string;
+  project_id: string;
 }
 
 export const authService = {
-  login: (data: LoginRequest) =>
-    api.post<LoginResponse>("/login", data),
+  login: async (data: LoginRequest) => {
+    console.log('AuthService - Tentando login com:', { email: data.email, baseURL: api.defaults.baseURL });
+    try {
+      const response = await api.post<LoginResponse>("/login", data);
+      console.log('AuthService - Login bem-sucedido:', response.status);
+      return response;
+    } catch (error) {
+      console.error('AuthService - Erro no login:', error);
+      throw error;
+    }
+  },
 
   logout: () =>
     api.post("/logout"),

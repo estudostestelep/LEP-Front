@@ -1,87 +1,108 @@
 import { useEffect, useState } from "react";
-import { productService } from "../../api/productService";
-import type { Product } from "../../api/productService";
+import { orderService, Order } from "@/api/ordersService";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, AlertCircle, Package, Plus, Edit, Trash2, Clock } from "lucide-react";
-import ProductForm from "./form";
+import { Loader2, AlertCircle, ShoppingCart, Plus, Edit, Trash2, Clock } from "lucide-react";
+import OrderForm from "./form";
 import ConfirmModal from "@/components/confirmModal";
 import { AxiosError } from "axios";
 
-export default function ProductList() {
-  const [products, setProducts] = useState<Product[]>([]);
+export default function OrderList() {
+  const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showForm, setShowForm] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [editingOrder, setEditingOrder] = useState<Order | null>(null);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [productToDelete, setProductToDelete] = useState<string | null>(null);
+  const [orderToDelete, setOrderToDelete] = useState<string | null>(null);
 
-  const fetchProducts = async () => {
+  const fetchOrders = async () => {
     try {
       setLoading(true);
       setError("");
-      const response = await productService.getAll();
-      setProducts(response.data);
+      const response = await orderService.getAll();
+      setOrders(response.data);
     } catch (err: unknown) {
       const axiosErr = err as AxiosError<{ error?: string; message?: string }>;
-      alert(
+      setError(
         axiosErr.response?.data?.error ||
         axiosErr.response?.data?.message ||
-        "Erro ao excluir mesa"
+        "Erro ao carregar pedidos"
       );
     } finally {
       setLoading(false);
     }
   };
 
-  const handleNewProduct = () => {
-    setEditingProduct(null);
+  const handleNewOrder = () => {
+    setEditingOrder(null);
     setShowForm(true);
   };
 
-  const handleEditProduct = (product: Product) => {
-    setEditingProduct(product);
+  const handleEditOrder = (order: Order) => {
+    setEditingOrder(order);
     setShowForm(true);
   };
 
-  const handleDeleteClick = (productId: string) => {
-    setProductToDelete(productId);
+  const handleDeleteClick = (orderId: string) => {
+    setOrderToDelete(orderId);
     setShowConfirm(true);
   };
 
   const handleDeleteConfirm = async () => {
-    if (!productToDelete) return;
+    if (!orderToDelete) return;
 
     try {
-      await productService.remove(productToDelete);
-      setProducts(products.filter(p => p.id !== productToDelete));
+      await orderService.remove(orderToDelete);
+      setOrders(orders.filter(o => o.id !== orderToDelete));
       setShowConfirm(false);
-      setProductToDelete(null);
+      setOrderToDelete(null);
     } catch (err: unknown) {
       const axiosErr = err as AxiosError<{ error?: string; message?: string }>;
       alert(
         axiosErr.response?.data?.error ||
         axiosErr.response?.data?.message ||
-        "Erro ao excluir mesa"
+        "Erro ao excluir pedido"
       );
     }
   };
 
   const handleFormSuccess = () => {
     setShowForm(false);
-    setEditingProduct(null);
-    fetchProducts();
+    setEditingOrder(null);
+    fetchOrders();
   };
 
   const handleFormCancel = () => {
     setShowForm(false);
-    setEditingProduct(null);
+    setEditingOrder(null);
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "pending": return "bg-yellow-100 text-yellow-800";
+      case "preparing": return "bg-blue-100 text-blue-800";
+      case "ready": return "bg-green-100 text-green-800";
+      case "delivered": return "bg-gray-100 text-gray-800";
+      case "cancelled": return "bg-red-100 text-red-800";
+      default: return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case "pending": return "Pendente";
+      case "preparing": return "Preparando";
+      case "ready": return "Pronto";
+      case "delivered": return "Entregue";
+      case "cancelled": return "Cancelado";
+      default: return status;
+    }
   };
 
   useEffect(() => {
-    fetchProducts();
+    fetchOrders();
   }, []);
 
   if (loading) {
@@ -89,7 +110,7 @@ export default function ProductList() {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-          <p className="text-muted-foreground">Carregando produtos...</p>
+          <p className="text-muted-foreground">Carregando pedidos...</p>
         </div>
       </div>
     );
@@ -102,21 +123,21 @@ export default function ProductList() {
         <div className="flex items-center justify-between mb-8">
           <div className="flex-1">
             <h1 className="text-3xl font-bold text-foreground flex items-center space-x-2">
-              <Package className="h-8 w-8" />
-              <span>Gerenciar Produtos</span>
+              <ShoppingCart className="h-8 w-8" />
+              <span>Gerenciar Pedidos</span>
             </h1>
             <p className="text-muted-foreground mt-2">
-              Gerencie os produtos do cardápio
+              Gerencie todos os pedidos do restaurante
             </p>
           </div>
 
           <Button
             size="lg"
             className="flex items-center space-x-2"
-            onClick={handleNewProduct}
+            onClick={handleNewOrder}
           >
             <Plus className="h-4 w-4" />
-            <span>Novo Produto</span>
+            <span>Novo Pedido</span>
           </Button>
         </div>
 
@@ -130,7 +151,7 @@ export default function ProductList() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={fetchProducts}
+                  onClick={fetchOrders}
                   className="ml-auto"
                 >
                   Tentar Novamente
@@ -140,20 +161,22 @@ export default function ProductList() {
           </Card>
         )}
 
-        {/* Products Grid */}
+        {/* Orders Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {products.map((product) => (
-            <Card key={product.id} className="hover:shadow-lg transition-shadow">
+          {orders.map((order) => (
+            <Card key={order.id} className="hover:shadow-lg transition-shadow">
               <CardHeader className="pb-4">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center space-x-3">
                     <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-                      <Package className="h-6 w-6 text-primary" />
+                      <ShoppingCart className="h-6 w-6 text-primary" />
                     </div>
                     <div>
-                      <CardTitle className="text-lg">{product.name}</CardTitle>
-                      <CardDescription className="line-clamp-2">
-                        {product.description}
+                      <CardTitle className="text-lg">
+                        Pedido #{order.id?.slice(-6)}
+                      </CardTitle>
+                      <CardDescription>
+                        {order.table_number ? `Mesa ${order.table_number}` : 'Balcão'}
                       </CardDescription>
                     </div>
                   </div>
@@ -162,14 +185,14 @@ export default function ProductList() {
                     <Button
                       size="sm"
                       variant="ghost"
-                      onClick={() => handleEditProduct(product)}
+                      onClick={() => handleEditOrder(order)}
                     >
                       <Edit className="h-4 w-4" />
                     </Button>
                     <Button
                       size="sm"
                       variant="ghost"
-                      onClick={() => product.id && handleDeleteClick(product.id)}
+                      onClick={() => order.id && handleDeleteClick(order.id)}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -180,25 +203,45 @@ export default function ProductList() {
               <CardContent>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Preço</span>
-                    <span className="font-semibold text-lg">
-                      R$ {product.price.toFixed(2)}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">Status</span>
-                    <Badge variant={product.available ? "default" : "secondary"}>
-                      {product.available ? "Disponível" : "Indisponível"}
+                    <Badge className={getStatusColor(order.status)}>
+                      {getStatusText(order.status)}
                     </Badge>
                   </div>
 
-                  {product.prep_time_minutes && (
+                  {order.total_amount && (
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Tempo de Preparo</span>
+                      <span className="text-sm text-muted-foreground">Total</span>
+                      <span className="font-semibold text-lg">
+                        R$ {order.total_amount.toFixed(2)}
+                      </span>
+                    </div>
+                  )}
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Itens</span>
+                    <span className="text-sm">
+                      {order.items.reduce((sum, item) => sum + item.quantity, 0)} itens
+                    </span>
+                  </div>
+
+                  {order.source && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Origem</span>
+                      <Badge variant="outline">
+                        {order.source === 'internal' ? 'Interno' : 'Público'}
+                      </Badge>
+                    </div>
+                  )}
+
+                  {order.created_at && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Criado</span>
                       <div className="flex items-center space-x-1">
                         <Clock className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm">{product.prep_time_minutes} min</span>
+                        <span className="text-sm">
+                          {new Date(order.created_at).toLocaleTimeString()}
+                        </span>
                       </div>
                     </div>
                   )}
@@ -209,19 +252,19 @@ export default function ProductList() {
         </div>
 
         {/* Empty State */}
-        {products.length === 0 && !error && (
+        {orders.length === 0 && !error && (
           <Card className="text-center py-12">
             <CardContent>
-              <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <ShoppingCart className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-medium text-foreground mb-2">
-                Nenhum produto cadastrado
+                Nenhum pedido encontrado
               </h3>
               <p className="text-muted-foreground mb-4">
-                Comece cadastrando seu primeiro produto do cardápio.
+                Comece criando seu primeiro pedido.
               </p>
-              <Button onClick={handleNewProduct}>
+              <Button onClick={handleNewOrder}>
                 <Plus className="h-4 w-4 mr-2" />
-                Novo Produto
+                Novo Pedido
               </Button>
             </CardContent>
           </Card>
@@ -231,8 +274,8 @@ export default function ProductList() {
         {showForm && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
             <div className="bg-white rounded-lg shadow-lg w-full max-w-4xl mx-4 max-h-[90vh] overflow-y-auto">
-              <ProductForm
-                initialData={editingProduct || undefined}
+              <OrderForm
+                initialData={editingOrder || undefined}
                 onSuccess={handleFormSuccess}
                 onCancel={handleFormCancel}
               />
@@ -242,12 +285,12 @@ export default function ProductList() {
 
         <ConfirmModal
           open={showConfirm}
-          title="Excluir Produto"
-          message="Tem certeza que deseja excluir este produto? Esta ação não pode ser desfeita."
+          title="Excluir Pedido"
+          message="Tem certeza que deseja excluir este pedido? Esta ação não pode ser desfeita."
           onConfirm={handleDeleteConfirm}
           onCancel={() => {
             setShowConfirm(false);
-            setProductToDelete(null);
+            setOrderToDelete(null);
           }}
         />
       </div>
