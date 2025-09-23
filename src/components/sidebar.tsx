@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/context/authContext';
 import { Button } from '@/components/ui/button';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, Variants } from 'framer-motion';
 import {
   Home,
   Menu,
@@ -16,7 +16,6 @@ import {
   Calendar,
   UserCheck,
   TableProperties,
-  MenuIcon,
   X
 } from 'lucide-react';
 
@@ -79,11 +78,11 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
     }
   };
 
-  const sidebarVariants = {
+  const sidebarVariants: Variants = {
     open: {
       x: 0,
       transition: {
-        type: "spring",
+        type: "spring" as const,
         stiffness: 300,
         damping: 30
       }
@@ -91,14 +90,14 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
     closed: {
       x: isMobile ? "-100%" : "-240px",
       transition: {
-        type: "spring",
+        type: "spring" as const,
         stiffness: 300,
         damping: 30
       }
     }
   };
 
-  const overlayVariants = {
+  const overlayVariants: Variants = {
     open: { opacity: 1 },
     closed: { opacity: 0 }
   };
