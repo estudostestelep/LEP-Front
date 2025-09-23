@@ -1,6 +1,8 @@
 import * as React from 'react';
+import { useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import Navbar from '@/components/navbar';
+import Sidebar from '@/components/sidebar';
+import Header from '@/components/header';
 import { useAuth } from '@/context/authContext';
 
 import Home from '@/pages/home/home';
@@ -21,23 +23,38 @@ function PrivateRoute({ children }: { children: React.ReactElement }) {
 }
 
 export default function AppRoutes() {
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
+
   return (
-    <>
-      <Navbar />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/menu" element={<Menu />} />
-        <Route path="/login" element={<Login />} />
-        {/* Rotas protegidas */}
-        <Route path="/orders" element={<PrivateRoute><Orders /></PrivateRoute>} />
-        <Route path="/reservations" element={<PrivateRoute><Reservations /></PrivateRoute>} />
-        <Route path="/customers" element={<PrivateRoute><Customers /></PrivateRoute>} />
-        <Route path="/tables" element={<PrivateRoute><Tables /></PrivateRoute>} />
-        <Route path="/products" element={<PrivateRoute><Products /></PrivateRoute>} />
-        <Route path="/users" element={<PrivateRoute><Users /></PrivateRoute>} />
-        <Route path="/organizations" element={<PrivateRoute><Organizations /></PrivateRoute>} />
-        <Route path="/projects" element={<PrivateRoute><Projects /></PrivateRoute>} />
-      </Routes>
-    </>
+    <div className="flex h-screen bg-background">
+      <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
+
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <Header toggleSidebar={toggleSidebar} />
+
+        <main className="flex-1 overflow-y-auto bg-background">
+          <div className="container mx-auto px-4 py-6">
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/menu" element={<Menu />} />
+              <Route path="/login" element={<Login />} />
+              {/* Rotas protegidas */}
+              <Route path="/orders" element={<PrivateRoute><Orders /></PrivateRoute>} />
+              <Route path="/reservations" element={<PrivateRoute><Reservations /></PrivateRoute>} />
+              <Route path="/customers" element={<PrivateRoute><Customers /></PrivateRoute>} />
+              <Route path="/tables" element={<PrivateRoute><Tables /></PrivateRoute>} />
+              <Route path="/products" element={<PrivateRoute><Products /></PrivateRoute>} />
+              <Route path="/users" element={<PrivateRoute><Users /></PrivateRoute>} />
+              <Route path="/organizations" element={<PrivateRoute><Organizations /></PrivateRoute>} />
+              <Route path="/projects" element={<PrivateRoute><Projects /></PrivateRoute>} />
+            </Routes>
+          </div>
+        </main>
+      </div>
+    </div>
   );
 }
