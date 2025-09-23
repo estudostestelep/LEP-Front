@@ -9,7 +9,12 @@ import {
   Package,
   LogIn,
   LogOut,
-  Utensils
+  Utensils,
+  Building,
+  FolderOpen,
+  Calendar,
+  UserCheck,
+  TableProperties
 } from 'lucide-react';
 
 export default function Navbar() {
@@ -50,11 +55,25 @@ export default function Navbar() {
                     <span>Pedidos</span>
                   </Link>
                   <Link
-                    to="/users"
+                    to="/reservations"
                     className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    <Users className="h-4 w-4" />
-                    <span>Usuários</span>
+                    <Calendar className="h-4 w-4" />
+                    <span>Reservas</span>
+                  </Link>
+                  <Link
+                    to="/customers"
+                    className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <UserCheck className="h-4 w-4" />
+                    <span>Clientes</span>
+                  </Link>
+                  <Link
+                    to="/tables"
+                    className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <TableProperties className="h-4 w-4" />
+                    <span>Mesas</span>
                   </Link>
                   <Link
                     to="/products"
@@ -62,6 +81,27 @@ export default function Navbar() {
                   >
                     <Package className="h-4 w-4" />
                     <span>Produtos</span>
+                  </Link>
+                  <Link
+                    to="/users"
+                    className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <Users className="h-4 w-4" />
+                    <span>Usuários</span>
+                  </Link>
+                  <Link
+                    to="/organizations"
+                    className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <Building className="h-4 w-4" />
+                    <span>Organizações</span>
+                  </Link>
+                  <Link
+                    to="/projects"
+                    className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <FolderOpen className="h-4 w-4" />
+                    <span>Projetos</span>
                   </Link>
                 </>
               )}

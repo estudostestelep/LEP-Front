@@ -12,21 +12,73 @@ import {
   TrendingUp,
   ArrowRight,
   Coffee,
-  DollarSign
+  DollarSign,
+  Loader2,
+  AlertCircle
 } from "lucide-react";
-import { mockReservations, mockOrders, mockWaitlist, mockCustomers } from "@/lib/mock-data";
 import { Link } from "react-router-dom";
+import { useState, useEffect, useCallback } from "react";
+import { customerService } from "@/api/customerService";
+import { orderService } from "@/api/ordersService";
+import { reservationService } from "@/api/bookingService";
+import { waitlistService } from "@/api/waitingLineService";
 
 export default function Home() {
   const { user } = useAuth();
+  const [stats, setStats] = useState({
+    totalCustomers: 0,
+    activeOrders: 0,
+    todayReservations: 0,
+    waitingCustomers: 0,
+    todayRevenue: 0
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const stats = {
-    totalCustomers: mockCustomers.length,
-    activeOrders: mockOrders.filter(o => o.status === 'preparing' || o.status === 'ready').length,
-    todayReservations: mockReservations.filter(r => r.status === 'confirmed').length,
-    waitingCustomers: mockWaitlist.filter(w => w.status === 'waiting').length,
-    todayRevenue: mockOrders.reduce((sum, order) => sum + order.total, 0)
-  };
+  const fetchStats = useCallback(async () => {
+    if (!user) return;
+
+    try {
+      setLoading(true);
+      setError("");
+
+      // Buscar dados de forma paralela
+      const [customers, orders, reservations, waitlist] = await Promise.all([
+        customerService.getAll().catch(() => ({ data: [] })),
+        orderService.getAll().catch(() => ({ data: [] })),
+        reservationService.getAll().catch(() => ({ data: [] })),
+        waitlistService.getAll().catch(() => ({ data: [] }))
+      ]);
+
+      // Calcular estatísticas
+      const today = new Date().toISOString().split('T')[0];
+
+      setStats({
+        totalCustomers: customers.data.length,
+        activeOrders: orders.data.filter(o =>
+          o.status === 'preparing' || o.status === 'ready'
+        ).length,
+        todayReservations: reservations.data.filter(r =>
+          r.status === 'confirmed' && r.datetime?.startsWith(today)
+        ).length,
+        waitingCustomers: waitlist.data.filter(w =>
+          w.status === 'waiting'
+        ).length,
+        todayRevenue: orders.data
+          .filter(o => o.created_at?.startsWith(today))
+          .reduce((sum, order) => sum + (order.total_amount || 0), 0)
+      });
+    } catch (err: unknown) {
+      setError("Erro ao carregar estatísticas");
+      console.error('Error fetching stats:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    fetchStats();
+  }, [fetchStats]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -63,8 +115,38 @@ export default function Home() {
               </Card>
             </div>
 
-            {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            {/* Error State */}
+            {error && (
+              <Card className="mb-6 border-destructive">
+                <CardContent className="p-4">
+                  <div className="flex items-center space-x-2 text-destructive">
+                    <AlertCircle className="h-5 w-5" />
+                    <span>{error}</span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={fetchStats}
+                      className="ml-auto"
+                    >
+                      Tentar Novamente
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Loading State */}
+            {loading ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="text-center">
+                  <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+                  <p className="text-muted-foreground">Carregando estatísticas...</p>
+                </div>
+              </div>
+            ) : (
+              <>
+                {/* Stats Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Total de Clientes</CardTitle>
@@ -188,6 +270,8 @@ export default function Home() {
                 </div>
               </CardContent>
             </Card>
+              </>
+            )}
           </>
         ) : (
           /* Public Home */

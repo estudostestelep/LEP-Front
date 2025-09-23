@@ -4,46 +4,37 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import AnimatedGradientText from "@/components/magicui/animated-gradient-text";
 import ShimmerButton from "@/components/magicui/shimmer-button";
-import { LogIn, Utensils, Users, Building, Folder } from "lucide-react";
-import { mockUsers } from "@/lib/mock-data";
+import { LogIn, Utensils, AlertCircle } from "lucide-react";
+import { AxiosError } from "axios";
 
 export default function Login() {
-  const { login } = useAuth();
+  const { login, loading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
 
     if (email && password) {
-      login({
-        id: "dev-user",
-        name: "Usuário Teste",
-        email: email,
-        role: "admin",
-        orgId: "org-123",
-        projectId: "proj-456"
-      });
+      try {
+        await login({ email, password });
+        // Login bem-sucedido - o redirect será tratado pelo contexto/router
+      } catch (err: unknown) {
+        const axiosErr = err as AxiosError<{ error?: string; message?: string }>;
+        setError(
+          axiosErr.response?.data?.error ||
+          axiosErr.response?.data?.message ||
+          "Erro ao fazer login. Verifique suas credenciais."
+        );
+      }
     }
   };
 
-  const handleQuickLogin = (user: typeof mockUsers[0]) => {
-    login({
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      orgId: "org-123",
-      projectId: "proj-456"
-    });
-  };
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      {/* TEST: This should show as a bright red box if Tailwind is working */}
-      <div className="fixed top-4 right-4 w-20 h-20 bg-red-500 text-white flex items-center justify-center rounded-lg z-50">
-        CSS TEST
-      </div>
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
@@ -62,37 +53,6 @@ export default function Login() {
           </p>
         </div>
 
-        {/* Quick Login Cards */}
-        <div className="space-y-4 mb-6">
-          <h3 className="text-sm font-medium text-muted-foreground text-center">
-            Login Rápido (Desenvolvimento)
-          </h3>
-
-          <div className="grid gap-3">
-            {mockUsers.map((user) => (
-              <Card
-                key={user.id}
-                className="cursor-pointer hover:shadow-md transition-shadow border-2 hover:border-primary/20"
-                onClick={() => handleQuickLogin(user)}
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                        <Users className="h-5 w-5 text-primary" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-sm">{user.name}</p>
-                        <p className="text-xs text-muted-foreground capitalize">{user.role}</p>
-                      </div>
-                    </div>
-                    <LogIn className="h-4 w-4 text-muted-foreground" />
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
 
         {/* Traditional Login Form */}
         <Card>
@@ -107,6 +67,13 @@ export default function Login() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
+              {error && (
+                <div className="p-3 rounded-md bg-destructive/10 border border-destructive/20 flex items-center space-x-2">
+                  <AlertCircle className="h-4 w-4 text-destructive" />
+                  <span className="text-sm text-destructive">{error}</span>
+                </div>
+              )}
+
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">
                   Email
@@ -116,6 +83,7 @@ export default function Login() {
                   placeholder="seu.email@restaurant.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  disabled={loading}
                   required
                 />
               </div>
@@ -129,6 +97,7 @@ export default function Login() {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  disabled={loading}
                   required
                 />
               </div>
@@ -136,36 +105,15 @@ export default function Login() {
               <ShimmerButton
                 type="submit"
                 className="w-full bg-primary hover:bg-primary/90"
-                disabled={!email || !password}
+                disabled={!email || !password || loading}
               >
                 <LogIn className="h-4 w-4 mr-2" />
-                Entrar no Sistema
+                {loading ? "Entrando..." : "Entrar no Sistema"}
               </ShimmerButton>
             </form>
           </CardContent>
         </Card>
 
-        {/* Development Info */}
-        <Card className="mt-6 bg-muted/50">
-          <CardContent className="p-4">
-            <div className="flex items-start space-x-2">
-              <Building className="h-4 w-4 text-muted-foreground mt-0.5" />
-              <div className="text-xs text-muted-foreground">
-                <p className="font-medium mb-1">Ambiente de Desenvolvimento</p>
-                <div className="space-y-1">
-                  <div className="flex items-center space-x-1">
-                    <Folder className="h-3 w-3" />
-                    <span>Org ID: org-123</span>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <Folder className="h-3 w-3" />
-                    <span>Project ID: proj-456</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );

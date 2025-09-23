@@ -1,310 +1,577 @@
-# LEP System — README
+# LEP System — Frontend
 
-> MVP: Reservations, Waitlist e Digital Menu
-
----
-
-## Visão geral
-
-Este repositório contém a base front-end de um sistema SaaS para gestão de restaurantes (LEP System), construído com **React + Vite + TypeScript**. O MVP foca em **Reservas**, **Fila de Espera** e **Cardápio Digital (público)** — com os CRUDs necessários para suportar essas funcionalidades: Users, Customers, Tables, Products, Reservations, Waitlist e Orders.
-
-O projeto já inclui um **Context** global para armazenar informações de sessão/tenant: `userId`, `orgId` e `projectId` (essas três chaves devem estar disponíveis para todas as páginas/serviços).
+> Sistema SaaS completo para gestão de restaurantes: Reservas, Fila de Espera, Cardápio Digital e Notificações
 
 ---
 
-## Objetivo e escopo do MVP
+## 🏗️ Arquitetura do Sistema
 
-* Permitir que clientes (acesso **público**) vejam o cardápio digital e façam pedidos informando o número/ID da mesa (sem login).
-* Permitir que funcionários/administradores (acesso **privado**, via login) gerenciem usuários, clientes, mesas, produtos, reservas, fila de espera e pedidos.
-* Fornecer serviços front-end (`src/api/*`) que encapsulam as chamadas ao backend (REST).
+### Visão Geral
 
----
+**LEP System** é um sistema SaaS de gestão completa para restaurantes, construído com **React 19 + Vite + TypeScript**. O sistema oferece funcionalidades de reservas, fila de espera, cardápio digital e sistema de notificações, com arquitetura **multi-tenant** para suportar múltiplos restaurantes.
 
-## Funcionalidades principais
+### Tecnologias Principais
 
-### Acesso público (sem login)
-
-* `/menu` — Listagem pública de produtos disponíveis (cardápio digital).
-* `/order` — Fluxo para criar um pedido público, informando mesa e itens.
-
-### Acesso privado (com login)
-
-* CRUD de **Users** (funcionários/admins)
-* CRUD de **Customers** (clientes do restaurante)
-* CRUD de **Tables** (mesas do estabelecimento)
-* CRUD de **Products** (itens do cardápio)
-* CRUD de **Reservations** (reservas de mesas)
-* CRUD de **Waitlist** (fila de espera)
-* Gestão de **Orders** (pedidos internos / acompanhamento)
-
-### Regras de negócio principais (resumo)
-
-* Ao criar uma reserva: validação de disponibilidade da mesa no horário.
-* Ao criar um pedido (interno ou público): cálculo de total, e baixa de estoque (quando aplicável).
-* Cancelamento de pedidos e reservas deve reverter efeitos (ex.: liberar mesa, restituir estoque).
-* Deleção lógica (soft delete) para preservar histórico quando aplicável.
-* Logs/auditoria para criação/atualização/cancelamento (usados em relatórios).
+- **Frontend**: React 19.1.1 + TypeScript
+- **Build Tool**: Vite 7.1.2
+- **Estilização**: Tailwind CSS + shadcn/ui + magicui
+- **Roteamento**: React Router DOM 7.9.1
+- **HTTP Client**: Axios com interceptors
+- **Animações**: Framer Motion
+- **Ícones**: Lucide React
 
 ---
 
-## Estrutura de pastas (resumo)
+## 🚀 Configuração e Instalação
+
+### Pré-requisitos
+
+- Node.js 18+
+- npm ou yarn
+- Backend LEP-Back rodando na porta 8080
+
+### Instalação
+
+```bash
+# Clonar o repositório
+git clone <repository-url>
+cd LEP-Front
+
+# Instalar dependências
+npm install
+
+# Configurar variáveis de ambiente
+cp .env.example .env
+# Editar .env com suas configurações
+
+# Iniciar desenvolvimento
+npm run dev
+
+# Build para produção
+npm run build
+
+# Preview da build
+npm run preview
+
+# Linting
+npm run lint
+```
+
+### Variáveis de Ambiente
+
+```env
+# .env
+VITE_API_BASE_URL=http://localhost:8080
+VITE_ENABLE_MOCKS=false
+```
+
+---
+
+## 🗺️ Estrutura de Rotas
+
+### Rotas Públicas (sem autenticação)
+
+| Rota | Componente | Descrição |
+|------|------------|-----------|
+| `/` | Home | Página inicial pública/dashboard |
+| `/menu` | Menu | Cardápio digital público |
+| `/login` | Login | Página de autenticação |
+
+### Rotas Privadas (requer autenticação)
+
+| Rota | Componente | Descrição |
+|------|------------|-----------|
+| `/users` | Users List | Gerenciamento de usuários |
+| `/customers` | Customers List | Gerenciamento de clientes |
+| `/tables` | Tables List | Gerenciamento de mesas |
+| `/products` | Products List | Gerenciamento de produtos |
+| `/reservations` | Reservations List | Gerenciamento de reservas |
+| `/waitlist` | Waitlist List | Gerenciamento de fila de espera |
+| `/orders` | Orders List | Gerenciamento de pedidos |
+
+---
+
+## 🔐 Sistema de Autenticação
+
+### Fluxo de Autenticação
+
+1. **Login**: `POST /login` com email/senha
+2. **Validação**: Token JWT armazenado no localStorage
+3. **Headers Automáticos**: Interceptors adicionam headers multi-tenant
+4. **Logout**: Limpeza do token e redirecionamento
+
+### Headers Multi-Tenant
+
+Todas as requisições incluem automaticamente:
+
+```http
+Authorization: Bearer <jwt-token>
+X-Lpe-Organization-Id: <organization-uuid>
+X-Lpe-Project-Id: <project-uuid>
+Content-Type: application/json
+```
+
+### Estrutura do AuthContext
+
+```typescript
+interface AuthContextType {
+  user: User | null;
+  token: string | null;
+  loading: boolean;
+  login: (credentials: LoginRequest) => Promise<void>;
+  logout: () => Promise<void>;
+  checkAuth: () => Promise<boolean>;
+  setOrgAndProject: (organization_id: string, project_id: string) => void;
+}
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  permissions: string[];
+  organization_id?: string;
+  project_id?: string;
+}
+```
+
+---
+
+## 📁 Estrutura de Arquivos
 
 ```
 src/
-├─ api/                    # Services que conversam com a API (axios)
-│  ├─ api.ts               # instância axios + interceptors
-│  ├─ userService.ts
-│  ├─ customerService.ts
-│  ├─ tableService.ts
-│  ├─ productService.ts
-│  ├─ reservationService.ts
-│  ├─ waitlistService.ts
-│  └─ orderService.ts
-├─ components/
-│  ├─ Navbar.tsx
-│  ├─ Table.tsx
-│  ├─ Modal.tsx
-│  └─ FormInput.tsx
-├─ context/
-│  └─ UserContext.tsx      # userId, orgId, projectId
-├─ pages/
-│  ├─ Users/               # List.tsx, Form.tsx
-│  ├─ Customers/
-│  ├─ Tables/
-│  ├─ Products/
-│  ├─ Reservations/
-│  ├─ Waitlist/
-│  └─ Orders/              # PublicMenu.tsx, MyOrders.tsx
-├─ App.tsx
-└─ main.tsx
+├── api/                    # Serviços da API
+│   ├── api.ts             # Instância Axios + interceptors
+│   ├── authService.ts     # Autenticação (login, logout, checkToken)
+│   ├── userService.ts     # CRUD de usuários
+│   ├── customerService.ts # CRUD de clientes
+│   ├── tableService.ts    # CRUD de mesas
+│   ├── productService.ts  # CRUD de produtos
+│   ├── bookingService.ts  # CRUD de reservas (alias: reservationService)
+│   ├── waitingLineService.ts # CRUD de fila de espera (alias: waitlistService)
+│   ├── ordersService.ts   # CRUD de pedidos + fila da cozinha
+│   ├── notificationService.ts # Sistema de notificações
+│   ├── reportsService.ts  # Relatórios e exports
+│   ├── projectService.ts  # Gerenciamento de projetos
+│   ├── settingsService.ts # Configurações do sistema
+│   └── environmentService.ts # Ambientes e credenciais
+├── components/
+│   ├── ui/                # Componentes shadcn/ui
+│   │   ├── button.tsx
+│   │   ├── card.tsx
+│   │   ├── input.tsx
+│   │   └── badge.tsx
+│   ├── magicui/          # Componentes animados customizados
+│   │   ├── animated-gradient-text.tsx
+│   │   ├── shimmer-button.tsx
+│   │   └── number-ticker.tsx
+│   ├── navbar.tsx        # Navegação principal
+│   ├── formModal.tsx     # Modal de formulário reutilizável
+│   └── confirmModal.tsx  # Modal de confirmação
+├── context/
+│   └── authContext.tsx   # Contexto de autenticação multi-tenant
+├── pages/
+│   ├── home/            # Dashboard principal
+│   ├── login/           # Página de login
+│   ├── menu/            # Cardápio público
+│   ├── users/           # Gerenciamento de usuários
+│   ├── customers/       # Gerenciamento de clientes
+│   ├── tables/          # Gerenciamento de mesas
+│   ├── products/        # Gerenciamento de produtos
+│   ├── reservations/    # Gerenciamento de reservas
+│   ├── waitlist/        # Gerenciamento de fila de espera
+│   └── orders/          # Gerenciamento de pedidos
+├── lib/
+│   ├── utils.ts         # Utilitários (Tailwind merge, etc.)
+│   └── mock-data.ts     # Dados mock para desenvolvimento
+├── App.tsx              # Configuração de rotas
+├── main.tsx             # Entry point
+└── index.css            # Estilos globais Tailwind
 ```
 
 ---
 
-## Rotas (frontend) — resumo
+## 🛠️ Serviços da API
 
-### Públicas
+### Padrão dos Services
 
-* `GET /menu` → PublicMenu (lista produtos)
-* `POST /orders/public` → Criar pedido público (mesa + itens)
+Todos os services seguem o padrão:
 
-### Privadas (requer login)
+```typescript
+export const serviceNameService = {
+  getAll: () => api.get<Entity[]>("/endpoint"),
+  getById: (id: string) => api.get<Entity>(`/endpoint/${id}`),
+  create: (data: CreateRequest) => api.post<Entity>("/endpoint", data),
+  update: (id: string, data: Partial<Entity>) => api.put<Entity>(`/endpoint/${id}`, data),
+  remove: (id: string) => api.delete(`/endpoint/${id}`)
+};
+```
 
-* `GET /users`, `POST /users`, `PUT /users/:id`, `DELETE /users/:id`
-* `GET /customers`, `POST /customers`, `PUT /customers/:id`, `DELETE /customers/:id`
-* `GET /tables`, `POST /tables`, `PUT /tables/:id`, `DELETE /tables/:id`
-* `GET /products`, `POST /products`, `PUT /products/:id`, `DELETE /products/:id`
-* `GET /reservations`, `POST /reservations`, `PUT /reservations/:id`, `DELETE /reservations/:id`
-* `GET /waitlist`, `POST /waitlist`, `PUT /waitlist/:id`, `DELETE /waitlist/:id`
-* `GET /orders`, `POST /orders`, `PUT /orders/:id`, `DELETE /orders/:id`
+### Services Disponíveis
 
-> Note: os endpoints acima são o *padrão* esperado pelo front-end. Ajuste `api.baseURL` conforme seu backend.
+#### Core Services (CRUD Completo)
+- **userService**: Gerenciamento de usuários do sistema
+- **customerService**: Gerenciamento de clientes do restaurante
+- **tableService**: Gerenciamento de mesas
+- **productService**: Gerenciamento de produtos do cardápio
+- **reservationService**: Gerenciamento de reservas (alias: bookingService)
+- **waitlistService**: Gerenciamento de fila de espera (alias: waitingLineService)
+- **orderService**: Gerenciamento de pedidos + fila da cozinha
+
+#### Advanced Services
+- **authService**: Login, logout, validação de token
+- **notificationService**: Configurações, templates e logs de notificações
+- **reportsService**: Relatórios de ocupação, reservas e exports CSV
+- **projectService**: Gerenciamento de projetos multi-tenant
+- **settingsService**: Configurações do projeto
+- **environmentService**: Ambientes e credenciais (Twilio, SMTP)
 
 ---
 
-## API (front) — interceptors e headers esperados
+## 📊 Funcionalidades Implementadas
 
-* A instância `api.ts` adiciona automaticamente os headers `x-org-id` e `x-proj-id` (extraídos do `UserContext` / `localStorage`) às requisições.
-* Recomenda-se também enviar `Authorization: Bearer <token>` para rotas privadas.
+### 🏠 Dashboard Principal
+- **Estatísticas em tempo real**: clientes, pedidos ativos, reservas, fila de espera
+- **Faturamento do dia**: cálculo automático baseado em pedidos
+- **Ações rápidas**: links diretos para principais funcionalidades
+- **Estado de loading e error handling** completo
 
-Exemplo de `api.ts` (resumo):
+### 👥 Gerenciamento de Usuários
+- **CRUD completo** com roles e permissions
+- **UI moderna** com cards e filtros
+- **Busca** por nome ou email
+- **Filtros por role**: admin, waiter, chef, etc.
 
-```ts
-const api = axios.create({ baseURL: import.meta.env.VITE_API_BASE_URL });
-// interceptor -> adiciona x-org-id e x-proj-id
+### 🏪 Gerenciamento de Clientes
+- **CRUD completo** com dados de contato
+- **Campos**: nome, email, telefone, data de nascimento
+- **UI padronizada** com cards e estados de loading
+
+### 🪑 Gerenciamento de Mesas
+- **CRUD completo** com status em tempo real
+- **Status**: livre, ocupada, reservada
+- **Informações**: número, capacidade, localização
+- **Filtros** por status e busca por número/localização
+
+### 🍕 Gerenciamento de Produtos
+- **CRUD completo** do cardápio
+- **Campos**: nome, descrição, preço, disponibilidade, tempo de preparo
+- **Status visual** de disponibilidade
+
+### 🔐 Sistema de Autenticação Completo
+- **Login real** com JWT tokens
+- **Multi-tenant** com headers automáticos
+- **Proteção de rotas** privadas
+- **Logout** com limpeza completa
+
+---
+
+## 🎨 Padrões de UI/UX
+
+### Design System
+- **Tailwind CSS** para estilização
+- **shadcn/ui** para componentes base
+- **magicui** para animações especiais
+- **Lucide React** para ícones consistentes
+
+### Padrões de Componentes
+
+#### Loading States
+```tsx
+{loading && (
+  <div className="min-h-screen bg-background flex items-center justify-center">
+    <div className="text-center">
+      <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+      <p className="text-muted-foreground">Carregando...</p>
+    </div>
+  </div>
+)}
+```
+
+#### Error Handling
+```tsx
+{error && (
+  <Card className="mb-6 border-destructive">
+    <CardContent className="p-4">
+      <div className="flex items-center space-x-2 text-destructive">
+        <AlertCircle className="h-5 w-5" />
+        <span>{error}</span>
+        <Button variant="outline" size="sm" onClick={retry}>
+          Tentar Novamente
+        </Button>
+      </div>
+    </CardContent>
+  </Card>
+)}
+```
+
+#### Empty States
+```tsx
+{data.length === 0 && (
+  <Card className="text-center py-12">
+    <CardContent>
+      <Icon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+      <h3 className="text-lg font-medium mb-2">Nenhum item encontrado</h3>
+      <p className="text-muted-foreground mb-4">Descrição do estado vazio</p>
+      <Button onClick={action}>Ação Principal</Button>
+    </CardContent>
+  </Card>
+)}
 ```
 
 ---
 
-## Exemplos de payloads (JSON)
+## 🔗 Integração com Backend
 
-### User (create)
+### Base URL
+```typescript
+// src/api/api.ts
+const api = axios.create({
+  baseURL: "http://localhost:8080"
+});
+```
 
+### Endpoints Backend Mapeados
+
+| Frontend Service | Backend Endpoint | Método | Descrição |
+|------------------|------------------|--------|-----------|
+| `authService.login()` | `POST /login` | POST | Autenticação |
+| `userService.getAll()` | `GET /user` | GET | Listar usuários |
+| `customerService.getAll()` | `GET /customer` | GET | Listar clientes |
+| `tableService.getAll()` | `GET /table` | GET | Listar mesas |
+| `productService.getAll()` | `GET /product` | GET | Listar produtos |
+| `reservationService.getAll()` | `GET /reservation` | GET | Listar reservas |
+| `waitlistService.getAll()` | `GET /waitlist` | GET | Listar fila de espera |
+| `orderService.getAll()` | `GET /order` | GET | Listar pedidos |
+| `orderService.getKitchenQueue()` | `GET /kitchen/queue` | GET | Fila da cozinha |
+
+### Exemplos de Payloads
+
+#### Criar Usuário
 ```json
 {
-  "name": "Maria Oliveira",
-  "email": "maria@restaurant.com",
-  "password": "secret_password",
-  "role": "waiter",
-  "permissions": ["view_orders","create_reservation"]
-}
-```
-
-### Customer (create)
-
-```json
-{
+  "organization_id": "uuid",
+  "project_id": "uuid",
   "name": "João Silva",
-  "email": "joao@email.com",
-  "phone": "+55 11 99999-9999",
-  "birthDate": "1990-05-12"
+  "email": "joao@restaurant.com",
+  "password": "senha123",
+  "role": "waiter",
+  "permissions": ["view_orders", "create_reservation"]
 }
 ```
 
-### Table (create)
-
+#### Criar Mesa
 ```json
 {
+  "organization_id": "uuid",
+  "project_id": "uuid",
   "number": 12,
   "capacity": 4,
-  "location": "Main Hall"
+  "location": "Salão Principal",
+  "status": "livre"
 }
 ```
 
-### Product (create)
-
+#### Criar Reserva
 ```json
 {
-  "name": "Pizza Margherita",
-  "description": "Thin crust, tomato sauce, basil",
-  "price": 45.9,
-  "available": true
-}
-```
-
-### Reservation (create)
-
-```json
-{
-  "customerId": "uuid-customer",
-  "tableId": "uuid-table",
-  "datetime": "2025-09-12T19:00:00Z",
-  "partySize": 4,
-  "note": "Birthday"
-}
-```
-
-### Waitlist (create)
-
-```json
-{
-  "customerId": "uuid-customer",
-  "people": 2
-}
-```
-
-### Order (public create)
-
-```json
-{
-  "tableNumber": "12",
-  "items": [
-    { "productId": "uuid-prod-1", "quantity": 2 },
-    { "productId": "uuid-prod-2", "quantity": 1 }
-  ],
-  "note": "No onions"
+  "organization_id": "uuid",
+  "project_id": "uuid",
+  "customer_id": "uuid",
+  "table_id": "uuid",
+  "datetime": "2024-03-15T19:30:00Z",
+  "party_size": 4,
+  "note": "Aniversário"
 }
 ```
 
 ---
 
-## Regras importantes e validações (detalhado)
+## 🧪 Desenvolvimento e Testing
 
-### Reservas
+### Scripts Disponíveis
 
-* Verificar se `tableId` está disponível no intervalo solicitado (p.ex. +/- 1h dependendo do tempo médio de ocupação).
-* Reservas confirmadas bloqueiam a mesa no intervalo.
-* Permitir alteração de horário/mesa com revalidação.
-* Cancelamento libera mesa e gera log.
+```bash
+# Desenvolvimento
+npm run dev          # Servidor de desenvolvimento (porta 5173)
+npm run build        # Build para produção
+npm run preview      # Preview da build de produção
+npm run lint         # Linting com ESLint
 
-### Fila de espera
+# Outros comandos úteis
+npm run dev -- --port 3000    # Executar em porta específica
+npm run build -- --mode prod  # Build com modo específico
+```
 
-* Adição rápida com `customerId` e `people`.
-* Notificação manual ou automática quando a mesa fica disponível.
-* Ordem FIFO (ou priorização por VIP/cliente frequente, se implementado).
+### Estrutura de Testing (Recomendada)
 
-### Pedidos (public)
+```bash
+# Instalar dependências de teste
+npm install -D vitest @testing-library/react @testing-library/jest-dom
 
-* Cliente informa `tableNumber`. Backend converte para `tableId` (se existir) e verifica disponibilidade.
-* Pedidos públicos devem gravar `source: public` e `tableNumber` para rastreabilidade.
-
-### Estoque (se presente)
-
-* Ao finalizar pedido: decrementar ingredientes/produtos associados.
-* Se item em falta, impedir inclusão no pedido (ou sinalizar como "pre-order").
+# Comandos de teste
+npm run test         # Executar testes
+npm run test:watch   # Executar testes em modo watch
+npm run test:ui      # Interface visual dos testes
+npm run coverage     # Relatório de cobertura
+```
 
 ---
 
-## Contexto global
+## 🔧 Troubleshooting
 
-O `UserContext` expõe pelo menos:
+### Problemas Comuns
 
-```ts
-{
-  user: { id, name, orgId, projectId, roles[] } | null,
-  login(...),
-  logout()
-}
+#### 1. Erro de CORS
+```bash
+# No backend, certificar que CORS está configurado para:
+Origin: http://localhost:5173
 ```
 
-* `orgId` e `projectId` são obrigatórios para todas as chamadas à API multi-tenant.
-* Em desenvolvimento, os valores podem vir do `localStorage` para facilitar testes.
+#### 2. Token Expirado
+- O sistema automaticamente limpa tokens inválidos
+- Usuário é redirecionado para `/login`
+- Verificar se backend está enviando tokens válidos
 
----
+#### 3. Headers Multi-tenant Ausentes
+```typescript
+// Verificar se user tem organization_id e project_id
+console.log(user.organization_id, user.project_id);
 
-## Como rodar (local)
-
+// Headers devem aparecer como:
+// X-Lpe-Organization-Id: uuid
+// X-Lpe-Project-Id: uuid
 ```
-# criar projeto (se ainda não criado)
-npm create vite@latest my-app -- --template react-ts
 
-# entrar na pasta
-cd my-app
-
-# instalar dependências
+#### 4. Problemas de Build
+```bash
+# Limpar cache e reinstalar
+rm -rf node_modules package-lock.json
 npm install
-# (se usar axios, react-router-dom, tailwind)
-npm install axios react-router-dom
 
-# rodar em dev
-npm run dev
-
-# build
-npm run build
+# Verificar versões
+node --version  # >= 18
+npm --version   # >= 8
 ```
 
-### Variáveis de ambiente
+---
 
-* `VITE_API_BASE_URL` — URL base do backend (ex: `http://localhost:3000/api`).
-* `VITE_ENABLE_MOCKS` — `true`/`false` (opcional) para ativar mocks locais.
+## 🚀 Deploy e Produção
+
+### Build de Produção
+
+```bash
+# Gerar build otimizada
+npm run build
+
+# Arquivos gerados em: dist/
+# Servir com qualquer servidor estático (nginx, apache, etc.)
+```
+
+### Variáveis de Produção
+
+```env
+# .env.production
+VITE_API_BASE_URL=https://api.lep-system.com
+VITE_ENABLE_MOCKS=false
+```
+
+### Exemplo Docker
+
+```dockerfile
+# Dockerfile
+FROM node:18-alpine
+
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+
+COPY . .
+RUN npm run build
+
+FROM nginx:alpine
+COPY --from=0 /app/dist /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/nginx.conf
+EXPOSE 80
+```
 
 ---
 
-## UI / Estilo
+## 🛣️ Roadmap
 
-* Estilização mínima com **Tailwind CSS** (padrão: Navbar com fundo escuro, links com hover azul).
-* Componentes reutilizáveis: `Table`, `Modal`, `FormInput`.
+### ✅ Implementado
+- [x] Sistema de autenticação JWT
+- [x] CRUD completo: Users, Customers, Tables, Products
+- [x] Dashboard com estatísticas em tempo real
+- [x] UI/UX padronizada e responsiva
+- [x] Multi-tenant com headers automáticos
+- [x] Error handling e loading states
 
----
+### 🔄 Em Desenvolvimento
+- [ ] CRUD de Reservations
+- [ ] CRUD de Waitlist
+- [ ] CRUD de Orders + Kitchen Queue
+- [ ] Sistema de Notificações (SMS/WhatsApp/Email)
+- [ ] Relatórios e exports CSV
+- [ ] Configurações de Projeto
 
-## Logging / Auditoria
-
-* Criar logs para: criação/edição/cancelamento de reservas, pedidos, movimentações de estoque e estornos.
-* Esses logs alimentam relatórios (vendas, produtos mais pedidos, reservas por horário).
-
----
-
-## Boas práticas e observações técnicas
-
-* Preferir soft-deletes para preservar histórico.
-* Todas as operações que alteram estado crítico (estoque, reserva, pagamento) devem ser idempotentes e registradas (request id / rid) para rastreabilidade.
-* Validar dados no front e no backend (sempre confiar no backend).
-
----
-
-## Roadmap / Próximos passos sugeridos
-
-1. Implementar autenticação real (JWT) e RBAC (roles/permissions).
-2. Integração com sistema de notificações (email/SMS) para reservas.
-3. Painel de relatórios/analytics (vendas, consumo de estoque, horário de pico).
-4. Integração com gateway de pagamentos para pagamentos no local (cartão/Pix).
-5. Suporte a multi-organization tenant isolation (RBAC por org + project).
+### 📋 Próximos Passos
+- [ ] Testes automatizados (Jest + Testing Library)
+- [ ] PWA (Progressive Web App)
+- [ ] WebSocket para updates em tempo real
+- [ ] Sistema de cache inteligente
+- [ ] Internacionalização (i18n)
+- [ ] Modo offline básico
 
 ---
 
-## Contribuição
+## 👥 Contribuição
 
-* Fork → branch feature/xxx → PR descrevendo mudanças e screenshots.
-* Seguir padrão de commits (feat, fix, chore) e incluir testes quando aplicável.
+### Padrões de Código
 
+1. **TypeScript**: Sempre tipado, evitar `any`
+2. **Componentes**: Funcionais com hooks
+3. **Styling**: Tailwind CSS + shadcn/ui
+4. **Imports**: Absolutos com `@/` alias
+5. **Commit**: Conventional Commits (feat, fix, chore)
 
+### Workflow
+
+```bash
+# Fork do repositório
+git clone <your-fork>
+cd LEP-Front
+
+# Criar branch para feature
+git checkout -b feature/nome-da-feature
+
+# Desenvolver e testar
+npm run dev
+npm run lint
+
+# Commit e push
+git add .
+git commit -m "feat: adicionar nova funcionalidade"
+git push origin feature/nome-da-feature
+
+# Criar Pull Request
+```
+
+---
+
+## 📞 Suporte
+
+### Documentação Adicional
+- **API Integration**: Consultar `API_INTEGRATION.md`
+- **Claude Development**: Consultar `CLAUDE.md`
+- **Backend**: Repositório LEP-Back
+
+### Contato
+- **Issues**: [GitHub Issues](link)
+- **Discussions**: [GitHub Discussions](link)
+- **Wiki**: [Documentação Completa](link)
+
+---
+
+**LEP System Frontend** - Sistema completo de gestão para restaurantes 🍽️

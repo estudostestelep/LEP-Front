@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { userService, User } from "@/api/userService";
+import { userService, User, CreateUserRequest } from "@/api/userService";
+import { useAuth } from "@/context/authContext";
 
 interface Props {
   initialData?: User;
@@ -7,10 +8,23 @@ interface Props {
   onCancel: () => void;
 }
 
+interface FormData {
+  name: string;
+  email: string;
+  role: string;
+  password?: string;
+  permissions: string[];
+}
+
 export default function UserForm({ initialData, onSuccess, onCancel }: Props) {
-  const [form, setForm] = useState<User>(
-    initialData || { name: "", email: "", role: "" }
-  );
+  const { user } = useAuth();
+  const [form, setForm] = useState<FormData>({
+    name: initialData?.name || "",
+    email: initialData?.email || "",
+    role: initialData?.role || "",
+    password: "",
+    permissions: initialData?.permissions || []
+  });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -18,10 +32,25 @@ export default function UserForm({ initialData, onSuccess, onCancel }: Props) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (form.id) {
-      await userService.update(form.id, form);
+
+    if (!user?.organization_id || !user?.project_id) {
+      alert("Erro: dados de organização não encontrados");
+      return;
+    }
+
+    if (initialData?.id) {
+      await userService.update(initialData.id, form);
     } else {
-      await userService.create(form);
+      const createData: CreateUserRequest = {
+        organization_id: user.organization_id,
+        project_id: user.project_id,
+        name: form.name,
+        email: form.email,
+        password: form.password || "123456", // Senha padrão
+        role: form.role,
+        permissions: form.permissions
+      };
+      await userService.create(createData);
     }
     onSuccess();
   };
@@ -61,7 +90,7 @@ export default function UserForm({ initialData, onSuccess, onCancel }: Props) {
           type="submit"
           className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
         >
-          {form.id ? "Update" : "Create"}
+          {initialData?.id ? "Update" : "Create"}
         </button>
         <button
           type="button"
