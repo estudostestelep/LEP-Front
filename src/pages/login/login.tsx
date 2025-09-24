@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "@/context/authContext";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import AnimatedGradientText from "@/components/magicui/animated-gradient-text";
@@ -9,9 +10,12 @@ import { AxiosError } from "axios";
 
 export default function Login() {
   const { login, loading } = useAuth();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [email, setEmail] = useState(location.state?.email || "");
+  const [password, setPassword] = useState(location.state?.password || "");
   const [error, setError] = useState("");
+  const [successMessage] = useState(location.state?.message || "");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,6 +71,13 @@ export default function Login() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
+              {successMessage && (
+                <div className="p-3 rounded-md bg-green-50 border border-green-200 flex items-center space-x-2">
+                  <LogIn className="h-4 w-4 text-green-600" />
+                  <span className="text-sm text-green-700">{successMessage}</span>
+                </div>
+              )}
+
               {error && (
                 <div className="p-3 rounded-md bg-destructive/10 border border-destructive/20 flex items-center space-x-2">
                   <AlertCircle className="h-4 w-4 text-destructive" />
@@ -110,6 +121,20 @@ export default function Login() {
                 <LogIn className="h-4 w-4 mr-2" />
                 {loading ? "Entrando..." : "Entrar no Sistema"}
               </ShimmerButton>
+
+              <div className="text-center pt-4 border-t">
+                <p className="text-sm text-muted-foreground mb-2">
+                  Não tem uma organização?
+                </p>
+                <button
+                  type="button"
+                  onClick={() => navigate("/create-organization")}
+                  className="text-sm text-primary hover:text-primary/80 underline font-medium"
+                  disabled={loading}
+                >
+                  Criar nova organização
+                </button>
+              </div>
             </form>
           </CardContent>
         </Card>
