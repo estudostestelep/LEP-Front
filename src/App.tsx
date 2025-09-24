@@ -16,6 +16,7 @@ import Products from '@/pages/products/list';
 import Customers from '@/pages/customers/list';
 import Tables from '@/pages/tables/list';
 import Login from '@/pages/login/login';
+import CreateOrganization from '@/pages/organizations/create';
 
 function PrivateRoute({ children }: { children: React.ReactElement }) {
   const { user } = useAuth();
@@ -42,6 +43,7 @@ export default function AppRoutes() {
               <Route path="/" element={<Home />} />
               <Route path="/menu" element={<Menu />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/create-organization" element={<CreateOrganization />} />
               {/* Rotas protegidas */}
               <Route path="/orders" element={<PrivateRoute><Orders /></PrivateRoute>} />
               <Route path="/reservations" element={<PrivateRoute><Reservations /></PrivateRoute>} />

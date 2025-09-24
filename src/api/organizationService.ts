@@ -21,10 +21,36 @@ export interface CreateOrganizationRequest {
   active?: boolean;
 }
 
+export interface CreateOrganizationBootstrapRequest {
+  name: string;
+  password: string;
+}
+
+export interface CreateOrganizationBootstrapResponse {
+  organization: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  project: {
+    id: string;
+    name: string;
+  };
+  user: {
+    id: string;
+    email: string;
+    name: string;
+    password: string;
+  };
+  message: string;
+}
+
 export const organizationService = {
   getAll: () => api.get<Organization[]>("/organization"),
   getById: (id: string) => api.get<Organization>(`/organization/${id}`),
   create: (data: CreateOrganizationRequest) => api.post<Organization>("/organization", data),
   update: (id: string, data: Partial<Organization>) => api.put<Organization>(`/organization/${id}`, data),
   remove: (id: string) => api.delete(`/organization/${id}`),
+  createBootstrap: (data: CreateOrganizationBootstrapRequest) =>
+    api.post<CreateOrganizationBootstrapResponse>("/create-organization", data),
 };

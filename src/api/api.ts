@@ -1,7 +1,8 @@
 import axios from "axios";
 
 // cria uma instância axios centralizada
-const baseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+const baseURL = import.meta.env.VITE_API_BASE_URL || "https://leps-backend-dev-516622888070.us-central1.run.app";
+
 console.log('API Configuration:', {
   VITE_API_BASE_URL: import.meta.env.VITE_API_BASE_URL,
   baseURL,
