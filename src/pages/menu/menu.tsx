@@ -9,6 +9,7 @@ import {
   Loader2
 } from "lucide-react";
 import { Product, productService } from "@/api/productService";
+import { getCategoryDisplayName, getOrganizedCategories } from "@/lib/categories";
 
 export default function PublicMenu() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -34,7 +35,9 @@ export default function PublicMenu() {
   }, []);
 
   const availableProducts = products.filter(p => p.available);
-  const categories = ["all", ...Array.from(new Set(availableProducts.map(p => p.category)))];
+  const productCategories = Array.from(new Set(availableProducts.map(p => p.category)));
+  const organizedCategories = getOrganizedCategories(productCategories);
+  const categories = ["all", ...organizedCategories];
 
   const filteredProducts = selectedCategory === "all"
     ? availableProducts
@@ -90,7 +93,7 @@ export default function PublicMenu() {
                 onClick={() => setSelectedCategory(category)}
                 className="capitalize"
               >
-                {category === "all" ? "Todos" : category}
+                {category === "all" ? "Todos" : getCategoryDisplayName(category)}
               </Button>
             ))}
           </div>
@@ -115,7 +118,7 @@ export default function PublicMenu() {
                 <div className="flex justify-between items-start">
                   <CardTitle className="text-lg">{product.name}</CardTitle>
                   <Badge variant="secondary" className="capitalize">
-                    {product.category.replace("_", " ")}
+                    {getCategoryDisplayName(product.category)}
                   </Badge>
                 </div>
                 <CardDescription className="text-sm">

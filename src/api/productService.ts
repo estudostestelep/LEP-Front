@@ -34,10 +34,14 @@ export const productService = {
   uploadImage: (file: File) => {
     const formData = new FormData();
     formData.append('image', file);
-    return api.post<{ url: string }>("/product/upload-image", formData, {
+    return api.post<{ success: boolean; image_url: string; filename: string; size: number }>("/upload/product/image", formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
     });
   },
+
+  // Atualizar apenas a imagem de um produto
+  updateImage: (id: string, imageUrl: string) =>
+    api.put(`/product/${id}/image`, { image_url: imageUrl }),
 };

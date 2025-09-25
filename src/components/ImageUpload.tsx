@@ -1,7 +1,8 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Upload, X, Image as ImageIcon, Loader2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { X, Image as ImageIcon, Loader2, Link, Camera } from "lucide-react";
 import { productService } from "@/api/productService";
 
 interface ImageUploadProps {
@@ -19,6 +20,9 @@ export default function ImageUpload({
 }: ImageUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
+  const [urlInput, setUrlInput] = useState("");
+  const [showUrlInput, setShowUrlInput] = useState(false);
+  const [urlError, setUrlError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = async (file: File) => {
@@ -41,7 +45,7 @@ export default function ImageUpload({
     try {
       setIsUploading(true);
       const response = await productService.uploadImage(file);
-      onImageUploaded(response.data.url);
+      onImageUploaded(response.data.image_url);
     } catch (error) {
       console.error('Erro ao fazer upload:', error);
       alert('Erro ao fazer upload da imagem. Tente novamente.');
@@ -92,6 +96,54 @@ export default function ImageUpload({
     onImageRemoved();
   };
 
+  const validateImageUrl = (url: string): boolean => {
+    try {
+      const urlObj = new URL(url);
+      return ['http:', 'https:'].includes(urlObj.protocol);
+    } catch {
+      return false;
+    }
+  };
+
+  const handleUrlSubmit = async () => {
+    if (!urlInput.trim()) {
+      setUrlError("Por favor, insira uma URL");
+      return;
+    }
+
+    if (!validateImageUrl(urlInput)) {
+      setUrlError("URL inválida. Use uma URL começando com http:// ou https://");
+      return;
+    }
+
+    try {
+      setIsUploading(true);
+      setUrlError("");
+
+      // Testar se a URL é uma imagem válida
+      const img = new Image();
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+        img.src = urlInput;
+      });
+
+      onImageUploaded(urlInput);
+      setUrlInput("");
+      setShowUrlInput(false);
+    } catch {
+      setUrlError("Não foi possível carregar a imagem desta URL");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const toggleUrlInput = () => {
+    setShowUrlInput(!showUrlInput);
+    setUrlInput("");
+    setUrlError("");
+  };
+
   return (
     <div className="space-y-4">
       <input
@@ -114,15 +166,24 @@ export default function ImageUpload({
               />
 
               <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
-                <div className="flex space-x-2">
+                <div className="flex flex-wrap gap-2 justify-center">
                   <Button
                     variant="secondary"
                     size="sm"
                     onClick={openFileDialog}
                     disabled={disabled || isUploading}
                   >
-                    <Upload className="h-4 w-4 mr-2" />
-                    Trocar
+                    <Camera className="h-4 w-4 mr-2" />
+                    Upload
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={toggleUrlInput}
+                    disabled={disabled || isUploading}
+                  >
+                    <Link className="h-4 w-4 mr-2" />
+                    URL
                   </Button>
                   <Button
                     variant="destructive"
@@ -139,43 +200,111 @@ export default function ImageUpload({
           </CardContent>
         </Card>
       ) : (
-        <Card
-          className={`border-2 border-dashed transition-colors cursor-pointer ${
-            dragActive
-              ? "border-primary bg-primary/5"
-              : "border-gray-300 hover:border-gray-400"
-          } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
-          onDragEnter={handleDrag}
-          onDragLeave={handleDrag}
-          onDragOver={handleDrag}
-          onDrop={handleDrop}
-          onClick={openFileDialog}
-        >
-          <CardContent className="p-8">
-            <div className="text-center">
-              {isUploading ? (
-                <div className="flex flex-col items-center space-y-2">
-                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                  <p className="text-sm text-muted-foreground">
-                    Fazendo upload...
-                  </p>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center space-y-2">
-                  <ImageIcon className="h-8 w-8 text-muted-foreground" />
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium">
-                      Clique para selecionar ou arraste uma imagem
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      PNG, JPG, WebP até 5MB
+        <div className="space-y-4">
+          <Card
+            className={`border-2 border-dashed transition-colors cursor-pointer ${
+              dragActive
+                ? "border-primary bg-primary/5"
+                : "border-gray-300 hover:border-gray-400"
+            } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
+            onDragEnter={handleDrag}
+            onDragLeave={handleDrag}
+            onDragOver={handleDrag}
+            onDrop={handleDrop}
+            onClick={openFileDialog}
+          >
+            <CardContent className="p-8">
+              <div className="text-center">
+                {isUploading ? (
+                  <div className="flex flex-col items-center space-y-2">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    <p className="text-sm text-muted-foreground">
+                      Processando...
                     </p>
                   </div>
+                ) : (
+                  <div className="flex flex-col items-center space-y-4">
+                    <ImageIcon className="h-12 w-12 text-muted-foreground" />
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium">
+                        Arraste e solte uma imagem ou clique para selecionar
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        PNG, JPG, WebP até 5MB
+                      </p>
+                    </div>
+                    <div className="text-muted-foreground text-sm">ou</div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleUrlInput();
+                      }}
+                      disabled={disabled}
+                      className="flex items-center space-x-2"
+                    >
+                      <Link className="h-4 w-4" />
+                      <span>Usar URL da imagem</span>
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* URL Input Section */}
+          {showUrlInput && (
+            <Card>
+              <CardContent className="p-4">
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-2">
+                    <Link className="h-4 w-4 text-muted-foreground" />
+                    <h4 className="text-sm font-medium">URL da imagem</h4>
+                  </div>
+
+                  <div className="flex space-x-2">
+                    <Input
+                      placeholder="https://exemplo.com/imagem.jpg"
+                      value={urlInput}
+                      onChange={(e) => {
+                        setUrlInput(e.target.value);
+                        setUrlError("");
+                      }}
+                      disabled={disabled || isUploading}
+                      className={urlError ? "border-destructive" : ""}
+                    />
+                    <Button
+                      onClick={handleUrlSubmit}
+                      disabled={disabled || isUploading || !urlInput.trim()}
+                      size="sm"
+                    >
+                      {isUploading ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        "Adicionar"
+                      )}
+                    </Button>
+                  </div>
+
+                  {urlError && (
+                    <p className="text-xs text-destructive">{urlError}</p>
+                  )}
+
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={toggleUrlInput}
+                    disabled={isUploading}
+                    className="w-full"
+                  >
+                    Cancelar
+                  </Button>
                 </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          )}
+        </div>
       )}
     </div>
   );

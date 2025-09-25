@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import ImageUpload from "@/components/ImageUpload";
 import { useAuth } from "@/context/authContext";
+import { getCategoryDisplayName } from "@/lib/categories";
 
 interface Props {
   initialData?: Product;
@@ -92,7 +93,8 @@ export default function ProductForm({ initialData, onSuccess, onCancel }: Props)
   };
 
   const categories = [
-    "appetizer", "main_course", "dessert", "beverage", "side_dish"
+    "appetizer", "main_course", "dessert", "beverage", "side_dish",
+    "pizza", "wine", "beer", "cocktail", "coffee"
   ];
 
   return (
@@ -161,7 +163,7 @@ export default function ProductForm({ initialData, onSuccess, onCancel }: Props)
                 <Input
                   type="number"
                   name="price"
-                  value={form.price}
+                  value={form.price || ''}
                   onChange={handleChange}
                   placeholder="0.00"
                   step="0.01"
@@ -186,7 +188,7 @@ export default function ProductForm({ initialData, onSuccess, onCancel }: Props)
                   <option value="">Selecione uma categoria</option>
                   {categories.map(cat => (
                     <option key={cat} value={cat} className="capitalize">
-                      {cat.replace("_", " ")}
+                      {getCategoryDisplayName(cat)}
                     </option>
                   ))}
                 </select>
@@ -201,7 +203,7 @@ export default function ProductForm({ initialData, onSuccess, onCancel }: Props)
               <Input
                 type="number"
                 name="prep_time_minutes"
-                value={form.prep_time_minutes}
+                value={form.prep_time_minutes || ''}
                 onChange={handleChange}
                 placeholder="Ex: 25"
                 min="0"
