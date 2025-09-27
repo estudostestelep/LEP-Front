@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { productService, Product, CreateProductRequest } from "@/api/productService";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import ImageUpload from "@/components/ImageUpload";
+import ImageUpload, { ImageUploadRef } from "@/components/ImageUpload";
 import { useAuth } from "@/context/authContext";
 import { getCategoryDisplayName } from "@/lib/categories";
 
@@ -27,6 +27,7 @@ interface FormData {
 
 export default function ProductForm({ initialData, onSuccess, onCancel }: Props) {
   const { user } = useAuth();
+  const imageUploadRef = useRef<ImageUploadRef>(null);
   const [form, setForm] = useState<FormData>({
     name: initialData?.name || "",
     description: initialData?.description || "",
@@ -38,6 +39,7 @@ export default function ProductForm({ initialData, onSuccess, onCancel }: Props)
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
@@ -58,6 +60,11 @@ export default function ProductForm({ initialData, onSuccess, onCancel }: Props)
 
   const handleImageRemoved = () => {
     setForm(prev => ({ ...prev, image_url: "" }));
+    setSelectedFile(null);
+  };
+
+  const handleFileSelected = (file: File | null) => {
+    setSelectedFile(file);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -71,13 +78,33 @@ export default function ProductForm({ initialData, onSuccess, onCancel }: Props)
     try {
       setIsSubmitting(true);
 
+      // Preparar dados do formulário
+      const baseForm = { ...form };
+
+      // Se há um arquivo selecionado, fazer upload primeiro
+      let uploadedImageUrl = null;
+      if (selectedFile && imageUploadRef.current) {
+        try {
+          uploadedImageUrl = await imageUploadRef.current.uploadSelectedFile();
+        } catch (uploadError) {
+          console.error("Erro ao fazer upload da imagem:", uploadError);
+          alert("Erro ao fazer upload da imagem. Tente novamente.");
+          return;
+        }
+      }
+
+      const finalForm = {
+        ...baseForm,
+        ...(uploadedImageUrl && { image_url: uploadedImageUrl })
+      };
+
       if (initialData?.id) {
         // Atualizar produto existente
-        await productService.update(initialData.id, form);
+        await productService.update(initialData.id, finalForm);
       } else {
         // Criar novo produto
         const createData: CreateProductRequest = {
-          ...form
+          ...finalForm
         };
         console.log("Creating product with data:", createData);
         await productService.create(createData);
@@ -116,9 +143,11 @@ export default function ProductForm({ initialData, onSuccess, onCancel }: Props)
                 Imagem do Produto
               </label>
               <ImageUpload
+                ref={imageUploadRef}
                 currentImageUrl={form.image_url}
                 onImageUploaded={handleImageUploaded}
                 onImageRemoved={handleImageRemoved}
+                onFileSelected={handleFileSelected}
                 disabled={isSubmitting}
               />
             </div>

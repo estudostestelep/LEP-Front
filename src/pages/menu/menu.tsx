@@ -6,16 +6,21 @@ import {
   Clock,
   Star,
   ChefHat,
-  Loader2
+  Loader2,
+  ChevronDown,
+  ChevronUp
 } from "lucide-react";
 import { Product, productService } from "@/api/productService";
 import { getCategoryDisplayName, getOrganizedCategories } from "@/lib/categories";
+import { useAuth } from "@/context/authContext";
 
 export default function PublicMenu() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [expandedProducts, setExpandedProducts] = useState<Set<string>>(new Set());
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -42,6 +47,18 @@ export default function PublicMenu() {
   const filteredProducts = selectedCategory === "all"
     ? availableProducts
     : availableProducts.filter(p => p.category === selectedCategory);
+
+  const toggleProductExpansion = (productId: string) => {
+    setExpandedProducts(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(productId)) {
+        newSet.delete(productId);
+      } else {
+        newSet.add(productId);
+      }
+      return newSet;
+    });
+  };
 
   if (loading) {
     return (
@@ -101,52 +118,87 @@ export default function PublicMenu() {
 
         {/* Products Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredProducts.map((product) => (
-            <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-              {/* Product Image */}
-              {product.image_url && (
-                <div className="aspect-video relative overflow-hidden">
-                  <img
-                    src={product.image_url}
-                    alt={product.name}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              )}
+          {filteredProducts.map((product) => {
+            const isExpanded = expandedProducts.has(product.id);
+            const hasDetails = product.notes && user; // Notas só aparecem para usuários logados
 
-              <CardHeader className="pb-4">
-                <div className="flex justify-between items-start">
-                  <CardTitle className="text-lg">{product.name}</CardTitle>
-                  <Badge variant="secondary" className="capitalize">
-                    {getCategoryDisplayName(product.category)}
-                  </Badge>
-                </div>
-                <CardDescription className="text-sm">
-                  {product.description}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center space-x-1">
-                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                    <span className="text-sm text-muted-foreground">4.8</span>
+            return (
+              <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                {/* Product Image */}
+                {product.image_url && (
+                  <div className="aspect-video relative overflow-hidden">
+                    <img
+                      src={product.image_url}
+                      alt={product.name}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
-                  {product.prep_time_minutes && (
-                    <div className="flex items-center space-x-1 text-muted-foreground">
-                      <Clock className="h-4 w-4" />
-                      <span className="text-sm">{product.prep_time_minutes} min</span>
+                )}
+
+                <CardHeader className="pb-4">
+                  <div className="flex justify-between items-start">
+                    <CardTitle className="text-lg">{product.name}</CardTitle>
+                    <Badge variant="secondary" className="capitalize">
+                      {getCategoryDisplayName(product.category)}
+                    </Badge>
+                  </div>
+                  <CardDescription className="text-sm">
+                    {product.description}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center space-x-1">
+                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                      <span className="text-sm text-muted-foreground">4.8</span>
+                    </div>
+                    {product.prep_time_minutes && (
+                      <div className="flex items-center space-x-1 text-muted-foreground">
+                        <Clock className="h-4 w-4" />
+                        <span className="text-sm">{product.prep_time_minutes} min</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Expanded Details */}
+                  {isExpanded && hasDetails && (
+                    <div className="mb-4 p-3 bg-muted rounded-lg">
+                      <h4 className="font-medium text-sm mb-2">Notas do Chef:</h4>
+                      <p className="text-sm text-muted-foreground">{product.notes}</p>
                     </div>
                   )}
-                </div>
 
-                <div className="text-center">
-                  <span className="text-3xl font-bold text-green-600">
-                    R$ {product.price.toFixed(2)}
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                  <div className="text-center mb-4">
+                    <span className="text-3xl font-bold text-green-600">
+                      R$ {product.price.toFixed(2)}
+                    </span>
+                  </div>
+
+                  {/* Ver mais detalhes button - só aparece se há detalhes para mostrar */}
+                  {hasDetails && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => toggleProductExpansion(product.id)}
+                      className="w-full"
+                    >
+                      {isExpanded ? (
+                        <>
+                          <ChevronUp className="h-4 w-4 mr-2" />
+                          Ver menos detalhes
+                        </>
+                      ) : (
+                        <>
+                          <ChevronDown className="h-4 w-4 mr-2" />
+                          Ver mais detalhes
+                        </>
+                      )}
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
 
         {filteredProducts.length === 0 && (

@@ -1,10 +1,13 @@
 import { useAuth } from '@/context/authContext';
+import { useTheme } from '@/hooks/useTheme';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import {
   MenuIcon,
   LogIn,
-  Utensils
+  Utensils,
+  Sun,
+  Moon
 } from 'lucide-react';
 
 interface HeaderProps {
@@ -13,6 +16,7 @@ interface HeaderProps {
 
 export default function Header({ toggleSidebar }: HeaderProps) {
   const { user } = useAuth();
+  const { resolvedTheme, toggleTheme } = useTheme();
 
   return (
     <header className="bg-background border-b border-border shadow-sm h-16 flex items-center justify-between px-4 lg:px-6">
@@ -39,6 +43,21 @@ export default function Header({ toggleSidebar }: HeaderProps) {
 
       {/* Right Section */}
       <div className="flex items-center space-x-4">
+        {/* Theme Toggle */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={toggleTheme}
+          className="h-9 w-9 px-0"
+        >
+          {resolvedTheme === 'light' ? (
+            <Moon className="h-4 w-4" />
+          ) : (
+            <Sun className="h-4 w-4" />
+          )}
+          <span className="sr-only">Alternar tema</span>
+        </Button>
+
         {!user && (
           <Button asChild variant="default" size="sm">
             <Link to="/login" className="flex items-center space-x-2">

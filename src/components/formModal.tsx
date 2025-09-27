@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useEffect } from "react";
 
 type SelectOption = {
   value: string | number;
@@ -30,6 +31,22 @@ export default function FormModal({ title, open, onClose, fields, initialValues 
 
   React.useEffect(() => setValues(initialValues), [initialValues, open]);
 
+  // Handle ESC key press
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && open) {
+        onClose();
+      }
+    };
+
+    if (open) {
+      document.addEventListener('keydown', handleKeyDown);
+      return () => {
+        document.removeEventListener('keydown', handleKeyDown);
+      };
+    }
+  }, [open, onClose]);
+
 
   const handleChange = (name: string, v: unknown) => setValues(prev => ({ ...prev, [name]: v }));
 
@@ -53,12 +70,22 @@ export default function FormModal({ title, open, onClose, fields, initialValues 
 
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="bg-white rounded-lg shadow-lg w-full max-w-2xl mx-4">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+    >
+      <div
+        className="bg-card rounded-lg shadow-lg w-full max-w-4xl mx-2 sm:mx-4"
+        onClick={(e) => e.stopPropagation()}
+      >
         <form onSubmit={submit}>
-          <div className="flex items-center justify-between px-6 py-4 border-b">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-border">
             <h3 className="text-lg font-semibold">{title}</h3>
-            <button type="button" onClick={onClose} className="text-gray-500 hover:text-gray-800">✕</button>
+            <button type="button" onClick={onClose} className="text-muted-foreground hover:text-foreground">✕</button>
           </div>
 
 
@@ -72,7 +99,7 @@ export default function FormModal({ title, open, onClose, fields, initialValues 
                     <select
                     value={String(values[f.name] ?? '')}
                     onChange={e => handleChange(f.name, e.target.value)}
-                    className="border rounded px-3 py-2"
+                    className="border border-input bg-background text-foreground rounded px-3 py-2 focus:ring-2 focus:ring-ring focus:ring-offset-2"
                     required={f.required}
                     >
                     <option value="">Select</option>
@@ -90,7 +117,7 @@ export default function FormModal({ title, open, onClose, fields, initialValues 
                     type={f.type ?? 'text'}
                     value={String(values[f.name] ?? '')}
                     onChange={e => handleChange(f.name, e.target.value)}
-                    className="border rounded px-3 py-2"
+                    className="border border-input bg-background text-foreground rounded px-3 py-2 focus:ring-2 focus:ring-ring focus:ring-offset-2"
                     required={f.required}
                   />
                 )}
@@ -101,9 +128,9 @@ export default function FormModal({ title, open, onClose, fields, initialValues 
           </div>
 
 
-          <div className="flex justify-end gap-3 px-6 py-4 border-t">
-            <button type="button" onClick={onClose} className="px-4 py-2 rounded bg-gray-100">Cancel</button>
-            <button type="submit" className="px-4 py-2 rounded bg-blue-600 text-white" disabled={loading}>{loading ? 'Saving...' : 'Save'}</button>
+          <div className="flex justify-end gap-3 px-6 py-4 border-t border-border">
+            <button type="button" onClick={onClose} className="px-4 py-2 rounded bg-muted text-muted-foreground hover:bg-muted/80">Cancel</button>
+            <button type="submit" className="px-4 py-2 rounded bg-primary text-primary-foreground hover:bg-primary/90" disabled={loading}>{loading ? 'Saving...' : 'Save'}</button>
           </div>
         </form>
       </div>

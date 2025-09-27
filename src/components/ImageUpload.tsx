@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useImperativeHandle, forwardRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,23 +9,32 @@ interface ImageUploadProps {
   currentImageUrl?: string;
   onImageUploaded: (imageUrl: string) => void;
   onImageRemoved: () => void;
+  onFileSelected?: (file: File | null) => void;
   disabled?: boolean;
 }
 
-export default function ImageUpload({
+export interface ImageUploadRef {
+  uploadSelectedFile: () => Promise<string | null>;
+  getSelectedFile: () => File | null;
+}
+
+const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(({
   currentImageUrl,
   onImageUploaded,
   onImageRemoved,
+  onFileSelected,
   disabled = false
-}: ImageUploadProps) {
+}, ref) => {
   const [isUploading, setIsUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [urlInput, setUrlInput] = useState("");
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [urlError, setUrlError] = useState("");
+  const [previewUrl, setPreviewUrl] = useState<string>("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileSelect = async (file: File) => {
+  const handleFileSelect = (file: File) => {
     if (!file) return;
 
     // Validações
@@ -42,16 +51,18 @@ export default function ImageUpload({
       return;
     }
 
-    try {
-      setIsUploading(true);
-      const response = await productService.uploadImage(file);
-      onImageUploaded(response.data.image_url);
-    } catch (error) {
-      console.error('Erro ao fazer upload:', error);
-      alert('Erro ao fazer upload da imagem. Tente novamente.');
-    } finally {
-      setIsUploading(false);
+    // Limpar preview anterior se existir
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
     }
+
+    // Criar preview imediatamente
+    const fileUrl = URL.createObjectURL(file);
+    setPreviewUrl(fileUrl);
+    setSelectedFile(file);
+
+    // Notificar o componente pai sobre o arquivo selecionado
+    onFileSelected?.(file);
   };
 
   const handleDrag = (e: React.DragEvent) => {
@@ -93,6 +104,12 @@ export default function ImageUpload({
 
   const removeImage = () => {
     if (disabled || isUploading) return;
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      setPreviewUrl("");
+    }
+    setSelectedFile(null);
+    onFileSelected?.(null);
     onImageRemoved();
   };
 
@@ -144,6 +161,28 @@ export default function ImageUpload({
     setUrlError("");
   };
 
+  // Função para fazer upload do arquivo selecionado
+  const uploadSelectedFile = async (): Promise<string | null> => {
+    if (!selectedFile) return null;
+
+    try {
+      setIsUploading(true);
+      const response = await productService.uploadImage(selectedFile);
+      return response.data.image_url;
+    } catch (error) {
+      console.error('Erro ao fazer upload:', error);
+      throw error;
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  // Expor funções via ref
+  useImperativeHandle(ref, () => ({
+    uploadSelectedFile,
+    getSelectedFile: () => selectedFile
+  }));
+
   return (
     <div className="space-y-4">
       <input
@@ -155,12 +194,12 @@ export default function ImageUpload({
         disabled={disabled || isUploading}
       />
 
-      {currentImageUrl ? (
+      {(currentImageUrl || previewUrl) ? (
         <Card className="relative">
           <CardContent className="p-4">
             <div className="relative group">
               <img
-                src={currentImageUrl}
+                src={previewUrl || currentImageUrl}
                 alt="Preview"
                 className="w-full h-48 object-cover rounded-lg"
               />
@@ -205,7 +244,7 @@ export default function ImageUpload({
             className={`border-2 border-dashed transition-colors cursor-pointer ${
               dragActive
                 ? "border-primary bg-primary/5"
-                : "border-gray-300 hover:border-gray-400"
+                : "border-muted-foreground/25 hover:border-muted-foreground/50"
             } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
             onDragEnter={handleDrag}
             onDragLeave={handleDrag}
@@ -308,4 +347,8 @@ export default function ImageUpload({
       )}
     </div>
   );
-}
+});
+
+ImageUpload.displayName = 'ImageUpload';
+
+export default ImageUpload;

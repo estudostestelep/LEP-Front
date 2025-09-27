@@ -62,7 +62,7 @@ export default function AppRoutes() {
           <div className="container mx-auto px-4 py-6">
             <Routes>
               <Route path="/" element={<Home />} />
-              <Route path="/menu" element={<Menu />} />
+              <Route path="/menu/:orgId/:projId" element={<Menu />} />
               <Route path="/login" element={<Login />} />
               <Route path="/create-organization" element={<CreateOrganization />} />
 

@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Modal } from "@/components/ui/modal";
 import {
-  Clock,
-  Star,
+  //  Clock,
+  //  Star,
   ChefHat,
   Loader2,
   AlertCircle,
@@ -215,7 +215,7 @@ export default function PublicMenu() {
                     {product.description}
                   </p>
 
-                  <div className="flex items-center justify-between pt-2">
+                  {/* <div className="flex items-center justify-between pt-2">
                     <div className="flex items-center space-x-1">
                       <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
                       <span className="text-sm text-muted-foreground">4.8</span>
@@ -227,7 +227,7 @@ export default function PublicMenu() {
                         <span className="text-sm">{product.prep_time_minutes} min</span>
                       </div>
                     )}
-                  </div>
+                  </div> */}
                 </div>
               </CardContent>
             </Card>
@@ -292,7 +292,7 @@ export default function PublicMenu() {
                 <p className="text-muted-foreground leading-relaxed">
                   {selectedProduct.description}
                 </p>
-
+                {/* 
                 <div className="flex items-center space-x-6 pt-4 border-t">
                   <div className="flex items-center space-x-2">
                     <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
@@ -306,7 +306,7 @@ export default function PublicMenu() {
                       <span>Tempo de preparo: {selectedProduct.prep_time_minutes} minutos</span>
                     </div>
                   )}
-                </div>
+                </div> */}
 
                 {/* Action Button */}
                 <div className="pt-4">

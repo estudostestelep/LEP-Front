@@ -71,11 +71,27 @@ export default function PublicReservation() {
       if (!orgId || !projId) return;
 
       try {
+        setLoading(true);
         const response = await publicService.getProjectInfo(orgId, projId);
         setProjectInfo(response.data);
-      } catch (err) {
+        setError(null);
+      } catch (err: any) {
         console.error("Erro ao carregar informações do projeto:", err);
-        setProjectInfo({ name: "Restaurante" });
+
+        // Handle specific error cases
+        const errorMessage = err.response?.data?.message || err.message;
+        if (errorMessage.includes("conn busy")) {
+          setError("Sistema temporariamente sobrecarregado. Tentando novamente...");
+          // Retry after a delay
+          setTimeout(() => {
+            fetchProjectInfo();
+          }, 3000);
+        } else {
+          setError("Erro ao carregar informações do restaurante");
+          setProjectInfo({ name: "Restaurante" });
+        }
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -134,7 +150,7 @@ export default function PublicReservation() {
       setLoading(true);
       setError(null);
 
-      const datetime = `${reservationData.date}T${reservationData.time}:00`;
+      const datetime = `${reservationData.date}T${reservationData.time}:00Z`;
 
       await publicService.createPublicReservation({
         orgId,
