@@ -54,10 +54,10 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
 
   const publicMenuItems = [
     { to: '/', icon: Home, label: 'Home' },
-    { to: '/menu', icon: Menu, label: 'Menu' }
   ];
 
   const privateMenuItems = [
+    { to: '/menu', icon: Menu, label: 'Menu' },
     { to: '/orders', icon: ShoppingCart, label: 'Pedidos' },
     { to: '/reservations', icon: Calendar, label: 'Reservas' },
     { to: '/customers', icon: UserCheck, label: 'Clientes' },

@@ -6,9 +6,13 @@ export interface Product {
   description: string;
   price: number;
   available: boolean;
-  prep_time_minutes?: number;
+  prep_time_minutes: number;
   category: string;
   image_url?: string;
+  stock?: number;
+  notes?: string;
+  organization_id?: string;
+  project_id?: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -18,9 +22,11 @@ export interface CreateProductRequest {
   description: string;
   price: number;
   available: boolean;
-  prep_time_minutes?: number;
+  prep_time_minutes: number;
   category: string;
   image_url?: string;
+  stock?: number;
+  notes?: string;
 }
 
 export const productService = {
@@ -34,10 +40,21 @@ export const productService = {
   uploadImage: (file: File) => {
     const formData = new FormData();
     formData.append('image', file);
-    return api.post<{ url: string }>("/product/upload-image", formData, {
+    return api.post<{
+      success: boolean;
+      image_url: string;
+      filename: string;
+      size: number;
+      organization_id: string;
+      project_id: string;
+    }>("/upload/product/image", formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
     });
   },
+
+  // Atualizar apenas a imagem de um produto
+  updateImage: (id: string, imageUrl: string) =>
+    api.put(`/product/${id}/image`, { image_url: imageUrl }),
 };

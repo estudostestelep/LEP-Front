@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useAuth } from "@/context/authContext";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,13 +9,20 @@ import { LogIn, Utensils, AlertCircle } from "lucide-react";
 import { AxiosError } from "axios";
 
 export default function Login() {
-  const { login, loading } = useAuth();
+  const { user, login, loading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [email, setEmail] = useState(location.state?.email || "");
   const [password, setPassword] = useState(location.state?.password || "");
   const [error, setError] = useState("");
   const [successMessage] = useState(location.state?.message || "");
+
+  // Redireciona para home se já estiver logado
+  React.useEffect(() => {
+    if (user && !loading) {
+      navigate("/", { replace: true });
+    }
+  }, [user, loading, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,7 +31,7 @@ export default function Login() {
     if (email && password) {
       try {
         await login({ email, password });
-        // Login bem-sucedido - o redirect será tratado pelo contexto/router
+        navigate("/", { replace: true });
       } catch (err: unknown) {
         const axiosErr = err as AxiosError<{ error?: string; message?: string }>;
         setError(

@@ -111,8 +111,30 @@ export default function UsersList() {
       return;
     }
 
+    // Definir permissões padrão baseadas no role
+    const getDefaultPermissions = (role: string): string[] => {
+      switch (role) {
+        case 'admin':
+          return ['all'];
+        case 'manager':
+          return ['users', 'products', 'orders', 'reservations', 'customers'];
+        case 'waiter':
+          return ['orders', 'reservations', 'customers'];
+        case 'kitchen':
+          return ['orders'];
+        case 'cashier':
+          return ['orders'];
+        default:
+          return [];
+      }
+    };
+
     if (editingUser?.id) {
-      await userService.update(editingUser.id, values as Partial<User>);
+      const updateData = {
+        ...values,
+        permissions: getDefaultPermissions(String(values.role))
+      };
+      await userService.update(editingUser.id, updateData as Partial<User>);
     } else {
       const createData: CreateUserRequest = {
         organization_id: currentUser.organization_id,
@@ -121,7 +143,7 @@ export default function UsersList() {
         email: String(values.email),
         password: String(values.password || "123456"),
         role: String(values.role),
-        permissions: Array.isArray(values.permissions) ? values.permissions as string[] : []
+        permissions: getDefaultPermissions(String(values.role))
       };
       await userService.create(createData);
     }
@@ -370,8 +392,7 @@ export default function UsersList() {
           initialValues={editingUser ? {
             name: editingUser.name,
             email: editingUser.email,
-            role: editingUser.role,
-            permissions: editingUser.permissions
+            role: editingUser.role
 
           } : {}}
           onSubmit={async (values) => {

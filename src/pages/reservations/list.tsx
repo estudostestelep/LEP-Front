@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Loader2, AlertCircle, Calendar, Plus, Edit, Trash2, Clock, Users } from "lucide-react";
+import { Loader2, AlertCircle, Calendar, Plus, Edit, Trash2, Clock, Users, CalendarDays } from "lucide-react";
 import ReservationForm from "./form";
 import ConfirmModal from "@/components/confirmModal";
 import { AxiosError } from "axios";
@@ -148,14 +148,26 @@ export default function ReservationList() {
             </p>
           </div>
 
-          <Button
-            size="lg"
-            className="flex items-center space-x-2"
-            onClick={handleNewReservation}
-          >
-            <Plus className="h-4 w-4" />
-            <span>Nova Reserva</span>
-          </Button>
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="lg"
+              className="flex items-center space-x-2"
+              onClick={() => window.location.href = "/reservations/calendar"}
+            >
+              <CalendarDays className="h-4 w-4" />
+              <span>Calendário</span>
+            </Button>
+
+            <Button
+              size="lg"
+              className="flex items-center space-x-2"
+              onClick={handleNewReservation}
+            >
+              <Plus className="h-4 w-4" />
+              <span>Nova Reserva</span>
+            </Button>
+          </div>
         </div>
 
         {/* Filtros */}
@@ -341,7 +353,7 @@ export default function ReservationList() {
         {/* Modals */}
         {showForm && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-            <div className="bg-white rounded-lg shadow-lg w-full max-w-4xl mx-4 max-h-[90vh] overflow-y-auto">
+            <div className=" rounded-lg shadow-lg w-full max-w-4xl mx-4 max-h-[90vh] overflow-y-auto">
               <ReservationForm
                 initialData={editingReservation || undefined}
                 onSuccess={handleFormSuccess}

@@ -273,7 +273,7 @@ export default function OrderList() {
         {/* Modals */}
         {showForm && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-            <div className="bg-white rounded-lg shadow-lg w-full max-w-4xl mx-4 max-h-[90vh] overflow-y-auto">
+            <div className=" rounded-lg shadow-lg w-full max-w-4xl mx-4 max-h-[90vh] overflow-y-auto">
               <OrderForm
                 initialData={editingOrder || undefined}
                 onSuccess={handleFormSuccess}
