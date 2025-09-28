@@ -309,7 +309,7 @@ export default function UsersList() {
                     <div className="flex items-center space-x-1">
                       <Shield className="h-4 w-4 text-muted-foreground" />
                       <span className="text-sm">
-                        {user.permissions.includes('all') ? 'Todas' : user.permissions.length}
+                        {user.permissions?.includes('all') ? 'Todas' : user.permissions?.length || 0}
                       </span>
                     </div>
                   </div>
@@ -324,12 +324,16 @@ export default function UsersList() {
 
                   <div className="pt-2 border-t">
                     <div className="flex flex-wrap gap-1">
-                      {user.permissions.slice(0, 3).map(permission => (
+                      {user.permissions?.slice(0, 3).map(permission => (
                         <Badge key={permission} variant="outline" className="text-xs">
                           {permission}
                         </Badge>
-                      ))}
-                      {user.permissions.length > 3 && (
+                      )) || (
+                        <Badge variant="outline" className="text-xs text-muted-foreground">
+                          Nenhuma permissão
+                        </Badge>
+                      )}
+                      {user.permissions && user.permissions.length > 3 && (
                         <Badge variant="outline" className="text-xs">
                           +{user.permissions.length - 3}
                         </Badge>
