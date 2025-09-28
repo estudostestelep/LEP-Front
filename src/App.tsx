@@ -36,7 +36,7 @@ export default function AppRoutes() {
 
   // Verificar se é uma rota pública (sem sidebar/header)
   const isPublicRoute = location.pathname.startsWith('/cardapio/') ||
-                       location.pathname.startsWith('/reserva/');
+    location.pathname.startsWith('/reserva/');
 
   // Layout para rotas públicas (sem sidebar/header)
   if (isPublicRoute) {
@@ -62,11 +62,11 @@ export default function AppRoutes() {
           <div className="container mx-auto px-4 py-6">
             <Routes>
               <Route path="/" element={<Home />} />
-              <Route path="/menu/:orgId/:projId" element={<Menu />} />
               <Route path="/login" element={<Login />} />
               <Route path="/create-organization" element={<CreateOrganization />} />
 
               {/* Rotas protegidas */}
+              <Route path="/menu" element={<Menu />} />
               <Route path="/orders" element={<PrivateRoute><Orders /></PrivateRoute>} />
               <Route path="/reservations" element={<PrivateRoute><Reservations /></PrivateRoute>} />
               <Route path="/reservations/calendar" element={<PrivateRoute><ReservationCalendar /></PrivateRoute>} />
