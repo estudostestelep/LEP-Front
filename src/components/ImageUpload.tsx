@@ -2,8 +2,8 @@ import { useState, useRef, useImperativeHandle, forwardRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { X, Image as ImageIcon, Loader2, Link, Camera } from "lucide-react";
-import { productService } from "@/api/productService";
+import { X, Image as ImageIcon, Loader2, Link, Camera, AlertCircle } from "lucide-react";
+import imageService, { ImageValidationError } from "@/api/imageService";
 
 interface ImageUploadProps {
   currentImageUrl?: string;
@@ -11,6 +11,9 @@ interface ImageUploadProps {
   onImageRemoved: () => void;
   onFileSelected?: (file: File | null) => void;
   disabled?: boolean;
+  category?: string; // Categoria para upload (product, user, restaurant, etc.)
+  maxSizeMB?: number; // Tamanho máximo customizável
+  allowedTypes?: string[]; // Tipos permitidos customizáveis
 }
 
 export interface ImageUploadRef {
@@ -23,13 +26,18 @@ const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(({
   onImageUploaded,
   onImageRemoved,
   onFileSelected,
-  disabled = false
+  disabled = false,
+  category = 'product', // Default para produto
+  maxSizeMB = 5,
+  allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
 }, ref) => {
   const [isUploading, setIsUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [urlInput, setUrlInput] = useState("");
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [urlError, setUrlError] = useState("");
+  const [validationError, setValidationError] = useState<string>("");
+  const [uploadError, setUploadError] = useState<string>("");
   const [previewUrl, setPreviewUrl] = useState<string>("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -37,27 +45,39 @@ const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(({
   const handleFileSelect = (file: File) => {
     if (!file) return;
 
-    // Validações
-    const maxSize = 5 * 1024 * 1024; // 5MB
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    // Limpar erros anteriores
+    setValidationError("");
+    setUploadError("");
+
+    // Validação usando o novo serviço - mas com parâmetros customizáveis
+    const maxSize = maxSizeMB * 1024 * 1024;
+
+    let validation: ImageValidationError | null = null;
 
     if (file.size > maxSize) {
-      alert('Arquivo muito grande. Tamanho máximo: 5MB');
-      return;
+      validation = {
+        code: 'FILE_TOO_LARGE',
+        message: `Arquivo muito grande. Tamanho máximo: ${imageService.formatFileSize(maxSize)}`
+      };
+    } else if (!allowedTypes.includes(file.type)) {
+      validation = {
+        code: 'INVALID_TYPE',
+        message: `Tipo não suportado. Use: ${allowedTypes.map(t => t.replace('image/', '').toUpperCase()).join(', ')}`
+      };
     }
 
-    if (!allowedTypes.includes(file.type)) {
-      alert('Tipo de arquivo não suportado. Use JPEG, PNG ou WebP');
+    if (validation) {
+      setValidationError(validation.message);
       return;
     }
 
     // Limpar preview anterior se existir
     if (previewUrl) {
-      URL.revokeObjectURL(previewUrl);
+      imageService.revokePreviewUrl(previewUrl);
     }
 
-    // Criar preview imediatamente
-    const fileUrl = URL.createObjectURL(file);
+    // Criar preview usando o serviço
+    const fileUrl = imageService.createPreviewUrl(file);
     setPreviewUrl(fileUrl);
     setSelectedFile(file);
 
@@ -105,7 +125,7 @@ const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(({
   const removeImage = () => {
     if (disabled || isUploading) return;
     if (previewUrl) {
-      URL.revokeObjectURL(previewUrl);
+      imageService.revokePreviewUrl(previewUrl);
       setPreviewUrl("");
     }
     setSelectedFile(null);
@@ -167,10 +187,13 @@ const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(({
 
     try {
       setIsUploading(true);
-      const response = await productService.uploadImage(selectedFile);
-      return response.data.image_url;
+      setUploadError("");
+      const response = await imageService.uploadImage(selectedFile, category);
+      return response.data?.image_url || null;
     } catch (error) {
       console.error('Erro ao fazer upload:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao fazer upload da imagem';
+      setUploadError(errorMessage);
       throw error;
     } finally {
       setIsUploading(false);
@@ -188,7 +211,7 @@ const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(({
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/jpeg,image/png,image/webp"
+        accept={allowedTypes.join(',')}
         onChange={handleInputChange}
         className="hidden"
         disabled={disabled || isUploading}
@@ -269,7 +292,7 @@ const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(({
                         Arraste e solte uma imagem ou clique para selecionar
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        PNG, JPG, WebP até 5MB
+                        {allowedTypes.map(t => t.replace('image/', '').toUpperCase()).join(', ')} até {maxSizeMB}MB
                       </p>
                     </div>
                     <div className="text-muted-foreground text-sm">ou</div>
@@ -343,6 +366,14 @@ const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(({
               </CardContent>
             </Card>
           )}
+        </div>
+      )}
+
+      {/* Error Display */}
+      {(validationError || uploadError) && (
+        <div className="flex items-center space-x-2 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+          <AlertCircle className="h-4 w-4 text-destructive" />
+          <span className="text-sm text-destructive">{validationError || uploadError}</span>
         </div>
       )}
     </div>
