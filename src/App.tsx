@@ -20,6 +20,7 @@ import Login from '@/pages/login/login';
 import CreateOrganization from '@/pages/organizations/create';
 import PublicMenu from '@/pages/public/menu';
 import PublicReservation from '@/pages/public/reservation';
+import NotFound from '@/pages/not-found/not-found';
 
 function PrivateRoute({ children }: { children: React.ReactElement }) {
   const { user } = useAuth();
@@ -45,6 +46,7 @@ export default function AppRoutes() {
         <Routes>
           <Route path="/cardapio/:orgId/:projId" element={<PublicMenu />} />
           <Route path="/reserva/:orgId/:projId" element={<PublicReservation />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </div>
     );
@@ -76,6 +78,9 @@ export default function AppRoutes() {
               <Route path="/users" element={<PrivateRoute><Users /></PrivateRoute>} />
               <Route path="/organizations" element={<PrivateRoute><Organizations /></PrivateRoute>} />
               <Route path="/projects" element={<PrivateRoute><Projects /></PrivateRoute>} />
+
+              {/* Rota catch-all para páginas não encontradas */}
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </div>
         </main>
