@@ -8,7 +8,7 @@ export interface User {
   email: string;
   password?: string; // Apenas para criação
   role: string;
-  permissions: string[];
+  permissions?: string[]; // Pode ser null/undefined do backend
   created_at?: string;
   updated_at?: string;
 }

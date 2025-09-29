@@ -149,6 +149,9 @@ export default function ProductForm({ initialData, onSuccess, onCancel }: Props)
                 onImageRemoved={handleImageRemoved}
                 onFileSelected={handleFileSelected}
                 disabled={isSubmitting}
+                category="product"
+                maxSizeMB={10}
+                allowedTypes={['image/jpeg', 'image/jpg', 'image/png', 'image/webp']}
               />
             </div>
 

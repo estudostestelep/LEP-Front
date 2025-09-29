@@ -20,6 +20,7 @@ import Login from '@/pages/login/login';
 import CreateOrganization from '@/pages/organizations/create';
 import PublicMenu from '@/pages/public/menu';
 import PublicReservation from '@/pages/public/reservation';
+import NotFound from '@/pages/not-found/not-found';
 
 function PrivateRoute({ children }: { children: React.ReactElement }) {
   const { user } = useAuth();
@@ -36,7 +37,7 @@ export default function AppRoutes() {
 
   // Verificar se é uma rota pública (sem sidebar/header)
   const isPublicRoute = location.pathname.startsWith('/cardapio/') ||
-                       location.pathname.startsWith('/reserva/');
+    location.pathname.startsWith('/reserva/');
 
   // Layout para rotas públicas (sem sidebar/header)
   if (isPublicRoute) {
@@ -45,6 +46,7 @@ export default function AppRoutes() {
         <Routes>
           <Route path="/cardapio/:orgId/:projId" element={<PublicMenu />} />
           <Route path="/reserva/:orgId/:projId" element={<PublicReservation />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </div>
     );
@@ -62,11 +64,11 @@ export default function AppRoutes() {
           <div className="container mx-auto px-4 py-6">
             <Routes>
               <Route path="/" element={<Home />} />
-              <Route path="/menu/:orgId/:projId" element={<Menu />} />
               <Route path="/login" element={<Login />} />
               <Route path="/create-organization" element={<CreateOrganization />} />
 
               {/* Rotas protegidas */}
+              <Route path="/menu" element={<Menu />} />
               <Route path="/orders" element={<PrivateRoute><Orders /></PrivateRoute>} />
               <Route path="/reservations" element={<PrivateRoute><Reservations /></PrivateRoute>} />
               <Route path="/reservations/calendar" element={<PrivateRoute><ReservationCalendar /></PrivateRoute>} />
@@ -76,6 +78,9 @@ export default function AppRoutes() {
               <Route path="/users" element={<PrivateRoute><Users /></PrivateRoute>} />
               <Route path="/organizations" element={<PrivateRoute><Organizations /></PrivateRoute>} />
               <Route path="/projects" element={<PrivateRoute><Projects /></PrivateRoute>} />
+
+              {/* Rota catch-all para páginas não encontradas */}
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </div>
         </main>
