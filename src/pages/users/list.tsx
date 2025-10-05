@@ -400,7 +400,7 @@ export default function UsersList() {
 
           } : {}}
           onSubmit={async (values) => {
-            await handleFormSubmit(values);
+            await handleFormSubmit(values || {});
             handleFormSuccess();
           }}
         />

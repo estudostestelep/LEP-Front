@@ -66,8 +66,8 @@ export default function PublicMenu() {
     fetchData();
   }, [orgId, projId]);
 
-  const availableProducts = products.filter(p => p.available);
-  const productCategories = Array.from(new Set(availableProducts.map(p => p.category)));
+  const availableProducts = products.filter(p => p.available ?? p.active);
+  const productCategories = Array.from(new Set(availableProducts.map(p => p.category).filter((c): c is string => !!c)));
   const organizedCategories = getOrganizedCategories(productCategories);
   const categories = ["all", ...organizedCategories];
 
@@ -195,14 +195,14 @@ export default function PublicMenu() {
                 {/* Price overlay */}
                 <div className="absolute top-4 right-4">
                   <Badge className="bg-green-600 text-white font-bold text-lg px-3 py-1">
-                    R$ {product.price.toFixed(2)}
+                    R$ {(product.price_normal || product.price || 0).toFixed(2)}
                   </Badge>
                 </div>
 
                 {/* Category badge */}
                 <div className="absolute top-4 left-4">
                   <Badge variant="secondary" className="capitalize">
-                    {getCategoryDisplayName(product.category)}
+                    {getCategoryDisplayName(product.category || '')}
                   </Badge>
                 </div>
               </div>
@@ -279,12 +279,12 @@ export default function PublicMenu() {
                   <div>
                     <h2 className="text-2xl font-bold">{selectedProduct.name}</h2>
                     <Badge variant="secondary" className="capitalize mt-2">
-                      {getCategoryDisplayName(selectedProduct.category)}
+                      {getCategoryDisplayName(selectedProduct.category || '')}
                     </Badge>
                   </div>
                   <div className="text-right">
                     <div className="text-3xl font-bold text-green-600">
-                      R$ {selectedProduct.price.toFixed(2)}
+                      R$ {(selectedProduct.price_normal || selectedProduct.price || 0).toFixed(2)}
                     </div>
                   </div>
                 </div>

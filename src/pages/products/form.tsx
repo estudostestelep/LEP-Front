@@ -1,11 +1,13 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { productService, Product, CreateProductRequest } from "@/api/productService";
+import { Tag } from "@/api/tagService";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import ImageUpload, { ImageUploadRef } from "@/components/ImageUpload";
+import { TagSelector } from "@/components/TagSelector";
 import { useAuth } from "@/context/authContext";
 import { getCategoryDisplayName } from "@/lib/categories";
 
@@ -18,8 +20,8 @@ interface Props {
 interface FormData {
   name: string;
   description: string;
-  price: number;
-  available: boolean;
+  price_normal: number;
+  active: boolean;
   category: string;
   prep_time_minutes: number;
   image_url?: string;
@@ -31,8 +33,8 @@ export default function ProductForm({ initialData, onSuccess, onCancel }: Props)
   const [form, setForm] = useState<FormData>({
     name: initialData?.name || "",
     description: initialData?.description || "",
-    price: initialData?.price || 0,
-    available: initialData?.available ?? true,
+    price_normal: initialData?.price_normal || initialData?.price || 0,
+    active: initialData?.active ?? initialData?.available ?? true,
     category: initialData?.category || "",
     prep_time_minutes: initialData?.prep_time_minutes || 0,
     image_url: initialData?.image_url || ""
@@ -40,6 +42,24 @@ export default function ProductForm({ initialData, onSuccess, onCancel }: Props)
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
+
+  // Carregar tags do produto ao editar
+  useEffect(() => {
+    if (initialData?.id) {
+      loadProductTags();
+    }
+  }, [initialData?.id]);
+
+  const loadProductTags = async () => {
+    if (!initialData?.id) return;
+    try {
+      const response = await productService.getProductTags(initialData.id);
+      setSelectedTags(response.data);
+    } catch (error) {
+      console.error("Erro ao carregar tags do produto:", error);
+    }
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
@@ -51,7 +71,7 @@ export default function ProductForm({ initialData, onSuccess, onCancel }: Props)
   };
 
   const handleSwitchChange = (checked: boolean) => {
-    setForm(prev => ({ ...prev, available: checked }));
+    setForm(prev => ({ ...prev, active: checked }));
   };
 
   const handleImageUploaded = (imageUrl: string) => {
@@ -98,16 +118,51 @@ export default function ProductForm({ initialData, onSuccess, onCancel }: Props)
         ...(uploadedImageUrl && { image_url: uploadedImageUrl })
       };
 
+      let productId = initialData?.id;
+
       if (initialData?.id) {
         // Atualizar produto existente
         await productService.update(initialData.id, finalForm);
       } else {
-        // Criar novo produto
+        // Criar novo produto - mapeando para campos compatíveis
         const createData: CreateProductRequest = {
-          ...finalForm
+          name: finalForm.name,
+          description: finalForm.description,
+          price: finalForm.price_normal,
+          available: finalForm.active,
+          category: finalForm.category,
+          prep_time_minutes: finalForm.prep_time_minutes,
+          image_url: finalForm.image_url
         };
         console.log("Creating product with data:", createData);
-        await productService.create(createData);
+        const response = await productService.create(createData);
+        productId = response.data.id;
+      }
+
+      // Salvar tags (para criação e edição)
+      if (productId) {
+        // Sincronizar tags: remover antigas, adicionar novas
+        try {
+          const currentTagsResponse = await productService.getProductTags(productId);
+          const currentTags = currentTagsResponse.data;
+
+          // Remover tags que não estão mais selecionadas
+          for (const currentTag of currentTags) {
+            if (!selectedTags.find(t => t.id === currentTag.id)) {
+              await productService.removeTagFromProduct(productId, currentTag.id);
+            }
+          }
+
+          // Adicionar tags que foram selecionadas
+          for (const selectedTag of selectedTags) {
+            if (!currentTags.find(t => t.id === selectedTag.id)) {
+              await productService.addTagToProduct(productId, selectedTag.id);
+            }
+          }
+        } catch (tagError) {
+          console.error("Erro ao salvar tags:", tagError);
+          // Não bloqueia o fluxo se houver erro nas tags
+        }
       }
 
       onSuccess();
@@ -130,8 +185,8 @@ export default function ProductForm({ initialData, onSuccess, onCancel }: Props)
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <span>{initialData ? "Editar Produto" : "Novo Produto"}</span>
-            <Badge variant={form.available ? "default" : "secondary"}>
-              {form.available ? "Disponível" : "Indisponível"}
+            <Badge variant={form.active ? "default" : "secondary"}>
+              {form.active ? "Disponível" : "Indisponível"}
             </Badge>
           </CardTitle>
         </CardHeader>
@@ -194,8 +249,8 @@ export default function ProductForm({ initialData, onSuccess, onCancel }: Props)
                 </label>
                 <Input
                   type="number"
-                  name="price"
-                  value={form.price || ''}
+                  name="price_normal"
+                  value={form.price_normal || ''}
                   onChange={handleChange}
                   placeholder="0.00"
                   step="0.01"
@@ -246,13 +301,25 @@ export default function ProductForm({ initialData, onSuccess, onCancel }: Props)
             {/* Disponibilidade */}
             <div className="flex items-center space-x-2">
               <Switch
-                checked={form.available}
+                checked={form.active}
                 onCheckedChange={handleSwitchChange}
                 disabled={isSubmitting}
               />
               <label className="text-sm font-medium text-foreground">
                 Produto disponível para pedidos
               </label>
+            </div>
+
+            {/* Tags do Produto */}
+            <div className="border-t pt-6">
+              <label className="text-sm font-medium text-foreground mb-2 block">
+                Tags do Produto
+              </label>
+              <TagSelector
+                entityType="product"
+                selectedTags={selectedTags}
+                onChange={setSelectedTags}
+              />
             </div>
 
             {/* Botões */}

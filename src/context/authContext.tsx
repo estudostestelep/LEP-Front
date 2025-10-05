@@ -103,9 +103,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Inicialização - verifica autenticação ao carregar
+  // Inicialização - carrega dados do localStorage sem verificar token
   useEffect(() => {
-    const initAuth = async () => {
+    const initAuth = () => {
       const storedToken = localStorage.getItem('token');
       const storedUser = localStorage.getItem('user');
 
@@ -114,13 +114,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           const userData = JSON.parse(storedUser);
           setToken(storedToken);
           setUser(userData);
-
-          // Verifica se o token ainda é válido
-          const isValid = await checkAuth();
-          if (!isValid) {
-            // Se token inválido, limpa dados (já feito no checkAuth)
-            console.warn('Token inválido durante inicialização');
-          }
+          console.log('Sessão restaurada do localStorage:', { userId: userData.id, name: userData.name });
         } catch (error) {
           console.warn('Erro ao recuperar sessão:', error);
           // Em caso de erro, limpa dados

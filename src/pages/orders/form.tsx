@@ -309,9 +309,9 @@ export default function OrderForm({ initialData, onSuccess, onCancel }: Props) {
                   disabled={isSubmitting}
                 >
                   <option value="">Selecione um produto</option>
-                  {products.filter(p => p.available).map(product => (
+                  {products.filter(p => p.available ?? p.active).map(product => (
                     <option key={product.id} value={product.id}>
-                      {product.name} - R$ {product.price.toFixed(2)}
+                      {product.name} - R$ {(product.price_normal || product.price || 0).toFixed(2)}
                     </option>
                   ))}
                 </select>
@@ -337,7 +337,7 @@ export default function OrderForm({ initialData, onSuccess, onCancel }: Props) {
                         <div className="flex-1">
                           <div className="font-medium">{item.product_name || product?.name}</div>
                           <div className="text-sm text-muted-foreground">
-                            R$ {product?.price.toFixed(2)} cada
+                            R$ {(product?.price_normal || product?.price || 0).toFixed(2)} cada
                           </div>
                         </div>
 

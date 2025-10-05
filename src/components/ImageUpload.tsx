@@ -189,7 +189,7 @@ const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(({
       setIsUploading(true);
       setUploadError("");
       const response = await imageService.uploadImage(selectedFile, category);
-      return response.data?.image_url || null;
+      return response.image_url || null;
     } catch (error) {
       console.error('Erro ao fazer upload:', error);
       const errorMessage = error instanceof Error ? error.message : 'Erro ao fazer upload da imagem';

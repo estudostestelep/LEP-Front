@@ -16,6 +16,8 @@ import {
   Calendar,
   UserCheck,
   TableProperties,
+  Tag,
+  BookOpen,
   X
 } from 'lucide-react';
 
@@ -58,11 +60,13 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
 
   const privateMenuItems = [
     { to: '/menu', icon: Menu, label: 'Menu' },
+    { to: '/admin-menu', icon: BookOpen, label: 'Admin Menu' },
     { to: '/orders', icon: ShoppingCart, label: 'Pedidos' },
     { to: '/reservations', icon: Calendar, label: 'Reservas' },
     { to: '/customers', icon: UserCheck, label: 'Clientes' },
     { to: '/tables', icon: TableProperties, label: 'Mesas' },
     { to: '/products', icon: Package, label: 'Produtos' },
+    { to: '/tags', icon: Tag, label: 'Tags' },
     { to: '/users', icon: Users, label: 'Usuários' },
     { to: '/organizations', icon: Building, label: 'Organizações' },
     { to: '/projects', icon: FolderOpen, label: 'Projetos' }

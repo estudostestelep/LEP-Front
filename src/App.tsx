@@ -16,6 +16,8 @@ import Users from '@/pages/users/list';
 import Products from '@/pages/products/list';
 import Customers from '@/pages/customers/list';
 import Tables from '@/pages/tables/list';
+import Tags from '@/pages/tags';
+import AdminMenu from '@/pages/admin-menu';
 import Login from '@/pages/login/login';
 import CreateOrganization from '@/pages/organizations/create';
 import PublicMenu from '@/pages/public/menu';
@@ -78,6 +80,8 @@ export default function AppRoutes() {
               <Route path="/users" element={<PrivateRoute><Users /></PrivateRoute>} />
               <Route path="/organizations" element={<PrivateRoute><Organizations /></PrivateRoute>} />
               <Route path="/projects" element={<PrivateRoute><Projects /></PrivateRoute>} />
+              <Route path="/tags" element={<PrivateRoute><Tags /></PrivateRoute>} />
+              <Route path="/admin-menu" element={<PrivateRoute><AdminMenu /></PrivateRoute>} />
 
               {/* Rota catch-all para páginas não encontradas */}
               <Route path="*" element={<NotFound />} />

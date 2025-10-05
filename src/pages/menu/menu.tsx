@@ -40,8 +40,8 @@ export default function PublicMenu() {
     fetchProducts();
   }, []);
 
-  const availableProducts = products.filter(p => p.available);
-  const productCategories = Array.from(new Set(availableProducts.map(p => p.category)));
+  const availableProducts = products.filter(p => p.available ?? p.active);
+  const productCategories = Array.from(new Set(availableProducts.map(p => p.category).filter((c): c is string => !!c)));
   const organizedCategories = getOrganizedCategories(productCategories);
   const categories = ["all", ...organizedCategories];
 
@@ -121,7 +121,7 @@ export default function PublicMenu() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredProducts.map((product) => {
             const isExpanded = expandedProducts.has(product.id);
-            const hasDetails = product.notes && user; // Notas só aparecem para usuários logados
+            const hasDetails = product.description && user; // Detalhes só aparecem para usuários logados
 
             return (
               <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-shadow">
@@ -175,14 +175,14 @@ export default function PublicMenu() {
                   {/* Category badge overlay */}
                   <div className="absolute top-3 left-3">
                     <Badge variant="secondary" className="capitalize text-xs">
-                      {getCategoryDisplayName(product.category)}
+                      {getCategoryDisplayName(product.category || '')}
                     </Badge>
                   </div>
 
                   {/* Price badge overlay */}
                   <div className="absolute top-3 right-3">
                     <Badge className="bg-green-600 text-white font-bold">
-                      R$ {product.price.toFixed(2)}
+                      R$ {(product.price_normal || product.price || 0).toFixed(2)}
                     </Badge>
                   </div>
                 </div>
@@ -211,8 +211,8 @@ export default function PublicMenu() {
                   {/* Expanded Details */}
                   {isExpanded && hasDetails && (
                     <div className="mb-4 p-3 bg-muted rounded-lg">
-                      <h4 className="font-medium text-sm mb-2">Notas do Chef:</h4>
-                      <p className="text-sm text-muted-foreground">{product.notes}</p>
+                      <h4 className="font-medium text-sm mb-2">Detalhes:</h4>
+                      <p className="text-sm text-muted-foreground">{product.description}</p>
                     </div>
                   )}
 
