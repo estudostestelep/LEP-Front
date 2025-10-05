@@ -2,7 +2,7 @@ import * as React from 'react';
 import FormModal from '@/components/formModal';
 import ConfirmModal from '@/components/confirmModal';
 import { customerService, Customer, CreateCustomerRequest } from '@/api/customerService';
-import { useAuth } from '@/context/authContext';
+import { useCurrentTenant } from '@/hooks/useCurrentTenant';
 import { Card, CardContent, CardTitle, CardHeader, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 //import { Badge } from "@/components/ui/badge";
@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 
 export default function CustomersPage() {
-  const { user: currentUser } = useAuth();
+  const { organization_id, project_id } = useCurrentTenant();
   const [customers, setCustomers] = React.useState<Customer[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState("");
@@ -56,8 +56,8 @@ export default function CustomersPage() {
         await customerService.update(editing.id!, values);
       } else {
         const createRequest: CreateCustomerRequest = {
-          organization_id: currentUser?.organization_id || "",
-          project_id: currentUser?.project_id || "",
+          organization_id: organization_id || "",
+          project_id: project_id || "",
           name: values.name,
           email: values.email,
           phone: values.phone,

@@ -19,7 +19,7 @@ import { userService, User, CreateUserRequest } from "@/api/userService";
 import { AxiosError } from "axios";
 import FormModal from "@/components/formModal";
 import ConfirmModal from "@/components/confirmModal";
-import { useAuth } from "@/context/authContext";
+import { useCurrentTenant } from '@/hooks/useCurrentTenant';
 
 
 export default function UsersList() {
@@ -32,7 +32,7 @@ export default function UsersList() {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [showConfirm, setShowConfirm] = useState(false);
   const [userToDelete, setUserToDelete] = useState<string | null>(null);
-  const { user: currentUser } = useAuth();
+  const { organization_id, project_id } = useCurrentTenant();
 
   const roles = ["all", ...Array.from(new Set(users.map(u => u.role)))];
 
@@ -106,7 +106,7 @@ export default function UsersList() {
   };
 
   const handleFormSubmit = async (values: Record<string, unknown>) => {
-    if (!currentUser?.organization_id || !currentUser?.project_id) {
+    if (!organization_id || !project_id) {
       alert("Erro: dados de organização não encontrados");
       return;
     }
@@ -137,8 +137,8 @@ export default function UsersList() {
       await userService.update(editingUser.id, updateData as Partial<User>);
     } else {
       const createData: CreateUserRequest = {
-        organization_id: currentUser.organization_id,
-        project_id: currentUser.project_id,
+        organization_id: organization_id,
+        project_id: project_id,
         name: String(values.name),
         email: String(values.email),
         password: String(values.password || "123456"),

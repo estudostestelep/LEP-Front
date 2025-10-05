@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { userService, User, CreateUserRequest } from "@/api/userService";
-import { useAuth } from "@/context/authContext";
+import { useCurrentTenant } from '@/hooks/useCurrentTenant';
 
 interface Props {
   initialData?: User;
@@ -17,7 +17,7 @@ interface FormData {
 }
 
 export default function UserForm({ initialData, onSuccess, onCancel }: Props) {
-  const { user } = useAuth();
+  const { organization_id, project_id } = useCurrentTenant();
   const [form, setForm] = useState<FormData>({
     name: initialData?.name || "",
     email: initialData?.email || "",
@@ -33,7 +33,7 @@ export default function UserForm({ initialData, onSuccess, onCancel }: Props) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!user?.organization_id || !user?.project_id) {
+    if (!organization_id || !project_id) {
       alert("Erro: dados de organização não encontrados");
       return;
     }
@@ -42,8 +42,8 @@ export default function UserForm({ initialData, onSuccess, onCancel }: Props) {
       await userService.update(initialData.id, form);
     } else {
       const createData: CreateUserRequest = {
-        organization_id: user.organization_id,
-        project_id: user.project_id,
+        organization_id: organization_id,
+        project_id: project_id,
         name: form.name,
         email: form.email,
         password: form.password || "123456", // Senha padrão

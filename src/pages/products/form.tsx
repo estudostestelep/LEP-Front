@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import ImageUpload, { ImageUploadRef } from "@/components/ImageUpload";
 import { TagSelector } from "@/components/TagSelector";
-import { useAuth } from "@/context/authContext";
+import { useCurrentTenant } from '@/hooks/useCurrentTenant';
 import { getCategoryDisplayName } from "@/lib/categories";
 
 interface Props {
@@ -28,7 +28,7 @@ interface FormData {
 }
 
 export default function ProductForm({ initialData, onSuccess, onCancel }: Props) {
-  const { user } = useAuth();
+  const { organization_id, project_id } = useCurrentTenant();
   const imageUploadRef = useRef<ImageUploadRef>(null);
   const [form, setForm] = useState<FormData>({
     name: initialData?.name || "",
@@ -90,7 +90,7 @@ export default function ProductForm({ initialData, onSuccess, onCancel }: Props)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!user?.organization_id || !user?.project_id) {
+    if (!organization_id || !project_id) {
       alert("Erro: dados de organização não encontrados");
       return;
     }
