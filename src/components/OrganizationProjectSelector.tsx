@@ -1,5 +1,6 @@
 import { useAuth } from '@/context/authContext';
 import { Building2, FolderKanban, ChevronDown, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 export const OrganizationProjectSelector = () => {
   const {
@@ -7,29 +8,57 @@ export const OrganizationProjectSelector = () => {
     projects,
     currentOrganization,
     currentProject,
-    organizationsData,
-    projectsData,
+    organizationDetails,
+    projectDetails,
     setCurrentOrganization,
     setCurrentProject,
     loading
   } = useAuth();
 
-  // Filtra projetos da organização atual
-  const currentOrgProjects = projects.filter(p => {
-    const projectData = projectsData.get(p.project_id);
-    return projectData?.organization_id === currentOrganization;
+  // DEBUG - Log para verificar dados
+  console.log('OrganizationProjectSelector - Estado:', {
+    orgsCount: organizations.length,
+    projsCount: projects.length,
+    currentOrg: currentOrganization,
+    currentProj: currentProject,
+    orgDetails: organizationDetails,
+    projDetails: projectDetails,
+    loading
   });
 
-  // Não mostra nada se não houver organizações
+  const handleOrgChange = async (orgId: string) => {
+    try {
+      await setCurrentOrganization(orgId);
+      toast.success('Organização alterada com sucesso');
+    } catch (error) {
+      toast.error('Erro ao trocar organização');
+      console.error(error);
+    }
+  };
+
+  const handleProjectChange = async (projectId: string) => {
+    try {
+      await setCurrentProject(projectId);
+      toast.success('Projeto alterado com sucesso');
+    } catch (error) {
+      toast.error('Erro ao trocar projeto');
+      console.error(error);
+    }
+  };
+
+  // Mostra aviso se não houver organizações
   if (organizations.length === 0) {
-    return null;
+    return (
+      <div className="flex items-center gap-2 px-3 py-1 bg-yellow-50 border border-yellow-200 rounded-lg">
+        <span className="text-xs text-yellow-700">
+          ⚠️ Nenhuma organização vinculada
+        </span>
+      </div>
+    );
   }
 
-  const currentOrgData = organizationsData.get(currentOrganization || '');
-  const currentProjectData = projectsData.get(currentProject || '');
-
   // Mostra loader se ainda está carregando dados
-  if (loading && organizationsData.size === 0) {
+  if (loading && !organizationDetails) {
     return (
       <div className="flex items-center gap-2 px-3 py-1 bg-muted/40 rounded-lg border border-border">
         <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
@@ -47,18 +76,17 @@ export const OrganizationProjectSelector = () => {
           <div className="flex items-center gap-1.5">
             <select
               value={currentOrganization || ''}
-              onChange={(e) => setCurrentOrganization(e.target.value)}
+              onChange={(e) => handleOrgChange(e.target.value)}
               className="appearance-none bg-transparent border-none text-sm font-medium text-foreground cursor-pointer focus:outline-none focus:ring-0 pr-5 max-w-[150px] truncate"
-              title={currentOrgData?.name || 'Organização'}
+              title={organizationDetails?.name || 'Organização'}
             >
-              {organizations.map((userOrg) => {
-                const org = organizationsData.get(userOrg.organization_id);
-                return (
-                  <option key={userOrg.id} value={userOrg.organization_id}>
-                    {org?.name || `Org ${userOrg.organization_id.slice(0, 8)}`}
-                  </option>
-                );
-              })}
+              {organizations.map((userOrg) => (
+                <option key={userOrg.id} value={userOrg.organization_id}>
+                  {userOrg.organization_id === currentOrganization && organizationDetails?.name
+                    ? `${organizationDetails.name} (${userOrg.role})`
+                    : `Org ${userOrg.organization_id.slice(0, 8)} (${userOrg.role})`}
+                </option>
+              ))}
             </select>
             <ChevronDown className="h-3.5 w-3.5 text-muted-foreground pointer-events-none absolute right-0" />
           </div>
@@ -66,30 +94,29 @@ export const OrganizationProjectSelector = () => {
       </div>
 
       {/* Separador */}
-      {currentOrgProjects.length > 0 && (
+      {projects.length > 0 && (
         <div className="h-5 w-px bg-border" />
       )}
 
       {/* Seletor de Projeto */}
-      {currentOrgProjects.length > 0 && (
+      {projects.length > 0 && (
         <div className="relative group">
           <label className="flex items-center gap-2 cursor-pointer">
             <FolderKanban className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
             <div className="flex items-center gap-1.5">
               <select
                 value={currentProject || ''}
-                onChange={(e) => setCurrentProject(e.target.value)}
+                onChange={(e) => handleProjectChange(e.target.value)}
                 className="appearance-none bg-transparent border-none text-sm font-medium text-foreground cursor-pointer focus:outline-none focus:ring-0 pr-5 max-w-[150px] truncate"
-                title={currentProjectData?.name || 'Projeto'}
+                title={projectDetails?.name || 'Projeto'}
               >
-                {currentOrgProjects.map((userProj) => {
-                  const proj = projectsData.get(userProj.project_id);
-                  return (
-                    <option key={userProj.id} value={userProj.project_id}>
-                      {proj?.name || `Projeto ${userProj.project_id.slice(0, 8)}`}
-                    </option>
-                  );
-                })}
+                {projects.map((userProj) => (
+                  <option key={userProj.id} value={userProj.project_id}>
+                    {userProj.project_id === currentProject && projectDetails?.name
+                      ? `${projectDetails.name} (${userProj.role})`
+                      : `Projeto ${userProj.project_id.slice(0, 8)} (${userProj.role})`}
+                  </option>
+                ))}
               </select>
               <ChevronDown className="h-3.5 w-3.5 text-muted-foreground pointer-events-none absolute right-0" />
             </div>

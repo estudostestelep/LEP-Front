@@ -18,14 +18,14 @@ const api = axios.create({
 api.interceptors.request.use((config) => {
   try {
     // Adiciona token de autenticação
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("@LEP:token");
     if (token) {
       config.headers["Authorization"] = `Bearer ${token}`;
     }
 
     // Adiciona headers multi-tenant usando currentOrganization e currentProject
-    const currentOrganization = localStorage.getItem("currentOrganization");
-    const currentProject = localStorage.getItem("currentProject");
+    const currentOrganization = localStorage.getItem("@LEP:currentOrganization");
+    const currentProject = localStorage.getItem("@LEP:currentProject");
 
     if (currentOrganization && currentProject) {
       config.headers["X-Lpe-Organization-Id"] = currentOrganization;
@@ -71,12 +71,12 @@ api.interceptors.response.use(
 
     if (error.response?.status === 401) {
       // Token expirado ou inválido - limpa dados de autenticação
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      localStorage.removeItem("organizations");
-      localStorage.removeItem("projects");
-      localStorage.removeItem("currentOrganization");
-      localStorage.removeItem("currentProject");
+      localStorage.removeItem("@LEP:token");
+      localStorage.removeItem("@LEP:user");
+      localStorage.removeItem("@LEP:organizations");
+      localStorage.removeItem("@LEP:projects");
+      localStorage.removeItem("@LEP:currentOrganization");
+      localStorage.removeItem("@LEP:currentProject");
       // Redireciona para login se não estiver já na página de login
       if (window.location.pathname !== "/login") {
         console.warn("Token inválido, redirecionando para login");

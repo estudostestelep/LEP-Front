@@ -42,12 +42,9 @@ export default function UserForm({ initialData, onSuccess, onCancel }: Props) {
       await userService.update(initialData.id, form);
     } else {
       const createData: CreateUserRequest = {
-        organization_id: organization_id,
-        project_id: project_id,
         name: form.name,
         email: form.email,
         password: form.password || "123456", // Senha padrão
-        role: form.role,
         permissions: form.permissions
       };
       await userService.create(createData);

@@ -12,13 +12,13 @@ interface AuthContextType {
   projects: UserProject[];
   currentOrganization: string | null;
   currentProject: string | null;
-  organizationsData: Map<string, Organization>;
-  projectsData: Map<string, Project>;
+  organizationDetails: Organization | null;
+  projectDetails: Project | null;
   login: (credentials: LoginRequest) => Promise<void>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<boolean>;
-  setCurrentOrganization: (orgId: string) => void;
-  setCurrentProject: (projectId: string) => void;
+  setCurrentOrganization: (orgId: string) => Promise<void>;
+  setCurrentProject: (projectId: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -31,8 +31,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [projects, setProjects] = useState<UserProject[]>([]);
   const [currentOrganization, setCurrentOrganizationState] = useState<string | null>(null);
   const [currentProject, setCurrentProjectState] = useState<string | null>(null);
-  const [organizationsData, setOrganizationsData] = useState<Map<string, Organization>>(new Map());
-  const [projectsData, setProjectsData] = useState<Map<string, Project>>(new Map());
+  const [organizationDetails, setOrganizationDetails] = useState<Organization | null>(null);
+  const [projectDetails, setProjectDetails] = useState<Project | null>(null);
 
   const login = async (credentials: LoginRequest) => {
     try {
@@ -42,6 +42,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const { token: authToken, user: userData, organizations: userOrgs, projects: userProjects } = response.data;
 
       console.log('Login response from backend:', response.data);
+
+      // Validação: usuário deve ter pelo menos 1 organização
+      if (!userOrgs || userOrgs.length === 0) {
+        throw new Error('Usuário não está vinculado a nenhuma organização. Contate o administrador.');
+      }
 
       // Armazena dados básicos
       setToken(authToken);
@@ -56,40 +61,32 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setCurrentOrganizationState(defaultOrg);
       setCurrentProjectState(defaultProject);
 
-      // Carrega dados das organizações e projetos
-      if (userOrgs && userOrgs.length > 0) {
-        const orgsMap = new Map<string, Organization>();
-        for (const userOrg of userOrgs) {
-          try {
-            const org = await organizationService.getById(userOrg.organization_id);
-            orgsMap.set(userOrg.organization_id, org.data);
-          } catch (error) {
-            console.warn(`Erro ao carregar organização ${userOrg.organization_id}:`, error);
-          }
+      // Carrega detalhes da organização e projeto atuais
+      if (defaultOrg) {
+        try {
+          const org = await organizationService.getById(defaultOrg);
+          setOrganizationDetails(org.data);
+        } catch (error) {
+          console.warn(`Erro ao carregar organização ${defaultOrg}:`, error);
         }
-        setOrganizationsData(orgsMap);
       }
 
-      if (userProjects && userProjects.length > 0) {
-        const projsMap = new Map<string, Project>();
-        for (const userProj of userProjects) {
-          try {
-            const proj = await projectService.getById(userProj.project_id);
-            projsMap.set(userProj.project_id, proj.data);
-          } catch (error) {
-            console.warn(`Erro ao carregar projeto ${userProj.project_id}:`, error);
-          }
+      if (defaultProject) {
+        try {
+          const proj = await projectService.getById(defaultProject);
+          setProjectDetails(proj.data);
+        } catch (error) {
+          console.warn(`Erro ao carregar projeto ${defaultProject}:`, error);
         }
-        setProjectsData(projsMap);
       }
 
       // Persistir no localStorage
-      localStorage.setItem('token', authToken);
-      localStorage.setItem('user', JSON.stringify(userData));
-      localStorage.setItem('organizations', JSON.stringify(userOrgs));
-      localStorage.setItem('projects', JSON.stringify(userProjects));
-      localStorage.setItem('currentOrganization', defaultOrg || '');
-      localStorage.setItem('currentProject', defaultProject || '');
+      localStorage.setItem('@LEP:token', authToken);
+      localStorage.setItem('@LEP:user', JSON.stringify(userData));
+      localStorage.setItem('@LEP:organizations', JSON.stringify(userOrgs));
+      localStorage.setItem('@LEP:projects', JSON.stringify(userProjects));
+      localStorage.setItem('@LEP:currentOrganization', defaultOrg || '');
+      localStorage.setItem('@LEP:currentProject', defaultProject || '');
 
       console.log('Login concluído com sucesso');
     } catch (error) {
@@ -114,19 +111,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setProjects([]);
       setCurrentOrganizationState(null);
       setCurrentProjectState(null);
-      setOrganizationsData(new Map());
-      setProjectsData(new Map());
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      localStorage.removeItem('organizations');
-      localStorage.removeItem('projects');
-      localStorage.removeItem('currentOrganization');
-      localStorage.removeItem('currentProject');
+      setOrganizationDetails(null);
+      setProjectDetails(null);
+      localStorage.removeItem('@LEP:token');
+      localStorage.removeItem('@LEP:user');
+      localStorage.removeItem('@LEP:organizations');
+      localStorage.removeItem('@LEP:projects');
+      localStorage.removeItem('@LEP:currentOrganization');
+      localStorage.removeItem('@LEP:currentProject');
     }
   };
 
   const checkAuth = async (): Promise<boolean> => {
-    const storedToken = localStorage.getItem('token');
+    const storedToken = localStorage.getItem('@LEP:token');
     if (!storedToken) {
       return false;
     }
@@ -142,50 +139,75 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setProjects([]);
       setCurrentOrganizationState(null);
       setCurrentProjectState(null);
-      setOrganizationsData(new Map());
-      setProjectsData(new Map());
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      localStorage.removeItem('organizations');
-      localStorage.removeItem('projects');
-      localStorage.removeItem('currentOrganization');
-      localStorage.removeItem('currentProject');
+      setOrganizationDetails(null);
+      setProjectDetails(null);
+      localStorage.removeItem('@LEP:token');
+      localStorage.removeItem('@LEP:user');
+      localStorage.removeItem('@LEP:organizations');
+      localStorage.removeItem('@LEP:projects');
+      localStorage.removeItem('@LEP:currentOrganization');
+      localStorage.removeItem('@LEP:currentProject');
       return false;
     }
   };
 
-  const setCurrentOrganization = (orgId: string) => {
+  const setCurrentOrganization = async (orgId: string) => {
     setCurrentOrganizationState(orgId);
-    localStorage.setItem('currentOrganization', orgId);
+    localStorage.setItem('@LEP:currentOrganization', orgId);
 
-    // Ao trocar de organização, resetar o projeto para o primeiro disponível dessa org
-    const orgProjects = projects.filter(p => {
-      const projectData = projectsData.get(p.project_id);
-      return projectData?.organization_id === orgId;
-    });
+    // Carregar detalhes da organização
+    try {
+      const org = await organizationService.getById(orgId);
+      setOrganizationDetails(org.data);
+    } catch (error) {
+      console.warn(`Erro ao carregar organização ${orgId}:`, error);
+    }
 
-    if (orgProjects.length > 0) {
-      setCurrentProject(orgProjects[0].project_id);
-    } else {
-      setCurrentProjectState(null);
-      localStorage.removeItem('currentProject');
+    // Filtrar projetos da organização e selecionar o primeiro
+    if (!user) return;
+
+    try {
+      const response = await projectService.getAll();
+      const allProjects = response.data;
+      const orgProjects = projects.filter(p => {
+        const projData = allProjects.find(proj => proj.id === p.project_id);
+        return projData?.organization_id === orgId;
+      });
+
+      if (orgProjects.length > 0) {
+        await setCurrentProject(orgProjects[0].project_id);
+      } else {
+        setCurrentProjectState(null);
+        setProjectDetails(null);
+        localStorage.removeItem('@LEP:currentProject');
+      }
+    } catch (error) {
+      console.error('Erro ao filtrar projetos da organização:', error);
     }
   };
 
-  const setCurrentProject = (projectId: string) => {
+  const setCurrentProject = async (projectId: string) => {
     setCurrentProjectState(projectId);
-    localStorage.setItem('currentProject', projectId);
+    localStorage.setItem('@LEP:currentProject', projectId);
+
+    // Carregar detalhes do projeto
+    try {
+      const proj = await projectService.getById(projectId);
+      setProjectDetails(proj.data);
+    } catch (error) {
+      console.warn(`Erro ao carregar projeto ${projectId}:`, error);
+    }
   };
 
   // Inicialização - carrega dados do localStorage sem verificar token
   useEffect(() => {
     const initAuth = () => {
-      const storedToken = localStorage.getItem('token');
-      const storedUser = localStorage.getItem('user');
-      const storedOrgs = localStorage.getItem('organizations');
-      const storedProjects = localStorage.getItem('projects');
-      const storedCurrentOrg = localStorage.getItem('currentOrganization');
-      const storedCurrentProject = localStorage.getItem('currentProject');
+      const storedToken = localStorage.getItem('@LEP:token');
+      const storedUser = localStorage.getItem('@LEP:user');
+      const storedOrgs = localStorage.getItem('@LEP:organizations');
+      const storedProjects = localStorage.getItem('@LEP:projects');
+      const storedCurrentOrg = localStorage.getItem('@LEP:currentOrganization');
+      const storedCurrentProject = localStorage.getItem('@LEP:currentProject');
 
       if (storedToken && storedUser) {
         try {
@@ -217,12 +239,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setProjects([]);
           setCurrentOrganizationState(null);
           setCurrentProjectState(null);
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
-          localStorage.removeItem('organizations');
-          localStorage.removeItem('projects');
-          localStorage.removeItem('currentOrganization');
-          localStorage.removeItem('currentProject');
+          localStorage.removeItem('@LEP:token');
+          localStorage.removeItem('@LEP:user');
+          localStorage.removeItem('@LEP:organizations');
+          localStorage.removeItem('@LEP:projects');
+          localStorage.removeItem('@LEP:currentOrganization');
+          localStorage.removeItem('@LEP:currentProject');
         }
       }
       setLoading(false);
@@ -240,8 +262,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       projects,
       currentOrganization,
       currentProject,
-      organizationsData,
-      projectsData,
+      organizationDetails,
+      projectDetails,
       login,
       logout,
       checkAuth,
