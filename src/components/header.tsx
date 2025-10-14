@@ -1,10 +1,12 @@
 import { useAuth } from '@/context/authContext';
 import { useTheme } from '@/hooks/useTheme';
 import { Button } from '@/components/ui/button';
+import { OrganizationProjectSelector } from '@/components/OrganizationProjectSelector';
 import { Link } from 'react-router-dom';
 import {
   MenuIcon,
   LogIn,
+  LogOut,
   Utensils,
   Sun,
   Moon
@@ -15,7 +17,7 @@ interface HeaderProps {
 }
 
 export default function Header({ toggleSidebar }: HeaderProps) {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { resolvedTheme, toggleTheme } = useTheme();
 
   return (
@@ -43,6 +45,9 @@ export default function Header({ toggleSidebar }: HeaderProps) {
 
       {/* Right Section */}
       <div className="flex items-center space-x-4">
+        {/* Organization/Project Selector - only when user is logged in */}
+        {user && <OrganizationProjectSelector />}
+
         {/* Theme Toggle */}
         <Button
           variant="ghost"
@@ -58,7 +63,23 @@ export default function Header({ toggleSidebar }: HeaderProps) {
           <span className="sr-only">Alternar tema</span>
         </Button>
 
-        {!user && (
+        {/* User Section */}
+        {user ? (
+          <div className="flex items-center space-x-3">
+            <span className="text-sm text-muted-foreground hidden sm:block">
+              Olá, {user.name}
+            </span>
+            <Button
+              onClick={logout}
+              variant="outline"
+              size="sm"
+              className="flex items-center space-x-2"
+            >
+              <LogOut className="h-4 w-4" />
+              <span className="hidden sm:block">Sair</span>
+            </Button>
+          </div>
+        ) : (
           <Button asChild variant="default" size="sm">
             <Link to="/login" className="flex items-center space-x-2">
               <LogIn className="h-4 w-4" />

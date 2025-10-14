@@ -18,6 +18,9 @@ import Customers from '@/pages/customers/list';
 import Tables from '@/pages/tables/list';
 import Tags from '@/pages/tags';
 import AdminMenu from '@/pages/admin-menu';
+import Categories from '@/pages/admin-menu/categories';
+import CategoryProducts from '@/pages/admin-menu/category-products';
+import Settings from '@/pages/settings';
 import Login from '@/pages/login/login';
 import CreateOrganization from '@/pages/organizations/create';
 import PublicMenu from '@/pages/public/menu';
@@ -27,6 +30,21 @@ import NotFound from '@/pages/not-found/not-found';
 function PrivateRoute({ children }: { children: React.ReactElement }) {
   const { user } = useAuth();
   return user ? children : <Navigate to="/login" />;
+}
+
+function MasterAdminRoute({ children }: { children: React.ReactElement }) {
+  const { user } = useAuth();
+  const isMasterAdmin = user?.permissions?.includes('master_admin');
+
+  if (!user) {
+    return <Navigate to="/login" />;
+  }
+
+  if (!isMasterAdmin) {
+    return <Navigate to="/" />;
+  }
+
+  return children;
 }
 
 export default function AppRoutes() {
@@ -78,10 +96,15 @@ export default function AppRoutes() {
               <Route path="/tables" element={<PrivateRoute><Tables /></PrivateRoute>} />
               <Route path="/products" element={<PrivateRoute><Products /></PrivateRoute>} />
               <Route path="/users" element={<PrivateRoute><Users /></PrivateRoute>} />
-              <Route path="/organizations" element={<PrivateRoute><Organizations /></PrivateRoute>} />
-              <Route path="/projects" element={<PrivateRoute><Projects /></PrivateRoute>} />
+              <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
               <Route path="/tags" element={<PrivateRoute><Tags /></PrivateRoute>} />
               <Route path="/admin-menu" element={<PrivateRoute><AdminMenu /></PrivateRoute>} />
+              <Route path="/admin-menu/:menuId/categories" element={<PrivateRoute><Categories /></PrivateRoute>} />
+              <Route path="/admin-menu/:menuId/categories/:categoryId/products" element={<PrivateRoute><CategoryProducts /></PrivateRoute>} />
+
+              {/* Rotas restritas para Master Admin */}
+              <Route path="/organizations" element={<MasterAdminRoute><Organizations /></MasterAdminRoute>} />
+              <Route path="/projects" element={<MasterAdminRoute><Projects /></MasterAdminRoute>} />
 
               {/* Rota catch-all para páginas não encontradas */}
               <Route path="*" element={<NotFound />} />

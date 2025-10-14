@@ -16,7 +16,6 @@ import {
 } from "lucide-react";
 import { publicService } from "@/api/publicService";
 import { Product } from "@/api/productService";
-import { getCategoryDisplayName, getOrganizedCategories } from "@/lib/categories";
 
 export default function PublicMenu() {
   const { orgId, projId } = useParams<{ orgId: string; projId: string }>();
@@ -66,14 +65,13 @@ export default function PublicMenu() {
     fetchData();
   }, [orgId, projId]);
 
-  const availableProducts = products.filter(p => p.available ?? p.active);
-  const productCategories = Array.from(new Set(availableProducts.map(p => p.category).filter((c): c is string => !!c)));
-  const organizedCategories = getOrganizedCategories(productCategories);
-  const categories = ["all", ...organizedCategories];
+  const availableProducts = products.filter(p => p.active);
+  const productTypes = Array.from(new Set(availableProducts.map(p => p.type).filter(t => !!t)));
+  const categories = ["all", ...productTypes];
 
   const filteredProducts = selectedCategory === "all"
     ? availableProducts
-    : availableProducts.filter(p => p.category === selectedCategory);
+    : availableProducts.filter(p => p.type === selectedCategory);
 
   const handleProductClick = (product: Product) => {
     setSelectedProduct(product);
@@ -164,7 +162,7 @@ export default function PublicMenu() {
                 onClick={() => setSelectedCategory(category)}
                 className="capitalize"
               >
-                {category === "all" ? "Todos" : getCategoryDisplayName(category)}
+                {category === "all" ? "Todos" : category}
               </Button>
             ))}
           </div>
@@ -195,14 +193,14 @@ export default function PublicMenu() {
                 {/* Price overlay */}
                 <div className="absolute top-4 right-4">
                   <Badge className="bg-green-600 text-white font-bold text-lg px-3 py-1">
-                    R$ {(product.price_normal || product.price || 0).toFixed(2)}
+                    R$ {product.price_normal.toFixed(2)}
                   </Badge>
                 </div>
 
-                {/* Category badge */}
+                {/* Type badge */}
                 <div className="absolute top-4 left-4">
                   <Badge variant="secondary" className="capitalize">
-                    {getCategoryDisplayName(product.category || '')}
+                    {product.type || 'Produto'}
                   </Badge>
                 </div>
               </div>
@@ -279,12 +277,12 @@ export default function PublicMenu() {
                   <div>
                     <h2 className="text-2xl font-bold">{selectedProduct.name}</h2>
                     <Badge variant="secondary" className="capitalize mt-2">
-                      {getCategoryDisplayName(selectedProduct.category || '')}
+                      {selectedProduct.type || 'Produto'}
                     </Badge>
                   </div>
                   <div className="text-right">
                     <div className="text-3xl font-bold text-green-600">
-                      R$ {(selectedProduct.price_normal || selectedProduct.price || 0).toFixed(2)}
+                      R$ {selectedProduct.price_normal.toFixed(2)}
                     </div>
                   </div>
                 </div>

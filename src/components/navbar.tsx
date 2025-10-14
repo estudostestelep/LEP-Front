@@ -15,11 +15,12 @@ import {
   FolderOpen,
   Calendar,
   UserCheck,
-  TableProperties
+  TableProperties,
+  Settings as SettingsIcon
 } from 'lucide-react';
 
 export default function Navbar() {
-  const { user, logout } = useAuth();
+  const { user, logout, isMasterAdmin } = useAuth();
 
   return (
     <nav className="bg-background border-b border-border shadow-sm">
@@ -91,19 +92,30 @@ export default function Navbar() {
                     <span>Usuários</span>
                   </Link>
                   <Link
-                    to="/organizations"
+                    to="/settings"
                     className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    <Building className="h-4 w-4" />
-                    <span>Organizações</span>
+                    <SettingsIcon className="h-4 w-4" />
+                    <span>Configurações</span>
                   </Link>
-                  <Link
-                    to="/projects"
-                    className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    <FolderOpen className="h-4 w-4" />
-                    <span>Projetos</span>
-                  </Link>
+                  {isMasterAdmin && (
+                    <>
+                      <Link
+                        to="/organizations"
+                        className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        <Building className="h-4 w-4" />
+                        <span>Organizações</span>
+                      </Link>
+                      <Link
+                        to="/projects"
+                        className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        <FolderOpen className="h-4 w-4" />
+                        <span>Projetos</span>
+                      </Link>
+                    </>
+                  )}
                 </>
               )}
             </div>

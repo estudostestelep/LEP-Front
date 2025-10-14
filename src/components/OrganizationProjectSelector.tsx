@@ -15,10 +15,16 @@ export const OrganizationProjectSelector = () => {
     loading
   } = useAuth();
 
+  // ✅ CORREÇÃO: Filtrar projetos pela organização selecionada
+  const filteredProjects = projects.filter(p =>
+    p.active && p.organization_id === currentOrganization
+  );
+
   // DEBUG - Log para verificar dados
   console.log('OrganizationProjectSelector - Estado:', {
     orgsCount: organizations.length,
     projsCount: projects.length,
+    filteredProjsCount: filteredProjects.length,
     currentOrg: currentOrganization,
     currentProj: currentProject,
     orgDetails: organizationDetails,
@@ -82,8 +88,8 @@ export const OrganizationProjectSelector = () => {
             >
               {organizations.map((userOrg) => (
                 <option key={userOrg.id} value={userOrg.organization_id}>
-                  {userOrg.organization_id === currentOrganization && organizationDetails?.name
-                    ? `${organizationDetails.name} (${userOrg.role})`
+                  {userOrg.organization_name
+                    ? `${userOrg.organization_name} (${userOrg.role})`
                     : `Org ${userOrg.organization_id.slice(0, 8)} (${userOrg.role})`}
                 </option>
               ))}
@@ -94,12 +100,12 @@ export const OrganizationProjectSelector = () => {
       </div>
 
       {/* Separador */}
-      {projects.length > 0 && (
+      {filteredProjects.length > 0 && (
         <div className="h-5 w-px bg-border" />
       )}
 
       {/* Seletor de Projeto */}
-      {projects.length > 0 && (
+      {filteredProjects.length > 0 && (
         <div className="relative group">
           <label className="flex items-center gap-2 cursor-pointer">
             <FolderKanban className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
@@ -110,10 +116,10 @@ export const OrganizationProjectSelector = () => {
                 className="appearance-none bg-transparent border-none text-sm font-medium text-foreground cursor-pointer focus:outline-none focus:ring-0 pr-5 max-w-[150px] truncate"
                 title={projectDetails?.name || 'Projeto'}
               >
-                {projects.map((userProj) => (
+                {filteredProjects.map((userProj) => (
                   <option key={userProj.id} value={userProj.project_id}>
-                    {userProj.project_id === currentProject && projectDetails?.name
-                      ? `${projectDetails.name} (${userProj.role})`
+                    {userProj.project_name
+                      ? `${userProj.project_name} (${userProj.role})`
                       : `Projeto ${userProj.project_id.slice(0, 8)} (${userProj.role})`}
                   </option>
                 ))}

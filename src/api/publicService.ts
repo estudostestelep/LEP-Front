@@ -4,7 +4,7 @@ import { Customer } from "./customerService";
 import { Reservation } from "./bookingService";
 
 const publicApi = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || "https://lep-system-516622888070.us-central1.run.app",
+  baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8080",
   timeout: 10000,
 });
 

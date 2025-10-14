@@ -45,15 +45,21 @@ export interface Product {
   stock?: number;
   prep_time_minutes?: number;
 
-  // Campos deprecados (manter para compatibilidade)
-  category?: string;
-  available?: boolean;
-  price?: number;
+  // Relacionamento com tags (quando carregado com expand)
+  tags?: Tag[];
 
   // Timestamps
   created_at: string;
   updated_at: string;
   deleted_at?: string;
+}
+
+export interface ProductFilters {
+  category_id?: string;
+  subcategory_id?: string;
+  tag_id?: string;
+  type?: ProductType;
+  active?: boolean;
 }
 
 export interface CreateProductDTO {
@@ -127,6 +133,17 @@ export interface CreateProductRequest {
 export const productService = {
   // CRUD básico
   getAll: () => api.get<Product[]>("/product"),
+  getAllWithFilters: (filters?: ProductFilters) => {
+    const params = new URLSearchParams();
+    if (filters?.category_id) params.append("category_id", filters.category_id);
+    if (filters?.subcategory_id) params.append("subcategory_id", filters.subcategory_id);
+    if (filters?.tag_id) params.append("tag_id", filters.tag_id);
+    if (filters?.type) params.append("type", filters.type);
+    if (filters?.active !== undefined) params.append("active", filters.active.toString());
+
+    const queryString = params.toString();
+    return api.get<Product[]>(`/product${queryString ? `?${queryString}` : ""}`);
+  },
   getById: (id: string) => api.get<Product>(`/product/${id}`),
   create: (data: CreateProductDTO | CreateProductRequest) =>
     api.post<Product>("/product", data),
