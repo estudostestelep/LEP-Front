@@ -15,13 +15,13 @@ import {
   AlertCircle
 } from "lucide-react";
 import { tableService, Table, CreateTableRequest } from "@/api/tableService";
-import { useAuth } from "@/context/authContext";
+import { useCurrentTenant } from '@/hooks/useCurrentTenant';
 import FormModal from "@/components/formModal";
 import ConfirmModal from "@/components/confirmModal";
 import { AxiosError } from "axios";
 
 export default function TablesPage() {
-  const { user: currentUser } = useAuth();
+  const { organization_id, project_id } = useCurrentTenant();
   const [tables, setTables] = useState<Table[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -65,8 +65,8 @@ export default function TablesPage() {
         await tableService.update(editing.id!, values);
       } else {
         const createRequest: CreateTableRequest = {
-          organization_id: currentUser?.organization_id || "",
-          project_id: currentUser?.project_id || "",
+          organization_id: organization_id || "",
+          project_id: project_id || "",
           number: parseInt(values.number),
           capacity: parseInt(values.capacity),
           location: values.location,

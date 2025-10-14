@@ -18,33 +18,32 @@ const api = axios.create({
 api.interceptors.request.use((config) => {
   try {
     // Adiciona token de autenticação
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("@LEP:token");
     if (token) {
       config.headers["Authorization"] = `Bearer ${token}`;
     }
 
-    // Adiciona headers multi-tenant
-    const user = JSON.parse(localStorage.getItem("user") || "null");
-    console.log('AuthContext - Current user for request:', user);
-    if (user && user.organization_id && user.project_id) {
-      config.headers["X-Lpe-Organization-Id"] = user.organization_id;
-      config.headers["X-Lpe-Project-Id"] = user.project_id;
+    // Adiciona headers multi-tenant usando currentOrganization e currentProject
+    const currentOrganization = localStorage.getItem("@LEP:currentOrganization");
+    const currentProject = localStorage.getItem("@LEP:currentProject");
+
+    if (currentOrganization && currentProject) {
+      config.headers["X-Lpe-Organization-Id"] = currentOrganization;
+      config.headers["X-Lpe-Project-Id"] = currentProject;
       console.log('Adding multi-tenant headers:', {
-        organization_id: user.organization_id,
-        project_id: user.project_id,
+        organization_id: currentOrganization,
+        project_id: currentProject,
         url: config.url
       });
     } else {
       console.warn('Missing organization_id or project_id for request:', {
-        user,
         url: config.url,
-        hasUser: !!user,
-        hasorganization_id: !!(user?.organization_id),
-        hasproject_id: !!(user?.project_id)
+        hasOrganization: !!currentOrganization,
+        hasProject: !!currentProject
       });
     }
   } catch (err) {
-    // ignora se não tiver user válido ou dados corrompidos
+    // ignora se não tiver dados válidos ou dados corrompidos
     console.warn("Erro ao adicionar headers de autenticação:", err);
   }
   return config;
@@ -72,8 +71,12 @@ api.interceptors.response.use(
 
     if (error.response?.status === 401) {
       // Token expirado ou inválido - limpa dados de autenticação
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
+      localStorage.removeItem("@LEP:token");
+      localStorage.removeItem("@LEP:user");
+      localStorage.removeItem("@LEP:organizations");
+      localStorage.removeItem("@LEP:projects");
+      localStorage.removeItem("@LEP:currentOrganization");
+      localStorage.removeItem("@LEP:currentProject");
       // Redireciona para login se não estiver já na página de login
       if (window.location.pathname !== "/login") {
         console.warn("Token inválido, redirecionando para login");

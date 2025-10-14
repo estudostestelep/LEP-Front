@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useAuth } from "@/context/authContext";
+import { useCurrentTenant } from '@/hooks/useCurrentTenant';
 
 interface Props {
   initialData?: Reservation;
@@ -24,7 +24,7 @@ interface FormData {
 }
 
 export default function ReservationForm({ initialData, onSuccess, onCancel }: Props) {
-  const { user } = useAuth();
+  const { organization_id, project_id } = useCurrentTenant();
   const [form, setForm] = useState<FormData>({
     customer_id: initialData?.customer_id || "",
     table_id: initialData?.table_id || "",
@@ -68,7 +68,7 @@ export default function ReservationForm({ initialData, onSuccess, onCancel }: Pr
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!user?.organization_id || !user?.project_id) {
+    if (!organization_id || !project_id) {
       alert("Erro: dados de organização não encontrados");
       return;
     }
@@ -91,8 +91,8 @@ export default function ReservationForm({ initialData, onSuccess, onCancel }: Pr
       } else {
         // Criar nova reserva
         const createData: CreateReservationRequest = {
-          organization_id: user.organization_id,
-          project_id: user.project_id,
+          organization_id: organization_id,
+          project_id: project_id,
           customer_id: form.customer_id,
           table_id: form.table_id,
           datetime: new Date(form.datetime).toISOString(),

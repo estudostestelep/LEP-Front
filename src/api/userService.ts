@@ -2,24 +2,21 @@ import api from "./api";
 
 export interface User {
   id: string;
-  organization_id: string;
-  project_id: string;
   name: string;
   email: string;
   password?: string; // Apenas para criação
-  role: string;
-  permissions?: string[]; // Pode ser null/undefined do backend
+  permissions: string[];
+  active: boolean;
   created_at?: string;
   updated_at?: string;
+  // Campos para compatibilidade com listagem (podem vir do backend)
+  role?: string;
 }
 
 export interface CreateUserRequest {
-  organization_id: string;
-  project_id: string;
   name: string;
   email: string;
   password: string;
-  role: string;
   permissions: string[];
 }
 

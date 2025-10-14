@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { subscriptionService, SubscriptionLimits, Usage } from '@/api/subscriptionService';
 import { useAuth } from '@/context/authContext';
+import { useCurrentTenant } from './useCurrentTenant';
 
 interface PermissionCheck {
   allowed: boolean;
@@ -36,13 +37,14 @@ interface Permissions {
 
 export function usePermissions(): Permissions {
   const { user } = useAuth();
+  const { organization_id } = useCurrentTenant();
   const [limits, setLimits] = useState<SubscriptionLimits | null>(null);
   const [usage, setUsage] = useState<Usage | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchData = async () => {
-    if (!user?.organization_id) return;
+    if (!user || !organization_id) return;
 
     try {
       setLoading(true);
@@ -65,7 +67,7 @@ export function usePermissions(): Permissions {
 
   useEffect(() => {
     fetchData();
-  }, [user?.organization_id]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [organization_id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const canCreateTable = (): PermissionCheck => {
     if (!limits || !usage) return { allowed: false, reason: 'Dados não carregados' };

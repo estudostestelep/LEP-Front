@@ -30,9 +30,9 @@ export const mockUsers: User[] = [
     email: 'joao@restaurant.com',
     role: 'admin',
     permissions: ['all'],
-    organization_id: 'org1',
-    project_id: 'proj1',
-    created_at: '2024-01-15T08:00:00Z'
+    active: true,
+    created_at: '2024-01-15T08:00:00Z',
+    updated_at: '2024-01-15T08:00:00Z'
   },
   {
     id: '2',
@@ -40,9 +40,9 @@ export const mockUsers: User[] = [
     email: 'maria@restaurant.com',
     role: 'waiter',
     permissions: ['view_orders', 'create_reservation'],
-    organization_id: 'org1',
-    project_id: 'proj1',
-    created_at: '2024-02-10T09:30:00Z'
+    active: true,
+    created_at: '2024-02-10T09:30:00Z',
+    updated_at: '2024-02-10T09:30:00Z'
   },
   {
     id: '3',
@@ -50,9 +50,9 @@ export const mockUsers: User[] = [
     email: 'carlos@restaurant.com',
     role: 'chef',
     permissions: ['view_orders', 'update_orders'],
-    organization_id: 'org1',
-    project_id: 'proj1',
-    created_at: '2024-01-20T07:15:00Z'
+    active: true,
+    created_at: '2024-01-20T07:15:00Z',
+    updated_at: '2024-01-20T07:15:00Z'
   }
 ];
 

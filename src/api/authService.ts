@@ -1,4 +1,5 @@
 import api from "./api";
+import { User, UserOrganization, UserProject } from '@/types/auth';
 
 export interface LoginRequest {
   email: string;
@@ -7,26 +8,13 @@ export interface LoginRequest {
 
 export interface LoginResponse {
   token: string;
-  user: {
-    id: string;
-    name: string;
-    email: string;
-    role: string;
-    permissions: string[];
-    organization_id: string;
-    project_id: string;
-  };
+  user: User;
+  organizations: UserOrganization[];
+  projects: UserProject[];
 }
 
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-  permissions: string[];
-  organization_id: string;
-  project_id: string;
-}
+// Mantido para compatibilidade
+export type { User }
 
 export const authService = {
   login: async (data: LoginRequest) => {

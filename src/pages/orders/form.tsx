@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useAuth } from "@/context/authContext";
+import { useCurrentTenant } from '@/hooks/useCurrentTenant';
 import { Plus, Minus, Trash2 } from "lucide-react";
 
 interface Props {
@@ -27,7 +27,7 @@ interface FormData {
 }
 
 export default function OrderForm({ initialData, onSuccess, onCancel }: Props) {
-  const { user } = useAuth();
+  const { organization_id, project_id } = useCurrentTenant();
   const [form, setForm] = useState<FormData>({
     table_id: initialData?.table_id || "",
     table_number: initialData?.table_number || undefined,
@@ -139,7 +139,7 @@ export default function OrderForm({ initialData, onSuccess, onCancel }: Props) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!user?.organization_id || !user?.project_id) {
+    if (!organization_id || !project_id) {
       alert("Erro: dados de organização não encontrados");
       return;
     }
@@ -158,8 +158,8 @@ export default function OrderForm({ initialData, onSuccess, onCancel }: Props) {
       } else {
         // Criar novo pedido
         const createData: CreateOrderRequest = {
-          organization_id: user.organization_id,
-          project_id: user.project_id,
+          organization_id: organization_id,
+          project_id: project_id,
           table_id: form.table_id,
           table_number: form.table_number,
           customer_id: form.customer_id,

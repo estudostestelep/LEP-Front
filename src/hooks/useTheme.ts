@@ -4,7 +4,7 @@ type Theme = 'light' | 'dark' | 'system';
 
 export function useTheme() {
   const [theme, setTheme] = useState<Theme>(() => {
-    const savedTheme = localStorage.getItem('theme') as Theme;
+    const savedTheme = localStorage.getItem('@LEP:theme') as Theme;
     return savedTheme || 'system';
   });
 
@@ -50,7 +50,7 @@ export function useTheme() {
 
   const setThemeAndPersist = (newTheme: Theme) => {
     setTheme(newTheme);
-    localStorage.setItem('theme', newTheme);
+    localStorage.setItem('@LEP:theme', newTheme);
   };
 
   const toggleTheme = () => {

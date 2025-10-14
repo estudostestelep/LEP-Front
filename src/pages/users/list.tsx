@@ -19,7 +19,8 @@ import { userService, User, CreateUserRequest } from "@/api/userService";
 import { AxiosError } from "axios";
 import FormModal from "@/components/formModal";
 import ConfirmModal from "@/components/confirmModal";
-import { useAuth } from "@/context/authContext";
+import { useCurrentTenant } from '@/hooks/useCurrentTenant';
+import { DiagnosticPanel } from '@/components/DiagnosticPanel';
 
 
 export default function UsersList() {
@@ -32,14 +33,14 @@ export default function UsersList() {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [showConfirm, setShowConfirm] = useState(false);
   const [userToDelete, setUserToDelete] = useState<string | null>(null);
-  const { user: currentUser } = useAuth();
+  const { organization_id, project_id } = useCurrentTenant();
 
-  const roles = ["all", ...Array.from(new Set(users.map(u => u.role)))];
+  const roles = ["all", ...Array.from(new Set(users.map(u => u.role || 'member')))];
 
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesRole = selectedRole === "all" || user.role === selectedRole;
+    const matchesRole = selectedRole === "all" || (user.role || 'member') === selectedRole;
     return matchesSearch && matchesRole;
   });
 
@@ -47,10 +48,26 @@ export default function UsersList() {
     try {
       setLoading(true);
       setError("");
+
+      console.log('🔍 Buscando usuários... Org:', organization_id, 'Proj:', project_id);
+
       const response = await userService.getAll();
-      setUsers(response.data);
+
+      console.log('📦 Resposta do backend:', {
+        status: response.status,
+        dataLength: response.data?.length,
+        data: response.data
+      });
+
+      setUsers(response.data || []);
+
+      if (!response.data || response.data.length === 0) {
+        console.warn('⚠️ Nenhum usuário retornado pelo backend');
+        setError('Nenhum usuário encontrado. O backend deve retornar usuários da organização atual.');
+      }
     } catch (err: unknown) {
       const axiosErr = err as AxiosError<{ error?: string; message?: string }>;
+      console.error('❌ Erro ao buscar usuários:', axiosErr);
       setError(
         axiosErr.response?.data?.error ||
         axiosErr.response?.data?.message ||
@@ -106,7 +123,7 @@ export default function UsersList() {
   };
 
   const handleFormSubmit = async (values: Record<string, unknown>) => {
-    if (!currentUser?.organization_id || !currentUser?.project_id) {
+    if (!organization_id || !project_id) {
       alert("Erro: dados de organização não encontrados");
       return;
     }
@@ -137,12 +154,9 @@ export default function UsersList() {
       await userService.update(editingUser.id, updateData as Partial<User>);
     } else {
       const createData: CreateUserRequest = {
-        organization_id: currentUser.organization_id,
-        project_id: currentUser.project_id,
         name: String(values.name),
         email: String(values.email),
         password: String(values.password || "123456"),
-        role: String(values.role),
         permissions: getDefaultPermissions(String(values.role))
       };
       await userService.create(createData);
@@ -182,6 +196,9 @@ export default function UsersList() {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Diagnostic Panel */}
+        <DiagnosticPanel />
+
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
@@ -243,13 +260,13 @@ export default function UsersList() {
               <div className="flex gap-2">
                 {roles.map(role => (
                   <Button
-                    key={role}
+                    key={role || 'undefined'}
                     variant={selectedRole === role ? "default" : "outline"}
                     size="sm"
-                    onClick={() => setSelectedRole(role)}
+                    onClick={() => setSelectedRole(role || 'all')}
                     className="capitalize"
                   >
-                    {role === "all" ? "Todos" : role}
+                    {role === "all" ? "Todos" : (role || 'sem função')}
                   </Button>
                 ))}
               </div>
@@ -299,8 +316,8 @@ export default function UsersList() {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">Função</span>
-                    <Badge variant={getRoleBadgeVariant(user.role)} className="capitalize">
-                      {user.role}
+                    <Badge variant={getRoleBadgeVariant(user.role || 'member')} className="capitalize">
+                      {user.role || 'member'}
                     </Badge>
                   </div>
 
@@ -396,8 +413,7 @@ export default function UsersList() {
           initialValues={editingUser ? {
             name: editingUser.name,
             email: editingUser.email,
-            role: editingUser.role
-
+            role: editingUser.role || 'member'
           } : {}}
           onSubmit={async (values) => {
             await handleFormSubmit(values || {});

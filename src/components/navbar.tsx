@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/context/authContext';
 import { Button } from '@/components/ui/button';
+import { OrganizationProjectSelector } from '@/components/OrganizationProjectSelector';
 import {
   Home,
   Menu,
@@ -109,6 +110,8 @@ export default function Navbar() {
           </div>
 
           <div className="flex items-center space-x-4">
+            {user && <OrganizationProjectSelector />}
+
             {user ? (
               <div className="flex items-center space-x-3">
                 <span className="text-sm text-muted-foreground hidden sm:block">
