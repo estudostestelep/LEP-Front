@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import AnimatedGradientText from "@/components/magicui/animated-gradient-text";
 import ShimmerButton from "@/components/magicui/shimmer-button";
 import { Home, Utensils, AlertTriangle } from "lucide-react";
-const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+const baseUrl = import.meta.env.VITE_API_BASE_URL || 'https://lep-system-516622888070.us-central1.run.app';
 
 export default function NotFound() {
   useEffect(() => {

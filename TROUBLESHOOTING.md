@@ -200,7 +200,7 @@ Se o backend está correto mas retorna arrays vazios:
 
 ```bash
 # 1. Adicionar usuário a uma organização
-curl -X POST http://localhost:8080/user/{userId}/organization \
+curl -X POST https://lep-system-516622888070.us-central1.run.app/user/{userId}/organization \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {token}" \
   -d '{
@@ -209,7 +209,7 @@ curl -X POST http://localhost:8080/user/{userId}/organization \
   }'
 
 # 2. Adicionar usuário a um projeto
-curl -X POST http://localhost:8080/user/{userId}/project \
+curl -X POST https://lep-system-516622888070.us-central1.run.app/user/{userId}/project \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {token}" \
   -d '{

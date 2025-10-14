@@ -13,7 +13,7 @@
 
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8080';
+const API_BASE_URL = 'https://lep-system-516622888070.us-central1.run.app';
 
 // Configurar headers (você precisará substituir com dados reais de autenticação)
 const headers = {
@@ -321,7 +321,7 @@ async function linkTagsToProducts(productIds: string[], tagIds: string[]) {
 async function runSeed() {
   console.log('\n🌱 Iniciando Seed...\n');
   console.log('⚠️  ATENÇÃO: Certifique-se de que:');
-  console.log('  1. O backend está rodando em http://localhost:8080');
+  console.log('  1. O backend está rodando em https://lep-system-516622888070.us-central1.run.app');
   console.log('  2. Você atualizou o token JWT e IDs de org/project no início deste arquivo');
   console.log('  3. O usuário tem permissões para criar esses recursos\n');
 

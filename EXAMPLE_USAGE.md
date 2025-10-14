@@ -222,7 +222,7 @@ npm run dev
 
 **Solução:**
 1. Verifique o console do navegador (erros de API)
-2. Teste o endpoint diretamente: `GET http://localhost:8080/organization/<id>`
+2. Teste o endpoint diretamente: `GET https://lep-system-516622888070.us-central1.run.app/organization/<id>`
 
 ### "Headers não são enviados nas requisições"
 **Causa:** `currentOrganization` ou `currentProject` não estão no localStorage

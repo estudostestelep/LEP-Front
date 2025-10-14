@@ -70,7 +70,7 @@ O script `seed.ts` cria dados de exemplo para:
    cd ../LEP-Back
    go run main.go
    ```
-   O backend deve estar rodando em `http://localhost:8080`
+   O backend deve estar rodando em `https://lep-system-516622888070.us-central1.run.app`
 
 2. **Autenticação:**
    Você precisará de um token JWT válido e IDs de organização/projeto.
@@ -80,7 +80,7 @@ O script `seed.ts` cria dados de exemplo para:
 Primeiro, faça login na aplicação para obter um token:
 
 ```bash
-curl -X POST http://localhost:8080/login \
+curl -X POST https://lep-system-516622888070.us-central1.run.app/login \
   -H "Content-Type: application/json" \
   -d '{
     "email": "seu-email@exemplo.com",
@@ -136,7 +136,7 @@ npx ts-node scripts/seed.ts
 🌱 Iniciando Seed...
 
 ⚠️  ATENÇÃO: Certifique-se de que:
-  1. O backend está rodando em http://localhost:8080
+  1. O backend está rodando em https://lep-system-516622888070.us-central1.run.app
   2. Você atualizou o token JWT e IDs de org/project no início deste arquivo
   3. O usuário tem permissões para criar esses recursos
 
@@ -188,8 +188,8 @@ npx ts-node scripts/seed.ts
 ## ❌ Troubleshooting
 
 ### Erro: "Cannot connect to backend"
-- Verifique se o backend está rodando em `http://localhost:8080`
-- Teste com: `curl http://localhost:8080/ping`
+- Verifique se o backend está rodando em `https://lep-system-516622888070.us-central1.run.app`
+- Teste com: `curl https://lep-system-516622888070.us-central1.run.app/ping`
 
 ### Erro: "Unauthorized" ou "Invalid token"
 - Seu token JWT pode ter expirado

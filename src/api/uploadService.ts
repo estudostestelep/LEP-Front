@@ -36,7 +36,7 @@ export const uploadService = {
     }
 
     // Se é um caminho relativo do servidor, constrói URL completa
-    const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || 'https://lep-system-516622888070.us-central1.run.app';
 
     // Se já começa com /uploads, usa diretamente
     if (imageUrl.startsWith('/uploads/')) {
