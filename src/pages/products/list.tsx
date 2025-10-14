@@ -266,14 +266,14 @@ export default function ProductList() {
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">Preço</span>
                     <span className="font-semibold text-lg">
-                      R$ {(product.price_normal || product.price || 0).toFixed(2)}
+                      R$ {product.price_normal.toFixed(2)}
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">Status</span>
-                    <Badge variant={(product.active ?? product.available) ? "default" : "secondary"}>
-                      {(product.active ?? product.available) ? "Disponível" : "Indisponível"}
+                    <Badge variant={product.active ? "default" : "secondary"}>
+                      {product.active ? "Disponível" : "Indisponível"}
                     </Badge>
                   </div>
 

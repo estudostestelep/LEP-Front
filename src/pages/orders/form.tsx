@@ -132,7 +132,7 @@ export default function OrderForm({ initialData, onSuccess, onCancel }: Props) {
   const calculateTotal = () => {
     return form.items.reduce((total, item) => {
       const product = products.find(p => p.id === item.product_id);
-      return total + (product?.price || 0) * item.quantity;
+      return total + (product?.price_normal || 0) * item.quantity;
     }, 0);
   };
 
@@ -309,9 +309,9 @@ export default function OrderForm({ initialData, onSuccess, onCancel }: Props) {
                   disabled={isSubmitting}
                 >
                   <option value="">Selecione um produto</option>
-                  {products.filter(p => p.available ?? p.active).map(product => (
+                  {products.filter(p => p.active).map(product => (
                     <option key={product.id} value={product.id}>
-                      {product.name} - R$ {(product.price_normal || product.price || 0).toFixed(2)}
+                      {product.name} - R$ {product.price_normal.toFixed(2)}
                     </option>
                   ))}
                 </select>
@@ -330,14 +330,14 @@ export default function OrderForm({ initialData, onSuccess, onCancel }: Props) {
                 <div className="space-y-2">
                   {form.items.map((item) => {
                     const product = products.find(p => p.id === item.product_id);
-                    const itemTotal = (product?.price || 0) * item.quantity;
+                    const itemTotal = (product?.price_normal || 0) * item.quantity;
 
                     return (
                       <div key={item.product_id} className="flex items-center justify-between p-3 border rounded-md">
                         <div className="flex-1">
                           <div className="font-medium">{item.product_name || product?.name}</div>
                           <div className="text-sm text-muted-foreground">
-                            R$ {(product?.price_normal || product?.price || 0).toFixed(2)} cada
+                            R$ {(product?.price_normal || 0).toFixed(2)} cada
                           </div>
                         </div>
 

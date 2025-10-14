@@ -3,19 +3,20 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import AnimatedGradientText from "@/components/magicui/animated-gradient-text";
 import ShimmerButton from "@/components/magicui/shimmer-button";
 import { Home, Utensils, AlertTriangle } from "lucide-react";
+const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
 export default function NotFound() {
   useEffect(() => {
     // Redireciona automaticamente após 5 segundos
     const timer = setTimeout(() => {
-      window.location.href = "https://lep-front.vercel.app/";
+      window.location.href = baseUrl;
     }, 5000);
 
     return () => clearTimeout(timer);
   }, []);
 
   const handleRedirect = () => {
-    window.location.href = "https://lep-front.vercel.app/";
+    window.location.href = baseUrl;
   };
 
   return (
@@ -57,7 +58,7 @@ export default function NotFound() {
 
             <div className="p-3 rounded-md bg-blue-50 border border-blue-200">
               <p className="text-sm text-blue-700 font-mono">
-                https://lep-front.vercel.app/
+                {baseUrl}
               </p>
             </div>
 
