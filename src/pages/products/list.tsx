@@ -1,16 +1,19 @@
 import { useEffect, useState } from "react";
 import { productService } from "../../api/productService";
 import type { Product } from "../../api/productService";
+import { Tag, tagService } from "../../api/tagService";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, AlertCircle, Package, Plus, Edit, Trash2, Clock } from "lucide-react";
+import { Loader2, AlertCircle, Package, Plus, Edit, Trash2, Clock, Filter, X } from "lucide-react";
+import { TagBadge } from "@/components/TagBadge";
 import ProductForm from "./form";
 import ConfirmModal from "@/components/confirmModal";
 import { AxiosError } from "axios";
 
 export default function ProductList() {
   const [products, setProducts] = useState<Product[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showForm, setShowForm] = useState(false);
@@ -18,21 +21,48 @@ export default function ProductList() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [productToDelete, setProductToDelete] = useState<string | null>(null);
 
+  // Estados para filtro de tags
+  const [availableTags, setAvailableTags] = useState<Tag[]>([]);
+  const [selectedTagId, setSelectedTagId] = useState<string>("");
+  const [productTags, setProductTags] = useState<Map<string, Tag[]>>(new Map());
+
   const fetchProducts = async () => {
     try {
       setLoading(true);
       setError("");
       const response = await productService.getAll();
       setProducts(response.data);
+
+      // Carregar tags de cada produto
+      const tagsMap = new Map<string, Tag[]>();
+      for (const product of response.data) {
+        try {
+          const tagsResponse = await productService.getProductTags(product.id);
+          tagsMap.set(product.id, tagsResponse.data);
+        } catch (error) {
+          console.error(`Erro ao carregar tags do produto ${product.id}:`, error);
+          tagsMap.set(product.id, []);
+        }
+      }
+      setProductTags(tagsMap);
     } catch (err: unknown) {
       const axiosErr = err as AxiosError<{ error?: string; message?: string }>;
       alert(
         axiosErr.response?.data?.error ||
         axiosErr.response?.data?.message ||
-        "Erro ao excluir mesa"
+        "Erro ao carregar produtos"
       );
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchTags = async () => {
+    try {
+      const response = await tagService.getTagsByEntityType("product");
+      setAvailableTags(response.data.filter(tag => tag.active));
+    } catch (error) {
+      console.error("Erro ao carregar tags:", error);
     }
   };
 
@@ -82,7 +112,21 @@ export default function ProductList() {
 
   useEffect(() => {
     fetchProducts();
+    fetchTags();
   }, []);
+
+  useEffect(() => {
+    // Filtrar produtos por tag selecionada
+    if (selectedTagId) {
+      const filtered = products.filter(product => {
+        const tags = productTags.get(product.id) || [];
+        return tags.some(tag => tag.id === selectedTagId);
+      });
+      setFilteredProducts(filtered);
+    } else {
+      setFilteredProducts(products);
+    }
+  }, [selectedTagId, products, productTags]);
 
   if (loading) {
     return (
@@ -120,6 +164,46 @@ export default function ProductList() {
           </Button>
         </div>
 
+        {/* Filtro de Tags */}
+        {availableTags.length > 0 && (
+          <Card className="mb-6">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <Filter className="h-5 w-5 text-muted-foreground" />
+                <div className="flex-1">
+                  <select
+                    value={selectedTagId}
+                    onChange={(e) => setSelectedTagId(e.target.value)}
+                    className="w-full md:w-64 px-3 py-2 border border-input bg-background text-sm rounded-md focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                  >
+                    <option value="">Todas as tags</option>
+                    {availableTags.map(tag => (
+                      <option key={tag.id} value={tag.id}>
+                        {tag.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                {selectedTagId && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSelectedTagId("")}
+                  >
+                    <X className="h-4 w-4 mr-1" />
+                    Limpar
+                  </Button>
+                )}
+                {selectedTagId && (
+                  <span className="text-sm text-muted-foreground">
+                    {filteredProducts.length} produto(s) encontrado(s)
+                  </span>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Error State */}
         {error && (
           <Card className="mb-6 border-destructive">
@@ -142,7 +226,7 @@ export default function ProductList() {
 
         {/* Products Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {products.map((product) => (
+          {filteredProducts.map((product) => (
             <Card key={product.id} className="hover:shadow-lg transition-shadow">
               <CardHeader className="pb-4">
                 <div className="flex items-start justify-between">
@@ -182,14 +266,14 @@ export default function ProductList() {
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">Preço</span>
                     <span className="font-semibold text-lg">
-                      R$ {product.price.toFixed(2)}
+                      R$ {product.price_normal.toFixed(2)}
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">Status</span>
-                    <Badge variant={product.available ? "default" : "secondary"}>
-                      {product.available ? "Disponível" : "Indisponível"}
+                    <Badge variant={product.active ? "default" : "secondary"}>
+                      {product.active ? "Disponível" : "Indisponível"}
                     </Badge>
                   </div>
 
@@ -202,6 +286,21 @@ export default function ProductList() {
                       </div>
                     </div>
                   )}
+
+                  {/* Tags do Produto */}
+                  {productTags.get(product.id) && productTags.get(product.id)!.length > 0 && (
+                    <div className="pt-2 border-t">
+                      <div className="flex flex-wrap gap-1">
+                        {productTags.get(product.id)!.map(tag => (
+                          <TagBadge
+                            key={tag.id}
+                            name={tag.name}
+                            color={tag.color}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -209,6 +308,23 @@ export default function ProductList() {
         </div>
 
         {/* Empty State */}
+        {filteredProducts.length === 0 && !error && products.length > 0 && (
+          <Card className="text-center py-12">
+            <CardContent>
+              <Filter className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-foreground mb-2">
+                Nenhum produto encontrado
+              </h3>
+              <p className="text-muted-foreground mb-4">
+                Não há produtos com a tag selecionada.
+              </p>
+              <Button variant="outline" onClick={() => setSelectedTagId("")}>
+                Limpar Filtro
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
         {products.length === 0 && !error && (
           <Card className="text-center py-12">
             <CardContent>

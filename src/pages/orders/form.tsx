@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useAuth } from "@/context/authContext";
+import { useCurrentTenant } from '@/hooks/useCurrentTenant';
 import { Plus, Minus, Trash2 } from "lucide-react";
 
 interface Props {
@@ -27,7 +27,7 @@ interface FormData {
 }
 
 export default function OrderForm({ initialData, onSuccess, onCancel }: Props) {
-  const { user } = useAuth();
+  const { organization_id, project_id } = useCurrentTenant();
   const [form, setForm] = useState<FormData>({
     table_id: initialData?.table_id || "",
     table_number: initialData?.table_number || undefined,
@@ -132,14 +132,14 @@ export default function OrderForm({ initialData, onSuccess, onCancel }: Props) {
   const calculateTotal = () => {
     return form.items.reduce((total, item) => {
       const product = products.find(p => p.id === item.product_id);
-      return total + (product?.price || 0) * item.quantity;
+      return total + (product?.price_normal || 0) * item.quantity;
     }, 0);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!user?.organization_id || !user?.project_id) {
+    if (!organization_id || !project_id) {
       alert("Erro: dados de organização não encontrados");
       return;
     }
@@ -158,8 +158,8 @@ export default function OrderForm({ initialData, onSuccess, onCancel }: Props) {
       } else {
         // Criar novo pedido
         const createData: CreateOrderRequest = {
-          organization_id: user.organization_id,
-          project_id: user.project_id,
+          organization_id: organization_id,
+          project_id: project_id,
           table_id: form.table_id,
           table_number: form.table_number,
           customer_id: form.customer_id,
@@ -309,9 +309,9 @@ export default function OrderForm({ initialData, onSuccess, onCancel }: Props) {
                   disabled={isSubmitting}
                 >
                   <option value="">Selecione um produto</option>
-                  {products.filter(p => p.available).map(product => (
+                  {products.filter(p => p.active).map(product => (
                     <option key={product.id} value={product.id}>
-                      {product.name} - R$ {product.price.toFixed(2)}
+                      {product.name} - R$ {product.price_normal.toFixed(2)}
                     </option>
                   ))}
                 </select>
@@ -330,14 +330,14 @@ export default function OrderForm({ initialData, onSuccess, onCancel }: Props) {
                 <div className="space-y-2">
                   {form.items.map((item) => {
                     const product = products.find(p => p.id === item.product_id);
-                    const itemTotal = (product?.price || 0) * item.quantity;
+                    const itemTotal = (product?.price_normal || 0) * item.quantity;
 
                     return (
                       <div key={item.product_id} className="flex items-center justify-between p-3 border rounded-md">
                         <div className="flex-1">
                           <div className="font-medium">{item.product_name || product?.name}</div>
                           <div className="text-sm text-muted-foreground">
-                            R$ {product?.price.toFixed(2)} cada
+                            R$ {(product?.price_normal || 0).toFixed(2)} cada
                           </div>
                         </div>
 

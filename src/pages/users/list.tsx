@@ -13,17 +13,27 @@ import {
   Shield,
   Calendar,
   Loader2,
-  AlertCircle
+  AlertCircle,
+  Network
 } from "lucide-react";
 import { userService, User, CreateUserRequest } from "@/api/userService";
+import { organizationService, Organization } from "@/api/organizationService";
+import { projectService, Project } from "@/api/projectService";
 import { AxiosError } from "axios";
 import FormModal from "@/components/formModal";
 import ConfirmModal from "@/components/confirmModal";
-import { useAuth } from "@/context/authContext";
+import UserAccessModal from "@/components/UserAccessModal";
+import { useCurrentTenant } from '@/hooks/useCurrentTenant';
+import { useAuth } from '@/context/authContext';
 
+
+interface UserWithAccess extends User {
+  organizationsCount?: number;
+  projectsCount?: number;
+}
 
 export default function UsersList() {
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<UserWithAccess[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
@@ -32,14 +42,19 @@ export default function UsersList() {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [showConfirm, setShowConfirm] = useState(false);
   const [userToDelete, setUserToDelete] = useState<string | null>(null);
-  const { user: currentUser } = useAuth();
+  const [showAccessModal, setShowAccessModal] = useState(false);
+  const [accessModalUser, setAccessModalUser] = useState<User | null>(null);
+  const [allOrganizations, setAllOrganizations] = useState<Organization[]>([]);
+  const [allProjects, setAllProjects] = useState<Project[]>([]);
+  const { organization_id, project_id } = useCurrentTenant();
+  const { isMasterAdmin } = useAuth();
 
-  const roles = ["all", ...Array.from(new Set(users.map(u => u.role)))];
+  const roles = ["all", ...Array.from(new Set(users.map(u => u.role || 'member')))];
 
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesRole = selectedRole === "all" || user.role === selectedRole;
+    const matchesRole = selectedRole === "all" || (user.role || 'member') === selectedRole;
     return matchesSearch && matchesRole;
   });
 
@@ -47,10 +62,49 @@ export default function UsersList() {
     try {
       setLoading(true);
       setError("");
+
+      console.log('🔍 Buscando usuários... Org:', organization_id, 'Proj:', project_id);
+
       const response = await userService.getAll();
-      setUsers(response.data);
+
+      console.log('📦 Resposta do backend:', {
+        status: response.status,
+        dataLength: response.data?.length,
+        data: response.data
+      });
+
+      const usersData = response.data || [];
+
+      // Se for master admin, carregar contagem de acessos para cada usuário
+      if (isMasterAdmin) {
+        const usersWithAccess = await Promise.all(
+          usersData.map(async (user) => {
+            try {
+              if (!user.id) return user;
+              const accessResponse = await userService.getUserAccess(user.id);
+              return {
+                ...user,
+                organizationsCount: accessResponse.data.organizations.length,
+                projectsCount: accessResponse.data.projects.length
+              };
+            } catch (error) {
+              console.warn(`Erro ao carregar acessos do usuário ${user.id}:`, error);
+              return user;
+            }
+          })
+        );
+        setUsers(usersWithAccess);
+      } else {
+        setUsers(usersData);
+      }
+
+      if (!response.data || response.data.length === 0) {
+        console.warn('⚠️ Nenhum usuário retornado pelo backend');
+        setError('Nenhum usuário encontrado. O backend deve retornar usuários da organização atual.');
+      }
     } catch (err: unknown) {
       const axiosErr = err as AxiosError<{ error?: string; message?: string }>;
+      console.error('❌ Erro ao buscar usuários:', axiosErr);
       setError(
         axiosErr.response?.data?.error ||
         axiosErr.response?.data?.message ||
@@ -61,9 +115,30 @@ export default function UsersList() {
     }
   };
 
+  const fetchOrganizationsAndProjects = async () => {
+    if (!isMasterAdmin) return;
+
+    try {
+      const [orgsResponse, projsResponse] = await Promise.all([
+        organizationService.getAll(),
+        projectService.getAll()
+      ]);
+
+      setAllOrganizations(orgsResponse.data || []);
+      setAllProjects(projsResponse.data || []);
+    } catch (err) {
+      console.error('Erro ao carregar organizações e projetos:', err);
+    }
+  };
+
   const handleNewUser = () => {
     setEditingUser(null);
     setShowForm(true);
+  };
+
+  const handleManageAccess = (user: User) => {
+    setAccessModalUser(user);
+    setShowAccessModal(true);
   };
 
   const handleEditUser = (user: User) => {
@@ -106,7 +181,7 @@ export default function UsersList() {
   };
 
   const handleFormSubmit = async (values: Record<string, unknown>) => {
-    if (!currentUser?.organization_id || !currentUser?.project_id) {
+    if (!organization_id || !project_id) {
       alert("Erro: dados de organização não encontrados");
       return;
     }
@@ -114,6 +189,8 @@ export default function UsersList() {
     // Definir permissões padrão baseadas no role
     const getDefaultPermissions = (role: string): string[] => {
       switch (role) {
+        case 'master_admin':
+          return ['master_admin', 'all'];
         case 'admin':
           return ['all'];
         case 'manager':
@@ -130,19 +207,16 @@ export default function UsersList() {
     };
 
     if (editingUser?.id) {
-      const updateData = {
+      const updateData: Partial<User> = {
         ...values,
         permissions: getDefaultPermissions(String(values.role))
       };
-      await userService.update(editingUser.id, updateData as Partial<User>);
+      await userService.update(editingUser.id, updateData);
     } else {
       const createData: CreateUserRequest = {
-        organization_id: currentUser.organization_id,
-        project_id: currentUser.project_id,
         name: String(values.name),
         email: String(values.email),
         password: String(values.password || "123456"),
-        role: String(values.role),
         permissions: getDefaultPermissions(String(values.role))
       };
       await userService.create(createData);
@@ -152,7 +226,8 @@ export default function UsersList() {
 
   useEffect(() => {
     fetchUsers();
-  }, []);
+    fetchOrganizationsAndProjects();
+  }, [isMasterAdmin]);
 
   const getRoleBadgeVariant = (role: string) => {
     switch (role) {
@@ -243,13 +318,13 @@ export default function UsersList() {
               <div className="flex gap-2">
                 {roles.map(role => (
                   <Button
-                    key={role}
+                    key={role || 'undefined'}
                     variant={selectedRole === role ? "default" : "outline"}
                     size="sm"
-                    onClick={() => setSelectedRole(role)}
+                    onClick={() => setSelectedRole(role || 'all')}
                     className="capitalize"
                   >
-                    {role === "all" ? "Todos" : role}
+                    {role === "all" ? "Todos" : (role || 'sem função')}
                   </Button>
                 ))}
               </div>
@@ -277,10 +352,21 @@ export default function UsersList() {
                   </div>
 
                   <div className="flex space-x-1">
+                    {isMasterAdmin && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleManageAccess(user)}
+                        title="Gerenciar Acessos"
+                      >
+                        <Network className="h-4 w-4" />
+                      </Button>
+                    )}
                     <Button
                       size="sm"
                       variant="ghost"
                       onClick={() => handleEditUser(user)}
+                      title="Editar"
                     >
                       <Edit className="h-4 w-4" />
                     </Button>
@@ -288,6 +374,7 @@ export default function UsersList() {
                       size="sm"
                       variant="ghost"
                       onClick={() => user.id && handleDeleteClick(user.id)}
+                      title="Excluir"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -299,8 +386,8 @@ export default function UsersList() {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">Função</span>
-                    <Badge variant={getRoleBadgeVariant(user.role)} className="capitalize">
-                      {user.role}
+                    <Badge variant={getRoleBadgeVariant(user.role || 'member')} className="capitalize">
+                      {user.role || 'member'}
                     </Badge>
                   </div>
 
@@ -321,6 +408,35 @@ export default function UsersList() {
                       <span className="text-sm">{user.created_at ? formatDate(user.created_at) : 'N/A'}</span>
                     </div>
                   </div>
+
+                  {/* Badges de Acesso - Apenas para Master Admin */}
+                  {isMasterAdmin && (user.organizationsCount !== undefined || user.projectsCount !== undefined) && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Acessos</span>
+                      <div className="flex items-center gap-2">
+                        {user.organizationsCount !== undefined && (
+                          <Badge
+                            variant="outline"
+                            className="text-xs cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-950"
+                            onClick={() => handleManageAccess(user)}
+                            title="Clique para gerenciar acessos"
+                          >
+                            🏢 {user.organizationsCount} {user.organizationsCount === 1 ? 'org' : 'orgs'}
+                          </Badge>
+                        )}
+                        {user.projectsCount !== undefined && (
+                          <Badge
+                            variant="outline"
+                            className="text-xs cursor-pointer hover:bg-green-50 dark:hover:bg-green-950"
+                            onClick={() => handleManageAccess(user)}
+                            title="Clique para gerenciar acessos"
+                          >
+                            📁 {user.projectsCount} {user.projectsCount === 1 ? 'proj' : 'projs'}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  )}
 
                   <div className="pt-2 border-t">
                     <div className="flex flex-wrap gap-1">
@@ -383,7 +499,14 @@ export default function UsersList() {
               label: 'Função',
               type: 'select',
               required: true,
-              options: [
+              options: isMasterAdmin ? [
+                { value: 'master_admin', label: 'Master Admin' },
+                { value: 'admin', label: 'Administrador' },
+                { value: 'manager', label: 'Gerente' },
+                { value: 'waiter', label: 'Garçom' },
+                { value: 'kitchen', label: 'Cozinha' },
+                { value: 'cashier', label: 'Caixa' }
+              ] : [
                 { value: 'admin', label: 'Administrador' },
                 { value: 'manager', label: 'Gerente' },
                 { value: 'waiter', label: 'Garçom' },
@@ -396,14 +519,30 @@ export default function UsersList() {
           initialValues={editingUser ? {
             name: editingUser.name,
             email: editingUser.email,
-            role: editingUser.role
-
+            role: editingUser.role || 'member'
           } : {}}
           onSubmit={async (values) => {
-            await handleFormSubmit(values);
+            await handleFormSubmit(values || {});
             handleFormSuccess();
           }}
         />
+
+        {/* User Access Modal */}
+        {accessModalUser && (
+          <UserAccessModal
+            user={accessModalUser}
+            open={showAccessModal}
+            onClose={() => {
+              setShowAccessModal(false);
+              setAccessModalUser(null);
+            }}
+            onSuccess={() => {
+              fetchUsers();
+            }}
+            allOrganizations={allOrganizations}
+            allProjects={allProjects}
+          />
+        )}
 
         <ConfirmModal
           open={showConfirm}

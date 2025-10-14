@@ -30,9 +30,9 @@ export const mockUsers: User[] = [
     email: 'joao@restaurant.com',
     role: 'admin',
     permissions: ['all'],
-    organization_id: 'org1',
-    project_id: 'proj1',
-    created_at: '2024-01-15T08:00:00Z'
+    active: true,
+    created_at: '2024-01-15T08:00:00Z',
+    updated_at: '2024-01-15T08:00:00Z'
   },
   {
     id: '2',
@@ -40,9 +40,9 @@ export const mockUsers: User[] = [
     email: 'maria@restaurant.com',
     role: 'waiter',
     permissions: ['view_orders', 'create_reservation'],
-    organization_id: 'org1',
-    project_id: 'proj1',
-    created_at: '2024-02-10T09:30:00Z'
+    active: true,
+    created_at: '2024-02-10T09:30:00Z',
+    updated_at: '2024-02-10T09:30:00Z'
   },
   {
     id: '3',
@@ -50,9 +50,9 @@ export const mockUsers: User[] = [
     email: 'carlos@restaurant.com',
     role: 'chef',
     permissions: ['view_orders', 'update_orders'],
-    organization_id: 'org1',
-    project_id: 'proj1',
-    created_at: '2024-01-20T07:15:00Z'
+    active: true,
+    created_at: '2024-01-20T07:15:00Z',
+    updated_at: '2024-01-20T07:15:00Z'
   }
 ];
 
@@ -93,56 +93,77 @@ export const mockTables: Table[] = [
 ];
 
 export const mockProducts: Product[] = [
-  
   {
     id: '1',
+    organization_id: 'org-1',
+    project_id: 'proj-1',
     name: 'Pizza Margherita',
     description: 'Massa fina, molho de tomate, manjericão fresco e mussarela',
-    price: 45.90,
-    available: true,
+    type: 'prato',
+    price_normal: 45.90,
+    active: true,
+    order: 0,
     prep_time_minutes: 25,
-    category: 'main_course',
-    created_at: '2024-01-01T08:00:00Z'
+    created_at: '2024-01-01T08:00:00Z',
+    updated_at: '2024-01-01T08:00:00Z'
   },
   {
     id: '2',
-        name: 'Hambúrguer Artesanal',
+    organization_id: 'org-1',
+    project_id: 'proj-1',
+    name: 'Hambúrguer Artesanal',
     description: 'Pão brioche, carne 180g, queijo cheddar, bacon e batata rústica',
-    price: 38.50,
-    available: true,
+    type: 'prato',
+    price_normal: 38.50,
+    active: true,
+    order: 1,
     prep_time_minutes: 20,
-    category: 'main_course',
-    created_at: '2024-01-01T08:00:00Z'
+    created_at: '2024-01-01T08:00:00Z',
+    updated_at: '2024-01-01T08:00:00Z'
   },
   {
     id: '3',
+    organization_id: 'org-1',
+    project_id: 'proj-1',
     name: 'Salmão Grelhado',
     description: 'Filé de salmão grelhado com risotto de limão siciliano',
-    price: 68.90,
-    available: true,
+    type: 'prato',
+    price_normal: 68.90,
+    active: true,
+    order: 2,
     prep_time_minutes: 30,
-    category: 'main_course',
-    created_at: '2024-01-01T08:00:00Z'
+    created_at: '2024-01-01T08:00:00Z',
+    updated_at: '2024-01-01T08:00:00Z'
   },
   {
     id: '4',
+    organization_id: 'org-1',
+    project_id: 'proj-1',
     name: 'Cerveja Artesanal IPA',
     description: 'Cerveja artesanal India Pale Ale 500ml',
-    price: 18.90,
-    available: true,
+    type: 'bebida',
+    price_normal: 18.90,
+    volume: 500,
+    alcohol_content: 6.5,
+    active: true,
+    order: 3,
     prep_time_minutes: 2,
-    category: 'beverage',
-    created_at: '2024-01-01T08:00:00Z'
+    created_at: '2024-01-01T08:00:00Z',
+    updated_at: '2024-01-01T08:00:00Z'
   },
   {
     id: '5',
+    organization_id: 'org-1',
+    project_id: 'proj-1',
     name: 'Tiramisu',
     description: 'Sobremesa italiana tradicional com café e mascarpone',
-    price: 22.90,
-    available: false,
+    type: 'prato',
+    price_normal: 22.90,
+    active: false,
+    order: 4,
     prep_time_minutes: 15,
-    category: 'dessert',
-    created_at: '2024-01-01T08:00:00Z'
+    created_at: '2024-01-01T08:00:00Z',
+    updated_at: '2024-01-01T08:00:00Z'
   }
 ];
 

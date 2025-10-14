@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 
 type SelectOption = {
   value: string | number;
@@ -18,18 +18,26 @@ type Props = {
   title: string;
   open: boolean;
   onClose: () => void;
-  fields: Field[];
+  fields?: Field[];
   initialValues?: Record<string, unknown>;
-  onSubmit: (values: Record<string, unknown>) => Promise<void> | void;
+  onSubmit: (values?: Record<string, unknown>) => Promise<void> | void;
+  children?: React.ReactNode;
 };
 
 
-export default function FormModal({ title, open, onClose, fields, initialValues = {}, onSubmit }: Props) {
+export default function FormModal({ title, open, onClose, fields, initialValues = {}, onSubmit, children }: Props) {
   const [values, setValues] = React.useState<Record<string, unknown>>(initialValues);
   const [loading, setLoading] = React.useState(false);
 
 
-  React.useEffect(() => setValues(initialValues), [initialValues, open]);
+  // Usar useMemo para evitar recriação desnecessária
+  const stableInitialValues = useMemo(() => initialValues, [JSON.stringify(initialValues)]);
+
+  React.useEffect(() => {
+    if (open) {
+      setValues(stableInitialValues);
+    }
+  }, [open, stableInitialValues]);
 
   // Handle ESC key press
   useEffect(() => {
@@ -89,8 +97,12 @@ export default function FormModal({ title, open, onClose, fields, initialValues 
           </div>
 
 
-          <div className="p-6 grid gap-4 grid-cols-1 md:grid-cols-2">
-            {fields.map(f => (
+          <div className="p-6">
+            {children ? (
+              children
+            ) : (
+              <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+                {fields?.map(f => (
               <div key={f.name} className="flex flex-col">
                 <label className="text-sm font-medium mb-1">{f.label}{f.required ? ' *' : ''}</label>
 
@@ -124,7 +136,9 @@ export default function FormModal({ title, open, onClose, fields, initialValues 
 
 
               </div>
-            ))}
+                ))}
+              </div>
+            )}
           </div>
 
 

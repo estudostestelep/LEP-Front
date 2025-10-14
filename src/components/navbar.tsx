@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/context/authContext';
 import { Button } from '@/components/ui/button';
+import { OrganizationProjectSelector } from '@/components/OrganizationProjectSelector';
 import {
   Home,
   Menu,
@@ -14,11 +15,12 @@ import {
   FolderOpen,
   Calendar,
   UserCheck,
-  TableProperties
+  TableProperties,
+  Settings as SettingsIcon
 } from 'lucide-react';
 
 export default function Navbar() {
-  const { user, logout } = useAuth();
+  const { user, logout, isMasterAdmin } = useAuth();
 
   return (
     <nav className="bg-background border-b border-border shadow-sm">
@@ -90,25 +92,38 @@ export default function Navbar() {
                     <span>Usuários</span>
                   </Link>
                   <Link
-                    to="/organizations"
+                    to="/settings"
                     className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    <Building className="h-4 w-4" />
-                    <span>Organizações</span>
+                    <SettingsIcon className="h-4 w-4" />
+                    <span>Configurações</span>
                   </Link>
-                  <Link
-                    to="/projects"
-                    className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    <FolderOpen className="h-4 w-4" />
-                    <span>Projetos</span>
-                  </Link>
+                  {isMasterAdmin && (
+                    <>
+                      <Link
+                        to="/organizations"
+                        className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        <Building className="h-4 w-4" />
+                        <span>Organizações</span>
+                      </Link>
+                      <Link
+                        to="/projects"
+                        className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        <FolderOpen className="h-4 w-4" />
+                        <span>Projetos</span>
+                      </Link>
+                    </>
+                  )}
                 </>
               )}
             </div>
           </div>
 
           <div className="flex items-center space-x-4">
+            {user && <OrganizationProjectSelector />}
+
             {user ? (
               <div className="flex items-center space-x-3">
                 <span className="text-sm text-muted-foreground hidden sm:block">

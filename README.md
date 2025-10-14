@@ -61,7 +61,8 @@ npm run lint
 
 ```env
 # .env
-VITE_API_BASE_URL=http://localhost:8080
+VITE_API_BASE_URL=https://lep-system-516622888070.us-central1.run.app
+
 VITE_ENABLE_MOCKS=false
 ```
 
@@ -328,7 +329,7 @@ export const serviceNameService = {
 ```typescript
 // src/api/api.ts
 const api = axios.create({
-  baseURL: "http://localhost:8080"
+  baseURL: "https://lep-system-516622888070.us-central1.run.app"
 });
 ```
 

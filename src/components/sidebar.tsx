@@ -16,7 +16,10 @@ import {
   Calendar,
   UserCheck,
   TableProperties,
-  X
+  Tag,
+  BookOpen,
+  X,
+  Settings as SettingsIcon
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -25,7 +28,7 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
-  const { user, logout } = useAuth();
+  const { user, logout, isMasterAdmin } = useAuth();
   const location = useLocation();
   const [isMobile, setIsMobile] = useState(false);
 
@@ -58,12 +61,18 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
 
   const privateMenuItems = [
     { to: '/menu', icon: Menu, label: 'Menu' },
+    { to: '/admin-menu', icon: BookOpen, label: 'Admin Menu' },
     { to: '/orders', icon: ShoppingCart, label: 'Pedidos' },
     { to: '/reservations', icon: Calendar, label: 'Reservas' },
     { to: '/customers', icon: UserCheck, label: 'Clientes' },
     { to: '/tables', icon: TableProperties, label: 'Mesas' },
     { to: '/products', icon: Package, label: 'Produtos' },
+    { to: '/tags', icon: Tag, label: 'Tags' },
     { to: '/users', icon: Users, label: 'Usuários' },
+    { to: '/settings', icon: SettingsIcon, label: 'Configurações' }
+  ];
+
+  const masterAdminMenuItems = [
     { to: '/organizations', icon: Building, label: 'Organizações' },
     { to: '/projects', icon: FolderOpen, label: 'Projetos' }
   ];
@@ -207,6 +216,39 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
                 </Link>
               );
             })}
+
+            {/* Master Admin Routes */}
+            {user && isMasterAdmin && (
+              <>
+                <div className="my-4 border-t border-border">
+                  <p className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    Master Admin
+                  </p>
+                </div>
+                {masterAdminMenuItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = isActiveRoute(item.to);
+
+                  return (
+                    <Link
+                      key={item.to}
+                      to={item.to}
+                      onClick={closeSidebarOnMobile}
+                      className={`
+                        flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
+                        ${isActive
+                          ? 'bg-primary text-primary-foreground'
+                          : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+                        }
+                      `}
+                    >
+                      <Icon className="h-5 w-5" />
+                      <span>{item.label}</span>
+                    </Link>
+                  );
+                })}
+              </>
+            )}
           </div>
         </nav>
 
