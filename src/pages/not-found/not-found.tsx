@@ -1,22 +1,24 @@
 import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import AnimatedGradientText from "@/components/magicui/animated-gradient-text";
 import ShimmerButton from "@/components/magicui/shimmer-button";
 import { Home, Utensils, AlertTriangle } from "lucide-react";
-const baseUrl = import.meta.env.VITE_API_BASE_URL || 'https://lep-system-516622888070.us-central1.run.app';
 
 export default function NotFound() {
+  const navigate = useNavigate();
+
   useEffect(() => {
     // Redireciona automaticamente após 5 segundos
     const timer = setTimeout(() => {
-      window.location.href = baseUrl;
+      navigate('/');
     }, 5000);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [navigate]);
 
   const handleRedirect = () => {
-    window.location.href = baseUrl;
+    navigate('/');
   };
 
   return (
@@ -53,14 +55,8 @@ export default function NotFound() {
           </CardHeader>
           <CardContent className="text-center space-y-4">
             <p className="text-sm text-muted-foreground">
-              Você será redirecionado automaticamente em 5 segundos para:
+              Você será redirecionado automaticamente em 5 segundos para a página inicial.
             </p>
-
-            <div className="p-3 rounded-md bg-blue-50 border border-blue-200">
-              <p className="text-sm text-blue-700 font-mono">
-                {baseUrl}
-              </p>
-            </div>
 
             <div className="pt-4">
               <ShimmerButton
