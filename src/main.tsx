@@ -4,15 +4,18 @@ import { BrowserRouter } from "react-router-dom";
 import { Toaster } from "sonner";
 import AppRoutes from "./App";
 import { AuthProvider } from "./context/authContext";
+import { ThemeProvider } from "./components/theme-provider";
 import "./index.css";
 
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <AuthProvider>
-      <BrowserRouter>
-        <AppRoutes />
-        <Toaster position="top-right" richColors />
-      </BrowserRouter>
-    </AuthProvider>
+    <ThemeProvider defaultTheme="light" storageKey="lep-ui-theme">
+      <AuthProvider>
+        <BrowserRouter>
+          <AppRoutes />
+          <Toaster position="top-right" richColors />
+        </BrowserRouter>
+      </AuthProvider>
+    </ThemeProvider>
   </React.StrictMode>
 );

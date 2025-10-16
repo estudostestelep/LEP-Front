@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { publicService } from "@/api/publicService";
 import { Product } from "@/api/productService";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export default function PublicMenu() {
   const { orgId, projId } = useParams<{ orgId: string; projId: string }>();
@@ -112,11 +113,14 @@ export default function PublicMenu() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="flex items-center justify-center space-x-2 mb-4">
-            <ChefHat className="h-8 w-8 text-primary" />
+          <div className="flex items-center justify-center space-x-2 mb-4 relative">
+            <ChefHat className="h-8 w-8 text-foreground" />
             <h1 className="text-4xl font-bold text-foreground">
               {projectInfo?.name || "Cardápio Digital"}
             </h1>
+            <div className="absolute right-0 top-0">
+              <ThemeToggle />
+            </div>
           </div>
 
           {projectInfo?.description && (
@@ -130,19 +134,19 @@ export default function PublicMenu() {
             <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-muted-foreground">
               {projectInfo.contact_info.phone && (
                 <div className="flex items-center space-x-1">
-                  <Phone className="h-4 w-4" />
+                  <Phone className="h-4 w-4 text-muted-foreground" />
                   <span>{projectInfo.contact_info.phone}</span>
                 </div>
               )}
               {projectInfo.contact_info.email && (
                 <div className="flex items-center space-x-1">
-                  <Mail className="h-4 w-4" />
+                  <Mail className="h-4 w-4 text-muted-foreground" />
                   <span>{projectInfo.contact_info.email}</span>
                 </div>
               )}
               {projectInfo.contact_info.address && (
                 <div className="flex items-center space-x-1">
-                  <MapPin className="h-4 w-4" />
+                  <MapPin className="h-4 w-4 text-muted-foreground" />
                   <span>{projectInfo.contact_info.address}</span>
                 </div>
               )}

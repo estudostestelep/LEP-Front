@@ -16,6 +16,7 @@ import {
   MapPin
 } from "lucide-react";
 import { publicService, AvailableTime } from "@/api/publicService";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 interface CustomerData {
   name: string;
@@ -75,11 +76,19 @@ export default function PublicReservation() {
         const response = await publicService.getProjectInfo(orgId, projId);
         setProjectInfo(response.data);
         setError(null);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error("Erro ao carregar informações do projeto:", err);
 
+        // Safely extract a message from unknown error
+        let errorMessage = "Unknown error";
+        if (typeof err === "string") {
+          errorMessage = err;
+        } else if (err && typeof err === "object") {
+          const maybeErr = err as { response?: { data?: { message?: string } }; message?: string };
+          errorMessage = maybeErr.response?.data?.message ?? maybeErr.message ?? "Unknown error";
+        }
+
         // Handle specific error cases
-        const errorMessage = err.response?.data?.message || err.message;
         if (errorMessage.includes("conn busy")) {
           setError("Sistema temporariamente sobrecarregado. Tentando novamente...");
           // Retry after a delay
@@ -249,9 +258,12 @@ export default function PublicReservation() {
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="flex items-center justify-center space-x-2 mb-4">
-            <Calendar className="h-8 w-8 text-primary" />
+          <div className="flex items-center justify-center space-x-2 mb-4 relative">
+            <Calendar className="h-8 w-8 text-foreground" />
             <h1 className="text-4xl font-bold">Faça sua Reserva</h1>
+            <div className="absolute right-0 top-0">
+              <ThemeToggle />
+            </div>
           </div>
 
           {projectInfo && (
@@ -261,13 +273,13 @@ export default function PublicReservation() {
                 <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-muted-foreground mt-2">
                   {projectInfo.contact_info.phone && (
                     <div className="flex items-center space-x-1">
-                      <Phone className="h-4 w-4" />
+                      <Phone className="h-4 w-4 text-muted-foreground" />
                       <span>{projectInfo.contact_info.phone}</span>
                     </div>
                   )}
                   {projectInfo.contact_info.address && (
                     <div className="flex items-center space-x-1">
-                      <MapPin className="h-4 w-4" />
+                      <MapPin className="h-4 w-4 text-muted-foreground" />
                       <span>{projectInfo.contact_info.address}</span>
                     </div>
                   )}
@@ -302,7 +314,7 @@ export default function PublicReservation() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
-                  <Calendar className="h-5 w-5" />
+                  <Calendar className="h-5 w-5 text-foreground" />
                   <span>Selecione Data e Horário</span>
                 </CardTitle>
               </CardHeader>
@@ -312,26 +324,29 @@ export default function PublicReservation() {
                   <label className="text-sm font-medium text-foreground mb-2 block">
                     Data
                   </label>
-                  <Input
-                    type="date"
-                    value={reservationData.date}
-                    min={new Date().toISOString().split('T')[0]}
-                    onChange={(e) => setReservationData(prev => ({ ...prev, date: e.target.value, time: "" }))}
-                  />
+                  <div className="relative">
+                    <Input
+                      type="date"
+                      value={reservationData.date}
+                      min={new Date().toISOString().split('T')[0]}
+                      onChange={(e) => setReservationData(prev => ({ ...prev, date: e.target.value, time: "" }))}
+                      className="[&::-webkit-calendar-picker-indicator]:dark:invert [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                    />
+                  </div>
                 </div>
 
                 {/* Party Size */}
                 <div>
                   <label className="text-sm font-medium text-foreground mb-2 block">
-                    <Users className="h-4 w-4 inline mr-1" />
+                    <Users className="h-4 w-4 inline mr-1 text-foreground" />
                     Número de pessoas
                   </label>
                   <select
                     value={reservationData.party_size}
                     onChange={(e) => setReservationData(prev => ({ ...prev, party_size: Number(e.target.value), time: "" }))}
-                    className="w-full px-3 py-2 border border-input bg-background text-sm ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-md"
+                    className="w-full px-3 py-2 border border-input bg-background text-foreground text-sm ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-md"
                   >
-                    {[1,2,3,4,5,6,7,8,9,10].map(size => (
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(size => (
                       <option key={size} value={size}>
                         {size} {size === 1 ? "pessoa" : "pessoas"}
                       </option>
@@ -342,7 +357,7 @@ export default function PublicReservation() {
                 {/* Available Times */}
                 <div>
                   <label className="text-sm font-medium text-foreground mb-2 block">
-                    <Clock className="h-4 w-4 inline mr-1" />
+                    <Clock className="h-4 w-4 inline mr-1 text-foreground" />
                     Horários disponíveis
                   </label>
 
@@ -421,7 +436,7 @@ export default function PublicReservation() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
-                  <User className="h-5 w-5" />
+                  <User className="h-5 w-5 text-foreground" />
                   <span>Seus Dados</span>
                 </CardTitle>
               </CardHeader>
@@ -441,7 +456,7 @@ export default function PublicReservation() {
                 <div className="space-y-4">
                   <div>
                     <label className="text-sm font-medium text-foreground mb-2 block">
-                      <User className="h-4 w-4 inline mr-1" />
+                      <User className="h-4 w-4 inline mr-1 text-foreground" />
                       Nome completo *
                     </label>
                     <Input
@@ -453,7 +468,7 @@ export default function PublicReservation() {
 
                   <div>
                     <label className="text-sm font-medium text-foreground mb-2 block">
-                      <Phone className="h-4 w-4 inline mr-1" />
+                      <Phone className="h-4 w-4 inline mr-1 text-foreground" />
                       Telefone *
                     </label>
                     <Input
@@ -465,7 +480,7 @@ export default function PublicReservation() {
 
                   <div>
                     <label className="text-sm font-medium text-foreground mb-2 block">
-                      <Mail className="h-4 w-4 inline mr-1" />
+                      <Mail className="h-4 w-4 inline mr-1 text-foreground" />
                       E-mail
                     </label>
                     <Input
@@ -484,7 +499,7 @@ export default function PublicReservation() {
                       value={reservationData.note}
                       onChange={(e) => setReservationData(prev => ({ ...prev, note: e.target.value }))}
                       placeholder="Alguma observação especial? (opcional)"
-                      className="w-full px-3 py-2 border border-input bg-background text-sm ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-md"
+                      className="w-full px-3 py-2 border border-input bg-background text-foreground text-sm ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-md"
                       rows={3}
                     />
                   </div>
