@@ -20,6 +20,7 @@ import { Textarea } from "@/components/ui/textarea";
 import ConfirmModal from "@/components/confirmModal";
 import FormModal from "@/components/formModal";
 import ImageUpload, { ImageUploadRef } from "@/components/ImageUpload";
+import { CategoryImage } from "@/components/CategoryImage";
 
 export default function CategoriesPage() {
   const navigate = useNavigate();
@@ -279,16 +280,23 @@ export default function CategoriesPage() {
             >
               <CardContent className="p-6">
                 <div className="flex justify-between items-start mb-4">
-                  <div className="flex-1">
-                    <h3 className="text-xl font-semibold">{category.name}</h3>
-                    <p className="text-sm text-gray-500 mt-1">
-                      Ordem: {category.order}
-                    </p>
-                    {category.notes && (
-                      <p className="text-sm text-gray-600 mt-2">
-                        {category.notes}
+                  <div className="flex items-center gap-3 flex-1">
+                    <CategoryImage
+                      imageUrl={category.photo}
+                      categoryName={category.name}
+                      size="md"
+                    />
+                    <div className="flex-1">
+                      <h3 className="text-xl font-semibold">{category.name}</h3>
+                      <p className="text-sm text-gray-500 mt-1">
+                        Ordem: {category.order}
                       </p>
-                    )}
+                      {category.notes && (
+                        <p className="text-sm text-gray-600 mt-2">
+                          {category.notes}
+                        </p>
+                      )}
+                    </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <button
@@ -308,16 +316,6 @@ export default function CategoriesPage() {
                     </button>
                   </div>
                 </div>
-
-                {category.photo && (
-                  <div className="mb-4">
-                    <img
-                      src={category.photo}
-                      alt={category.name}
-                      className="w-full h-32 object-cover rounded-lg"
-                    />
-                  </div>
-                )}
 
                 <div className="flex gap-2 mt-4">
                   <div className="flex gap-1">
@@ -418,17 +416,28 @@ export default function CategoriesPage() {
             <label className="block text-sm font-medium mb-2">
               Imagem da Categoria
             </label>
-            <ImageUpload
-              ref={imageUploadRef}
-              currentImageUrl={formData.photo}
-              onImageUploaded={handleImageUploaded}
-              onImageRemoved={handleImageRemoved}
-              onFileSelected={handleFileSelected}
-              disabled={isSaving}
-              category="categories"
-              maxSizeMB={5}
-              allowedTypes={['image/jpeg', 'image/jpg', 'image/png', 'image/webp']}
-            />
+            <div className="flex gap-4 items-start">
+              <div className="flex-shrink-0">
+                <CategoryImage
+                  imageUrl={formData.photo}
+                  categoryName={formData.name || "Categoria"}
+                  size="lg"
+                />
+              </div>
+              <div className="flex-1">
+                <ImageUpload
+                  ref={imageUploadRef}
+                  currentImageUrl={formData.photo}
+                  onImageUploaded={handleImageUploaded}
+                  onImageRemoved={handleImageRemoved}
+                  onFileSelected={handleFileSelected}
+                  disabled={isSaving}
+                  category="categories"
+                  maxSizeMB={5}
+                  allowedTypes={['image/jpeg', 'image/jpg', 'image/png', 'image/webp']}
+                />
+              </div>
+            </div>
           </div>
 
           <div>

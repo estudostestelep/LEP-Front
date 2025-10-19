@@ -10,7 +10,8 @@
       "Bash(npx playwright:*)",
       "Bash(curl:*)",
       "Bash(npx eslint:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Always allow for this folder"
     ],
     "deny": [],
     "ask": []

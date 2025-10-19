@@ -2,6 +2,8 @@ import axios from "axios";
 import { Product } from "./productService";
 import { Customer } from "./customerService";
 import { Reservation } from "./bookingService";
+import { Category } from "./categoryService";
+import { Menu } from "./menuService";
 
 const publicApi = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || "https://lep-system-516622888070.us-central1.run.app",
@@ -45,6 +47,14 @@ export const publicService = {
   // Buscar produtos do cardápio sem autenticação
   getMenuProducts: (orgId: string, projId: string) =>
     publicApi.get<Product[]>(`/public/menu/${orgId}/${projId}`),
+
+  // Buscar categorias públicas
+  getCategories: (orgId: string, projId: string) =>
+    publicApi.get<Category[]>(`/public/categories/${orgId}/${projId}`),
+
+  // Buscar menus públicos
+  getMenus: (orgId: string, projId: string) =>
+    publicApi.get<Menu[]>(`/public/menus/${orgId}/${projId}`),
 
   // Buscar horários disponíveis para reserva
   getAvailableTimes: (params: AvailableTimesRequest) =>
