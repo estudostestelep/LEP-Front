@@ -19,6 +19,7 @@ import { Category, categoryService } from "@/api/categoryService";
 import { Tag, tagService } from "@/api/tagService";
 import { useAuth } from "@/context/authContext";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { CategoryImage } from "@/components/CategoryImage";
 
 export default function MenuPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -316,8 +317,23 @@ export default function MenuPage() {
                         variant={selectedCategory === category.id ? "default" : "outline"}
                         size="sm"
                         onClick={() => setSelectedCategory(category.id)}
+                        className="flex items-center gap-2 relative overflow-hidden"
                       >
-                        {category.name}
+                        <CategoryImage
+                          imageUrl={category.photo}
+                          categoryName={category.name}
+                          asBackground
+                          className="absolute inset-0 opacity-20"
+                        />
+                        <span className="relative z-10 flex items-center gap-2">
+                          <CategoryImage
+                            imageUrl={category.photo}
+                            categoryName={category.name}
+                            size="sm"
+                            className="w-6 h-6"
+                          />
+                          {category.name}
+                        </span>
                       </Button>
                     ))}
                   </div>

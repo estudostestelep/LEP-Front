@@ -24,6 +24,7 @@ import { Menu, menuService } from "@/api/menuService";
 import { Category, categoryService } from "@/api/categoryService";
 import { Tag, tagService } from "@/api/tagService";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { CategoryImage } from "@/components/CategoryImage";
 
 export default function PublicMenu() {
   const { orgId, projId } = useParams<{ orgId: string; projId: string }>();
@@ -368,8 +369,23 @@ export default function PublicMenu() {
                         variant={selectedCategory === category.id ? "default" : "outline"}
                         size="sm"
                         onClick={() => setSelectedCategory(category.id)}
+                        className="flex items-center gap-2 relative overflow-hidden"
                       >
-                        {category.name}
+                        <CategoryImage
+                          imageUrl={category.photo}
+                          categoryName={category.name}
+                          asBackground
+                          className="absolute inset-0 opacity-20"
+                        />
+                        <span className="relative z-10 flex items-center gap-2">
+                          <CategoryImage
+                            imageUrl={category.photo}
+                            categoryName={category.name}
+                            size="sm"
+                            className="w-6 h-6"
+                          />
+                          {category.name}
+                        </span>
                       </Button>
                     ))}
                   </div>
