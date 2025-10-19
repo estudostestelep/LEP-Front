@@ -183,15 +183,24 @@ const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(({
 
   // Função para fazer upload do arquivo selecionado
   const uploadSelectedFile = async (): Promise<string | null> => {
-    if (!selectedFile) return null;
+    console.log("🎯 uploadSelectedFile chamado - selectedFile:", selectedFile);
+    console.log("🎯 category:", category);
+
+    if (!selectedFile) {
+      console.warn("⚠️ Nenhum arquivo selecionado para upload");
+      return null;
+    }
 
     try {
       setIsUploading(true);
       setUploadError("");
+      console.log("📤 Enviando arquivo para upload:", selectedFile.name);
       const result = await imageService.uploadImage(selectedFile, category);
+      console.log("📥 Resposta do upload:", result);
+      console.log("🔗 URL da imagem:", result.image_url);
       return result.image_url || null;
     } catch (error) {
-      console.error('Erro ao fazer upload:', error);
+      console.error('❌ Erro ao fazer upload:', error);
       const errorMessage = error instanceof Error ? error.message : 'Erro ao fazer upload da imagem';
       setUploadError(errorMessage);
       throw error;
@@ -264,11 +273,10 @@ const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(({
       ) : (
         <div className="space-y-4">
           <Card
-            className={`border-2 border-dashed transition-colors cursor-pointer ${
-              dragActive
-                ? "border-primary bg-primary/5"
-                : "border-muted-foreground/25 hover:border-muted-foreground/50"
-            } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
+            className={`border-2 border-dashed transition-colors cursor-pointer ${dragActive
+              ? "border-primary bg-primary/5"
+              : "border-muted-foreground/25 hover:border-muted-foreground/50"
+              } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
             onDragEnter={handleDrag}
             onDragLeave={handleDrag}
             onDragOver={handleDrag}

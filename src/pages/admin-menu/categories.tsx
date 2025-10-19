@@ -38,7 +38,7 @@ export default function CategoriesPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [formData, setFormData] = useState({
     name: "",
-    photo: "",
+    image_url: "",
     notes: "",
     order: 0,
     active: true,
@@ -72,8 +72,8 @@ export default function CategoriesPage() {
       // Log das imagens para debug
       response.data.forEach((cat: Category) => {
         console.log(`Categoria "${cat.name}":`, {
-          photo: cat.photo,
-          hasPhoto: !!cat.photo
+          image_url: cat.image_url,
+          hasImage: !!cat.image_url
         });
       });
 
@@ -90,7 +90,7 @@ export default function CategoriesPage() {
     setSelectedFile(null);
     setFormData({
       name: "",
-      photo: "",
+      image_url: "",
       notes: "",
       order: categories.length,
       active: true,
@@ -104,7 +104,7 @@ export default function CategoriesPage() {
     setSelectedFile(null);
     setFormData({
       name: category.name,
-      photo: category.photo || "",
+      image_url: category.image_url || "",
       notes: category.notes || "",
       order: category.order,
       active: category.active,
@@ -114,11 +114,11 @@ export default function CategoriesPage() {
   };
 
   const handleImageUploaded = (imageUrl: string) => {
-    setFormData(prev => ({ ...prev, photo: imageUrl }));
+    setFormData(prev => ({ ...prev, image_url: imageUrl }));
   };
 
   const handleImageRemoved = () => {
-    setFormData(prev => ({ ...prev, photo: "" }));
+    setFormData(prev => ({ ...prev, image_url: "" }));
     setSelectedFile(null);
   };
 
@@ -142,7 +142,7 @@ export default function CategoriesPage() {
       setFormErrors([]);
 
       // Se há um arquivo selecionado, fazer upload primeiro
-      let photoUrl = formData.photo; // Começar com a URL existente (pode ser URL manual ou existente)
+      let imageUrl = formData.image_url; // Começar com a URL existente (pode ser URL manual ou existente)
 
       if (selectedFile && imageUploadRef.current) {
         try {
@@ -150,7 +150,7 @@ export default function CategoriesPage() {
           const uploadedImageUrl = await imageUploadRef.current.uploadSelectedFile();
 
           if (uploadedImageUrl) {
-            photoUrl = uploadedImageUrl;
+            imageUrl = uploadedImageUrl;
             console.log("✅ Upload concluído. URL:", uploadedImageUrl);
           } else {
             console.warn("⚠️ Upload retornou null");
@@ -166,13 +166,14 @@ export default function CategoriesPage() {
       const categoryData = {
         menu_id: menuId,
         name: formData.name,
-        photo: photoUrl || undefined,
+        image_url: imageUrl || undefined,
         notes: formData.notes || undefined,
         order: formData.order,
         active: formData.active,
       };
 
       console.log("📤 Enviando dados da categoria:", categoryData);
+      console.log("📸 URL da imagem sendo enviada:", imageUrl);
 
       if (selectedCategory) {
         await categoryService.update(selectedCategory.id, categoryData);
@@ -292,15 +293,14 @@ export default function CategoriesPage() {
           {categories.map((category, index) => (
             <Card
               key={category.id}
-              className={`hover:shadow-lg transition-shadow ${
-                !category.active ? "opacity-60" : ""
-              }`}
+              className={`hover:shadow-lg transition-shadow ${!category.active ? "opacity-60" : ""
+                }`}
             >
               <CardContent className="p-6">
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex items-center gap-3 flex-1">
                     <CategoryImage
-                      imageUrl={category.photo}
+                      imageUrl={category.image_url}
                       categoryName={category.name}
                       size="md"
                     />
@@ -319,11 +319,10 @@ export default function CategoriesPage() {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => handleToggleStatus(category)}
-                      className={`p-2 rounded-lg transition-colors ${
-                        category.active
-                          ? "bg-green-100 text-green-700 hover:bg-green-200"
-                          : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-                      }`}
+                      className={`p-2 rounded-lg transition-colors ${category.active
+                        ? "bg-green-100 text-green-700 hover:bg-green-200"
+                        : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                        }`}
                       title={category.active ? "Pausar" : "Ativar"}
                     >
                       {category.active ? (
@@ -437,7 +436,7 @@ export default function CategoriesPage() {
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0">
                 <CategoryImage
-                  imageUrl={formData.photo}
+                  imageUrl={formData.image_url}
                   categoryName={formData.name || "Categoria"}
                   size="lg"
                 />
@@ -445,7 +444,7 @@ export default function CategoriesPage() {
               <div className="flex-1">
                 <ImageUpload
                   ref={imageUploadRef}
-                  currentImageUrl={formData.photo}
+                  currentImageUrl={formData.image_url}
                   onImageUploaded={handleImageUploaded}
                   onImageRemoved={handleImageRemoved}
                   onFileSelected={handleFileSelected}

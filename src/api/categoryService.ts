@@ -6,7 +6,7 @@ export interface Category {
   project_id: string;
   menu_id: string;
   name: string;
-  photo?: string;
+  image_url?: string;
   notes?: string;
   order: number;
   active: boolean;
@@ -18,7 +18,7 @@ export interface Category {
 export interface CreateCategoryDTO {
   menu_id: string;
   name: string;
-  photo?: string;
+  image_url?: string;
   notes?: string;
   order?: number;
   active?: boolean;
@@ -28,7 +28,7 @@ export interface UpdateCategoryDTO {
   id: string;
   menu_id?: string;
   name?: string;
-  photo?: string;
+  image_url?: string;
   notes?: string;
   order?: number;
   active?: boolean;

@@ -79,7 +79,7 @@ export const imageService = {
     formData.append('image', file);
 
     try {
-      const response = await api.post<ImageUploadResponse>(
+      const response = await api.post<{ success: boolean; message: string; data: ImageUploadResponse }>(
         `/upload/${category}/image`,
         formData,
         {
@@ -89,7 +89,9 @@ export const imageService = {
         }
       );
 
-      return response.data;
+      // O backend encapsula a resposta em { success, message, data }
+      // Precisamos acessar response.data.data para pegar o objeto ImageUploadResponse
+      return response.data.data;
     } catch (error: unknown) {
       // Tratar erros específicos do backend
       const axiosError = error as { response?: { status?: number; data?: { message?: string } }; code?: string };
