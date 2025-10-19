@@ -368,7 +368,15 @@ export default function PublicMenu() {
                         variant={selectedCategory === category.id ? "default" : "outline"}
                         size="sm"
                         onClick={() => setSelectedCategory(category.id)}
+                        className="flex items-center gap-2"
                       >
+                        {category.photo && (
+                          <img
+                            src={category.photo}
+                            alt={category.name}
+                            className="w-5 h-5 rounded-full object-cover"
+                          />
+                        )}
                         {category.name}
                       </Button>
                     ))}

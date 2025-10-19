@@ -425,7 +425,7 @@ export default function CategoriesPage() {
               onImageRemoved={handleImageRemoved}
               onFileSelected={handleFileSelected}
               disabled={isSaving}
-              category="category"
+              category="categories"
               maxSizeMB={5}
               allowedTypes={['image/jpeg', 'image/jpg', 'image/png', 'image/webp']}
             />
