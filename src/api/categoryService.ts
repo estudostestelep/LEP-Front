@@ -36,36 +36,36 @@ export interface UpdateCategoryDTO {
 
 export const categoryService = {
   // Listar todos
-  getAll: () => api.get<Category[]>("/category"),
+  getAll: () => api.get<Category[]>("/categories"),
 
   // Listar ativos
-  getActive: () => api.get<Category[]>("/category/active"),
+  getActive: () => api.get<Category[]>("/categories/active"),
 
   // Obter por ID
-  getById: (id: string) => api.get<Category>(`/category/${id}`),
+  getById: (id: string) => api.get<Category>(`/categories/${id}`),
 
   // Obter por menu
   getByMenu: (menuId: string) =>
-    api.get<Category[]>(`/category/menu/${menuId}`),
+    api.get<Category[]>(`/categories/menu/${menuId}`),
 
   // Criar
   create: (category: CreateCategoryDTO) =>
-    api.post<Category>("/category", category),
+    api.post<Category>("/categories", category),
 
   // Atualizar
   update: (id: string, category: Partial<UpdateCategoryDTO>) =>
-    api.put<Category>(`/category/${id}`, category),
+    api.put<Category>(`/categories/${id}`, category),
 
   // Atualizar ordem
   updateOrder: (id: string, order: number) =>
-    api.put(`/category/${id}/order`, { order }),
+    api.put(`/categories/${id}/order`, { order }),
 
   // Atualizar status
   updateStatus: (id: string, active: boolean) =>
-    api.put(`/category/${id}/status`, { active }),
+    api.put(`/categories/${id}/status`, { active }),
 
   // Deletar
-  remove: (id: string) => api.delete(`/category/${id}`),
+  remove: (id: string) => api.delete(`/categories/${id}`),
 };
 
 // Validação de Category
