@@ -67,6 +67,16 @@ export default function CategoriesPage() {
     setLoading(true);
     try {
       const response = await categoryService.getByMenu(menuId);
+      console.log("📥 Categorias carregadas do backend:", response.data);
+
+      // Log das imagens para debug
+      response.data.forEach((cat: Category) => {
+        console.log(`Categoria "${cat.name}":`, {
+          photo: cat.photo,
+          hasPhoto: !!cat.photo
+        });
+      });
+
       setCategories(response.data.sort((a, b) => a.order - b.order));
     } catch (error) {
       console.error("Erro ao carregar categorias:", error);
@@ -131,44 +141,52 @@ export default function CategoriesPage() {
       setIsSaving(true);
       setFormErrors([]);
 
-      // Preparar dados do formulário
-      const baseForm = { ...formData };
-
       // Se há um arquivo selecionado, fazer upload primeiro
-      let uploadedImageUrl = null;
+      let photoUrl = formData.photo; // Começar com a URL existente (pode ser URL manual ou existente)
+
       if (selectedFile && imageUploadRef.current) {
         try {
-          uploadedImageUrl = await imageUploadRef.current.uploadSelectedFile();
+          console.log("🔄 Fazendo upload da imagem selecionada...");
+          const uploadedImageUrl = await imageUploadRef.current.uploadSelectedFile();
+
+          if (uploadedImageUrl) {
+            photoUrl = uploadedImageUrl;
+            console.log("✅ Upload concluído. URL:", uploadedImageUrl);
+          } else {
+            console.warn("⚠️ Upload retornou null");
+          }
         } catch (uploadError) {
-          console.error("Erro ao fazer upload da imagem:", uploadError);
+          console.error("❌ Erro ao fazer upload da imagem:", uploadError);
           setFormErrors(["Erro ao fazer upload da imagem. Tente novamente."]);
           setIsSaving(false);
           return;
         }
       }
 
-      const finalForm = {
-        ...baseForm,
-        ...(uploadedImageUrl && { photo: uploadedImageUrl })
+      const categoryData = {
+        menu_id: menuId,
+        name: formData.name,
+        photo: photoUrl || undefined,
+        notes: formData.notes || undefined,
+        order: formData.order,
+        active: formData.active,
       };
 
+      console.log("📤 Enviando dados da categoria:", categoryData);
+
       if (selectedCategory) {
-        await categoryService.update(selectedCategory.id, finalForm);
+        await categoryService.update(selectedCategory.id, categoryData);
+        console.log("✅ Categoria atualizada com sucesso");
       } else {
-        await categoryService.create({
-          menu_id: menuId,
-          name: finalForm.name,
-          photo: finalForm.photo || undefined,
-          notes: finalForm.notes || undefined,
-          order: finalForm.order,
-          active: finalForm.active,
-        });
+        await categoryService.create(categoryData);
+        console.log("✅ Categoria criada com sucesso");
       }
+
       await loadCategories();
       setIsFormModalOpen(false);
       setSelectedFile(null);
     } catch (error) {
-      console.error("Erro ao salvar categoria:", error);
+      console.error("❌ Erro ao salvar categoria:", error);
       setFormErrors(["Erro ao salvar categoria. Tente novamente."]);
     } finally {
       setIsSaving(false);
