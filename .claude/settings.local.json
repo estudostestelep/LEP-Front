@@ -11,7 +11,8 @@
       "Bash(curl:*)",
       "Bash(npx eslint:*)",
       "Bash(npx tsc:*)",
-      "Always allow for this folder"
+      "Always allow for this folder",
+      "Read(//c/Users/pablo/OneDrive/Área de Trabalho/Trabalho Be Growth/Projetos/LEP/LEP-Back/**)"
     ],
     "deny": [],
     "ask": []

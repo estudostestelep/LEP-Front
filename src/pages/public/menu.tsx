@@ -372,14 +372,14 @@ export default function PublicMenu() {
                         className="flex items-center gap-2 relative overflow-hidden"
                       >
                         <CategoryImage
-                          imageUrl={category.photo}
+                          imageUrl={category.image_url}
                           categoryName={category.name}
                           asBackground
                           className="absolute inset-0 opacity-20"
                         />
                         <span className="relative z-10 flex items-center gap-2">
                           <CategoryImage
-                            imageUrl={category.photo}
+                            imageUrl={category.image_url}
                             categoryName={category.name}
                             size="sm"
                             className="w-6 h-6"

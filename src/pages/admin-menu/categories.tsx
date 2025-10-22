@@ -38,7 +38,7 @@ export default function CategoriesPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [formData, setFormData] = useState({
     name: "",
-    photo: "",
+    image_url: "",
     notes: "",
     order: 0,
     active: true,
@@ -56,6 +56,7 @@ export default function CategoriesPage() {
     if (!menuId) return;
     try {
       const response = await menuService.getById(menuId);
+      console.log("📥 Menu carregado do backend:", response.data);
       setMenu(response.data);
     } catch (error) {
       console.error("Erro ao carregar menu:", error);
@@ -67,6 +68,16 @@ export default function CategoriesPage() {
     setLoading(true);
     try {
       const response = await categoryService.getByMenu(menuId);
+      console.log("📥 Categorias carregadas do backend:", response.data);
+
+      // Log das imagens para debug
+      response.data.forEach((cat: Category) => {
+        console.log(`Categoria "${cat.name}":`, {
+          image_url: cat.image_url,
+          hasImage: !!cat.image_url
+        });
+      });
+
       setCategories(response.data.sort((a, b) => a.order - b.order));
     } catch (error) {
       console.error("Erro ao carregar categorias:", error);
@@ -80,7 +91,7 @@ export default function CategoriesPage() {
     setSelectedFile(null);
     setFormData({
       name: "",
-      photo: "",
+      image_url: "",
       notes: "",
       order: categories.length,
       active: true,
@@ -94,7 +105,7 @@ export default function CategoriesPage() {
     setSelectedFile(null);
     setFormData({
       name: category.name,
-      photo: category.photo || "",
+      image_url: category.image_url || "",
       notes: category.notes || "",
       order: category.order,
       active: category.active,
@@ -104,19 +115,34 @@ export default function CategoriesPage() {
   };
 
   const handleImageUploaded = (imageUrl: string) => {
-    setFormData(prev => ({ ...prev, photo: imageUrl }));
+    console.log("🎯 handleImageUploaded chamado com URL:", imageUrl);
+    setFormData(prev => {
+      const newData = { ...prev, image_url: imageUrl };
+      console.log("📝 FormData atualizado:", newData);
+      return newData;
+    });
   };
 
   const handleImageRemoved = () => {
-    setFormData(prev => ({ ...prev, photo: "" }));
+    console.log("🗑️ handleImageRemoved chamado");
+    setFormData(prev => ({ ...prev, image_url: "" }));
     setSelectedFile(null);
   };
 
   const handleFileSelected = (file: File | null) => {
+    console.log("📁 handleFileSelected chamado. Arquivo:", file?.name);
     setSelectedFile(file);
   };
 
   const handleSaveCategory = async () => {
+    console.log("\n═══════════════════════════════════════");
+    console.log("🚀 INICIANDO SALVAMENTO DE CATEGORIA");
+    console.log("═══════════════════════════════════════");
+
+    console.log("📋 Estado atual do formData:", formData);
+    console.log("📁 Arquivo selecionado:", selectedFile?.name || "Nenhum");
+    console.log("🔗 URL atual no formData:", formData.image_url);
+
     if (!formData.name || formData.name.trim().length === 0) {
       setFormErrors(["Nome da categoria é obrigatório"]);
       return;
@@ -131,44 +157,93 @@ export default function CategoriesPage() {
       setIsSaving(true);
       setFormErrors([]);
 
-      // Preparar dados do formulário
-      const baseForm = { ...formData };
-
       // Se há um arquivo selecionado, fazer upload primeiro
-      let uploadedImageUrl = null;
+      let imageUrl = formData.image_url; // Começar com a URL existente (pode ser URL manual ou existente)
+
+      console.log("\n─────────────────────────────────────");
+      console.log("📸 ETAPA 1: VERIFICAR UPLOAD DE IMAGEM");
+      console.log("─────────────────────────────────────");
+      console.log("Tem arquivo selecionado?", !!selectedFile);
+      console.log("Tem imageUploadRef?", !!imageUploadRef.current);
+      console.log("URL inicial (antes do upload):", imageUrl);
+
       if (selectedFile && imageUploadRef.current) {
         try {
-          uploadedImageUrl = await imageUploadRef.current.uploadSelectedFile();
+          console.log("\n🔄 Iniciando upload da imagem...");
+          console.log("Nome do arquivo:", selectedFile.name);
+          console.log("Tamanho:", (selectedFile.size / 1024).toFixed(2), "KB");
+
+          const uploadedImageUrl = await imageUploadRef.current.uploadSelectedFile();
+
+          console.log("\n✅ Upload retornou:", uploadedImageUrl);
+
+          if (uploadedImageUrl) {
+            imageUrl = uploadedImageUrl;
+            console.log("✅ imageUrl atualizada para:", imageUrl);
+          } else {
+            console.warn("⚠️ Upload retornou null - mantendo URL anterior:", imageUrl);
+          }
         } catch (uploadError) {
-          console.error("Erro ao fazer upload da imagem:", uploadError);
+          console.error("\n❌ ERRO NO UPLOAD:");
+          console.error(uploadError);
           setFormErrors(["Erro ao fazer upload da imagem. Tente novamente."]);
           setIsSaving(false);
           return;
         }
+      } else {
+        console.log("⏭️ Pulando upload (sem arquivo ou sem ref)");
       }
 
-      const finalForm = {
-        ...baseForm,
-        ...(uploadedImageUrl && { photo: uploadedImageUrl })
+      console.log("\n─────────────────────────────────────");
+      console.log("📦 ETAPA 2: PREPARAR DADOS");
+      console.log("─────────────────────────────────────");
+
+      const categoryData = {
+        menu_id: menuId,
+        name: formData.name,
+        image_url: imageUrl || undefined,
+        notes: formData.notes || undefined,
+        order: formData.order,
+        active: formData.active,
       };
 
+      console.log("📤 Dados completos da categoria:");
+      console.log(JSON.stringify(categoryData, null, 2));
+      console.log("\n🔍 Verificação final:");
+      console.log("  - image_url está presente?", !!categoryData.image_url);
+      console.log("  - Valor de image_url:", categoryData.image_url);
+
+      console.log("\n─────────────────────────────────────");
+      console.log("💾 ETAPA 3: ENVIAR PARA API");
+      console.log("─────────────────────────────────────");
+
       if (selectedCategory) {
-        await categoryService.update(selectedCategory.id, finalForm);
+        console.log("📝 Atualizando categoria existente:", selectedCategory.id);
+        const response = await categoryService.update(selectedCategory.id, categoryData);
+        console.log("✅ Resposta da API (update):", response.data);
       } else {
-        await categoryService.create({
-          menu_id: menuId,
-          name: finalForm.name,
-          photo: finalForm.photo || undefined,
-          notes: finalForm.notes || undefined,
-          order: finalForm.order,
-          active: finalForm.active,
-        });
+        console.log("➕ Criando nova categoria");
+        const response = await categoryService.create(categoryData);
+        console.log("✅ Resposta da API (create):", response.data);
       }
+
+      console.log("\n─────────────────────────────────────");
+      console.log("🔄 ETAPA 4: RECARREGAR CATEGORIAS");
+      console.log("─────────────────────────────────────");
       await loadCategories();
+
+      console.log("\n✅ SUCESSO! Categoria salva com imagem.");
+      console.log("═══════════════════════════════════════\n");
+
       setIsFormModalOpen(false);
       setSelectedFile(null);
     } catch (error) {
-      console.error("Erro ao salvar categoria:", error);
+      console.error("\n❌❌❌ ERRO AO SALVAR CATEGORIA ❌❌❌");
+      console.error("Erro completo:", error);
+      if (error instanceof Error) {
+        console.error("Mensagem:", error.message);
+        console.error("Stack:", error.stack);
+      }
       setFormErrors(["Erro ao salvar categoria. Tente novamente."]);
     } finally {
       setIsSaving(false);
@@ -274,15 +349,14 @@ export default function CategoriesPage() {
           {categories.map((category, index) => (
             <Card
               key={category.id}
-              className={`hover:shadow-lg transition-shadow ${
-                !category.active ? "opacity-60" : ""
-              }`}
+              className={`hover:shadow-lg transition-shadow ${!category.active ? "opacity-60" : ""
+                }`}
             >
               <CardContent className="p-6">
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex items-center gap-3 flex-1">
                     <CategoryImage
-                      imageUrl={category.photo}
+                      imageUrl={category.image_url}
                       categoryName={category.name}
                       size="md"
                     />
@@ -301,11 +375,10 @@ export default function CategoriesPage() {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => handleToggleStatus(category)}
-                      className={`p-2 rounded-lg transition-colors ${
-                        category.active
-                          ? "bg-green-100 text-green-700 hover:bg-green-200"
-                          : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-                      }`}
+                      className={`p-2 rounded-lg transition-colors ${category.active
+                        ? "bg-green-100 text-green-700 hover:bg-green-200"
+                        : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                        }`}
                       title={category.active ? "Pausar" : "Ativar"}
                     >
                       {category.active ? (
@@ -419,7 +492,7 @@ export default function CategoriesPage() {
             <div className="flex gap-4 items-start">
               <div className="flex-shrink-0">
                 <CategoryImage
-                  imageUrl={formData.photo}
+                  imageUrl={formData.image_url}
                   categoryName={formData.name || "Categoria"}
                   size="lg"
                 />
@@ -427,7 +500,7 @@ export default function CategoriesPage() {
               <div className="flex-1">
                 <ImageUpload
                   ref={imageUploadRef}
-                  currentImageUrl={formData.photo}
+                  currentImageUrl={formData.image_url}
                   onImageUploaded={handleImageUploaded}
                   onImageRemoved={handleImageRemoved}
                   onFileSelected={handleFileSelected}
