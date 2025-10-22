@@ -56,6 +56,7 @@ export default function CategoriesPage() {
     if (!menuId) return;
     try {
       const response = await menuService.getById(menuId);
+      console.log("📥 Menu carregado do backend:", response.data);
       setMenu(response.data);
     } catch (error) {
       console.error("Erro ao carregar menu:", error);
