@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/authContext";
 import { DiagnosticPanel } from "@/components/DiagnosticPanel";
+import { ImageManagementSection } from "@/components/ImageManagementSection";
 import {
   Settings as SettingsIcon,
   Building,
@@ -101,6 +102,11 @@ export default function Settings() {
 
         {/* Diagnostic Panel */}
         <DiagnosticPanel />
+
+        {/* Image Management Section */}
+        <div className="mb-6">
+          <ImageManagementSection />
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Informações do Usuário */}

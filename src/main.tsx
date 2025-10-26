@@ -9,7 +9,7 @@ import "./index.css";
 
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <ThemeProvider defaultTheme="light" storageKey="lep-ui-theme">
+    <ThemeProvider defaultTheme="system" storageKey="lep-ui-theme">
       <AuthProvider>
         <BrowserRouter>
           <AppRoutes />
