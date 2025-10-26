@@ -1,70 +1,41 @@
-import { useState, useEffect } from 'react';
+import { useContext } from 'react';
+import { ThemeProviderContext } from '@/components/theme-provider';
 
-type Theme = 'light' | 'dark' | 'system';
-
+/**
+ * Hook que usa o ThemeProvider centralizado.
+ * Resolvido para 'light' ou 'dark' considerando preferências do sistema.
+ */
 export function useTheme() {
-  const [theme, setTheme] = useState<Theme>(() => {
-    const savedTheme = localStorage.getItem('@LEP:theme') as Theme;
-    return savedTheme || 'system';
-  });
+  const context = useContext(ThemeProviderContext);
 
-  const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light');
+  if (!context) {
+    throw new Error('useTheme must be used within ThemeProvider');
+  }
 
-  useEffect(() => {
-    const root = document.documentElement;
+  const { theme, setTheme } = context;
 
-    const updateTheme = () => {
-      let isDark = false;
-
-      if (theme === 'dark') {
-        isDark = true;
-      } else if (theme === 'system') {
-        isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      }
-
-      setResolvedTheme(isDark ? 'dark' : 'light');
-
-      if (isDark) {
-        root.classList.add('dark');
-      } else {
-        root.classList.remove('dark');
-      }
-    };
-
-    updateTheme();
-
-    // Listen for system theme changes
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleSystemThemeChange = () => {
-      if (theme === 'system') {
-        updateTheme();
-      }
-    };
-
-    mediaQuery.addEventListener('change', handleSystemThemeChange);
-
-    return () => {
-      mediaQuery.removeEventListener('change', handleSystemThemeChange);
-    };
-  }, [theme]);
-
-  const setThemeAndPersist = (newTheme: Theme) => {
-    setTheme(newTheme);
-    localStorage.setItem('@LEP:theme', newTheme);
-  };
+  // Resolver o tema para 'light' ou 'dark' considerando 'system'
+  let resolvedTheme: 'light' | 'dark' = 'light';
+  if (theme === 'dark') {
+    resolvedTheme = 'dark';
+  } else if (theme === 'system') {
+    resolvedTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
+      ? 'dark'
+      : 'light';
+  }
 
   const toggleTheme = () => {
     if (resolvedTheme === 'light') {
-      setThemeAndPersist('dark');
+      setTheme('dark');
     } else {
-      setThemeAndPersist('light');
+      setTheme('light');
     }
   };
 
   return {
     theme,
     resolvedTheme,
-    setTheme: setThemeAndPersist,
+    setTheme,
     toggleTheme,
   };
 }
