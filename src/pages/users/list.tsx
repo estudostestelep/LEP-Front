@@ -47,7 +47,7 @@ export default function UsersList() {
   const [allOrganizations, setAllOrganizations] = useState<Organization[]>([]);
   const [allProjects, setAllProjects] = useState<Project[]>([]);
   const { organization_id, project_id } = useCurrentTenant();
-  const { isMasterAdmin } = useAuth();
+  const { isMasterAdmin, projects: userProjects, organizations: userOrganizations } = useAuth();
 
   const roles = ["all", ...Array.from(new Set(users.map(u => u.role || 'member')))];
 
@@ -119,13 +119,34 @@ export default function UsersList() {
     if (!isMasterAdmin) return;
 
     try {
-      const [orgsResponse, projsResponse] = await Promise.all([
-        organizationService.getAll(),
-        projectService.getAll()
-      ]);
+      // ✅ Usar dados do Context (vêm do login) ao invés de fazer chamadas separadas
+      // Isso garante que TODOS os projetos do usuário sejam mostrados, não apenas da org atual
+      if (userOrganizations && userOrganizations.length > 0) {
+        // Extrair IDs únicos das organizações
+        const uniqueOrgs = Array.from(
+          new Map(userOrganizations.map(o => [o.organization_id, o])).values()
+        ).map(o => ({
+          id: o.organization_id,
+          name: o.organization_name || 'Sem nome',
+          description: ''
+        }));
+        setAllOrganizations(uniqueOrgs);
+        console.log('✓ Organizações carregadas do Context:', uniqueOrgs.length);
+      }
 
-      setAllOrganizations(orgsResponse.data || []);
-      setAllProjects(projsResponse.data || []);
+      if (userProjects && userProjects.length > 0) {
+        // Extrair IDs únicos dos projetos
+        const uniqueProjs = Array.from(
+          new Map(userProjects.map(p => [p.project_id, p])).values()
+        ).map(p => ({
+          id: p.project_id,
+          name: p.project_name || 'Sem nome',
+          description: '',
+          organization_id: p.organization_id
+        }));
+        setAllProjects(uniqueProjs);
+        console.log('✓ Projetos carregados do Context:', uniqueProjs.length);
+      }
     } catch (err) {
       console.error('Erro ao carregar organizações e projetos:', err);
     }

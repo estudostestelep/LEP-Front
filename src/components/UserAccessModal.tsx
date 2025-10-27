@@ -85,22 +85,17 @@ export default function UserAccessModal({
     org.name.toLowerCase().includes(orgSearch.toLowerCase())
   );
 
-  // Filtrar projetos: apenas projetos das organizações selecionadas
+  // Filtrar projetos: mostrar projetos das orgs selecionadas OU todos se nenhuma org selecionada
   const filteredProjs = allProjects.filter(proj => {
-    // Se nenhuma organização está selecionada, não mostra nenhum projeto
-    if (selectedOrgIds.length === 0) return false;
-
-    // Mostra apenas projetos que pertencem às organizações selecionadas
-    const belongsToSelectedOrg = selectedOrgIds.includes(proj.organization_id);
     const matchesSearch = proj.name.toLowerCase().includes(projSearch.toLowerCase());
 
+    // Se nenhuma organização selecionada, mostra TODOS os projetos para facilitar seleção
+    if (selectedOrgIds.length === 0) return matchesSearch;
+
+    // Caso contrário, mostra apenas projetos das orgs selecionadas
+    const belongsToSelectedOrg = selectedOrgIds.includes(proj.organization_id);
     return belongsToSelectedOrg && matchesSearch;
   });
-
-  // Contar projetos disponíveis (das orgs selecionadas)
-  const availableProjectsCount = allProjects.filter(proj =>
-    selectedOrgIds.includes(proj.organization_id)
-  ).length;
 
   // Detecta mudanças
   const hasChanges = () => {
@@ -133,11 +128,21 @@ export default function UserAccessModal({
   };
 
   const toggleProj = (projId: string) => {
+    const isAdding = !selectedProjIds.includes(projId);
+
     setSelectedProjIds(prev =>
       prev.includes(projId)
         ? prev.filter(id => id !== projId)
         : [...prev, projId]
     );
+
+    // ✨ Smart: se está adicionando um projeto, automaticamente adiciona sua org
+    if (isAdding) {
+      const proj = allProjects.find(p => p.id === projId);
+      if (proj && !selectedOrgIds.includes(proj.organization_id)) {
+        setSelectedOrgIds(prev => [...prev, proj.organization_id]);
+      }
+    }
   };
 
   const selectAllOrgs = () => {
@@ -332,11 +337,10 @@ export default function UserAccessModal({
                         return (
                           <label
                             key={org.id}
-                            className={`flex items-center space-x-3 py-2 px-2 rounded transition-colors ${
-                              isDisabled
+                            className={`flex items-center space-x-3 py-2 px-2 rounded transition-colors ${isDisabled
                                 ? 'bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 cursor-not-allowed'
                                 : 'hover:bg-muted cursor-pointer'
-                            }`}
+                              }`}
                             title={isDisabled ? 'Esta é a organização na qual você está logado atualmente' : ''}
                           >
                             <input
@@ -388,11 +392,11 @@ export default function UserAccessModal({
                   </CardTitle>
                   <CardDescription className="space-y-1">
                     <Badge variant="secondary" className="mt-1">
-                      {selectedProjIds.length} de {availableProjectsCount} disponíveis selecionados
+                      {selectedProjIds.length} de {allProjects.length} selecionados
                     </Badge>
                     {selectedOrgIds.length === 0 && (
-                      <p className="text-xs text-orange-600 dark:text-orange-400 mt-1">
-                        ⚠️ Selecione ao menos uma organização para ver seus projetos
+                      <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                        💡 Selecione projetos diretamente (suas orgs serão adicionadas automaticamente)
                       </p>
                     )}
                   </CardDescription>
@@ -433,17 +437,7 @@ export default function UserAccessModal({
 
                   {/* List */}
                   <div className="border border-input rounded-md p-3 max-h-80 overflow-y-auto bg-background">
-                    {selectedOrgIds.length === 0 ? (
-                      <div className="text-center py-8">
-                        <Building className="h-12 w-12 text-muted-foreground mx-auto mb-2 opacity-50" />
-                        <p className="text-sm text-muted-foreground">
-                          Selecione ao menos uma organização
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Os projetos disponíveis serão exibidos aqui
-                        </p>
-                      </div>
-                    ) : filteredProjs.length > 0 ? (
+                    {filteredProjs.length > 0 ? (
                       filteredProjs.map((proj) => {
                         const orgName = allOrganizations.find(o => o.id === proj.organization_id)?.name;
                         const isSelf = currentUser?.id === user.id;
@@ -453,11 +447,10 @@ export default function UserAccessModal({
                         return (
                           <label
                             key={proj.id}
-                            className={`flex items-center space-x-3 py-2 px-2 rounded transition-colors ${
-                              isDisabled
+                            className={`flex items-center space-x-3 py-2 px-2 rounded transition-colors ${isDisabled
                                 ? 'bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 cursor-not-allowed'
                                 : 'hover:bg-muted cursor-pointer'
-                            }`}
+                              }`}
                             title={isDisabled ? 'Este é o projeto no qual você está logado atualmente' : ''}
                           >
                             <input
@@ -496,9 +489,6 @@ export default function UserAccessModal({
                         <FolderOpen className="h-12 w-12 text-muted-foreground mx-auto mb-2 opacity-50" />
                         <p className="text-sm text-muted-foreground">
                           Nenhum projeto encontrado
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          As organizações selecionadas não possuem projetos
                         </p>
                       </div>
                     )}

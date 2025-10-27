@@ -83,7 +83,7 @@ export const OrganizationProjectSelector = () => {
             <select
               value={currentOrganization || ''}
               onChange={(e) => handleOrgChange(e.target.value)}
-              className="appearance-none bg-transparent border-none text-sm font-medium text-foreground cursor-pointer focus:outline-none focus:ring-0 pr-5 max-w-[150px] truncate"
+              className="appearance-none bg-transparent border-none text-sm font-medium text-foreground cursor-pointer focus:outline-none focus:ring-0 pr-5 max-w-[150px] truncate [&>option]:bg-background [&>option]:text-foreground [&>option]:dark:bg-slate-950 [&>option]:dark:text-slate-50"
               title={organizationDetails?.name || 'Organização'}
             >
               {organizations.map((userOrg) => (
@@ -113,7 +113,7 @@ export const OrganizationProjectSelector = () => {
               <select
                 value={currentProject || ''}
                 onChange={(e) => handleProjectChange(e.target.value)}
-                className="appearance-none bg-transparent border-none text-sm font-medium text-foreground cursor-pointer focus:outline-none focus:ring-0 pr-5 max-w-[150px] truncate"
+                className="appearance-none bg-transparent border-none text-sm font-medium text-foreground cursor-pointer focus:outline-none focus:ring-0 pr-5 max-w-[150px] truncate [&>option]:bg-background [&>option]:text-foreground [&>option]:dark:bg-slate-950 [&>option]:dark:text-slate-50"
                 title={projectDetails?.name || 'Projeto'}
               >
                 {filteredProjects.map((userProj) => (
