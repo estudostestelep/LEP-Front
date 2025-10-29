@@ -1,15 +1,18 @@
+import { useState } from 'react';
 import { useAuth } from '@/context/authContext';
 import { useTheme } from '@/hooks/useTheme';
 import { Button } from '@/components/ui/button';
 import { OrganizationProjectSelector } from '@/components/OrganizationProjectSelector';
+import { OrgProjectDrawer } from '@/components/OrgProjectDrawer';
+import { UserMenu } from '@/components/UserMenu';
 import { Link } from 'react-router-dom';
 import {
   MenuIcon,
   LogIn,
-  LogOut,
   Utensils,
   Sun,
-  Moon
+  Moon,
+  Building2
 } from 'lucide-react';
 
 interface HeaderProps {
@@ -17,77 +20,111 @@ interface HeaderProps {
 }
 
 export default function Header({ toggleSidebar }: HeaderProps) {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const { resolvedTheme, toggleTheme } = useTheme();
+  const [showOrgDrawer, setShowOrgDrawer] = useState(false);
 
   return (
-    <header className="bg-background border-b border-border shadow-sm h-16 flex items-center justify-between px-4 lg:px-6">
-      {/* Left Section */}
-      <div className="flex items-center space-x-4">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={toggleSidebar}
-          className="lg:hidden"
-        >
-          <MenuIcon className="h-5 w-5" />
-        </Button>
-
-        {/* Logo - visible only on mobile when sidebar is hidden */}
-        <Link
-          to="/"
-          className="flex items-center space-x-2 text-primary font-bold text-xl lg:hidden"
-        >
-          <Utensils className="h-6 w-6" />
-          <span>LEP System</span>
-        </Link>
-      </div>
-
-      {/* Right Section */}
-      <div className="flex items-center space-x-4">
-        {/* Organization/Project Selector - only when user is logged in */}
-        {user && <OrganizationProjectSelector />}
-
-        {/* Theme Toggle */}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={toggleTheme}
-          className="h-9 w-9 px-0"
-        >
-          {resolvedTheme === 'light' ? (
-            <Moon className="h-4 w-4" />
-          ) : (
-            <Sun className="h-4 w-4" />
-          )}
-          <span className="sr-only">Alternar tema</span>
-        </Button>
-
-        {/* User Section */}
-        {user ? (
-          <div className="flex items-center space-x-3">
-            <span className="text-sm text-muted-foreground hidden sm:block">
-              Olá, {user.name}
-            </span>
-            <Button
-              onClick={logout}
-              variant="outline"
-              size="sm"
-              className="flex items-center space-x-2"
-            >
-              <LogOut className="h-4 w-4" />
-              <span className="hidden sm:block">Sair</span>
-            </Button>
-          </div>
-        ) : (
-          <Button asChild variant="default" size="sm">
-            <Link to="/login" className="flex items-center space-x-2">
-              <LogIn className="h-4 w-4" />
-              <span>Entrar</span>
-            </Link>
+    <>
+      <header className="bg-background border-b border-border shadow-sm h-16 flex items-center justify-between px-4 lg:px-6 transition-colors duration-200">
+        {/* Left Section */}
+        <div className="flex items-center gap-3">
+          {/* Hamburger Menu - Mobile/Tablet only */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={toggleSidebar}
+            className="lg:hidden h-9 w-9 p-0 hover:bg-accent transition-colors duration-200"
+            aria-label="Toggle sidebar"
+          >
+            <MenuIcon className="h-5 w-5" />
           </Button>
-        )}
-      </div>
-    </header>
+
+          {/* Logo - Visible only on mobile when sidebar is hidden */}
+          <Link
+            to="/"
+            className="flex items-center gap-2 text-primary font-bold text-xl lg:hidden transition-colors duration-200 hover:text-primary/80"
+          >
+            <Utensils className="h-6 w-6" />
+            <span>LEP System</span>
+          </Link>
+        </div>
+
+        {/* Right Section */}
+        <div className="flex items-center gap-3">
+          {user && (
+            <>
+              {/* Desktop: Show full selector (≥768px) */}
+              <div className="hidden md:block">
+                <OrganizationProjectSelector />
+              </div>
+
+              {/* Mobile/Tablet: Show compact button (<768px) */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowOrgDrawer(true)}
+                className="md:hidden h-9 w-9 p-0 hover:bg-accent transition-colors duration-200"
+                aria-label="Selecionar organização/projeto"
+              >
+                <Building2 className="h-5 w-5" />
+              </Button>
+            </>
+          )}
+
+          {/* Theme Toggle */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={toggleTheme}
+            className="h-9 w-9 p-0 hover:bg-accent transition-all duration-200 hover:scale-105"
+            aria-label="Alternar tema"
+          >
+            {resolvedTheme === 'light' ? (
+              <Moon className="h-[1.2rem] w-[1.2rem] transition-transform duration-200" />
+            ) : (
+              <Sun className="h-[1.2rem] w-[1.2rem] transition-transform duration-200" />
+            )}
+            <span className="sr-only">Alternar tema</span>
+          </Button>
+
+          {/* User Section */}
+          {user ? (
+            <>
+              {/* Desktop: Show UserMenu with name (≥640px) */}
+              <div className="hidden sm:block">
+                <UserMenu />
+              </div>
+
+              {/* Mobile: Show compact avatar only (<640px) */}
+              <div className="sm:hidden">
+                <UserMenu compact />
+              </div>
+            </>
+          ) : (
+            /* Login Button for non-authenticated users */
+            <Button
+              asChild
+              variant="default"
+              size="sm"
+              className="transition-all duration-200 hover:scale-105"
+            >
+              <Link to="/login" className="flex items-center gap-2">
+                <LogIn className="h-4 w-4" />
+                <span className="hidden sm:inline">Entrar</span>
+              </Link>
+            </Button>
+          )}
+        </div>
+      </header>
+
+      {/* Mobile Org/Project Drawer */}
+      {user && (
+        <OrgProjectDrawer
+          open={showOrgDrawer}
+          onOpenChange={setShowOrgDrawer}
+        />
+      )}
+    </>
   );
 }
