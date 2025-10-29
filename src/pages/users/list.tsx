@@ -17,8 +17,8 @@ import {
   Network
 } from "lucide-react";
 import { userService, User, CreateUserRequest } from "@/api/userService";
-import { organizationService, Organization } from "@/api/organizationService";
-import { projectService, Project } from "@/api/projectService";
+import { Organization } from "@/api/organizationService";
+import { Project } from "@/api/projectService";
 import { AxiosError } from "axios";
 import FormModal from "@/components/formModal";
 import ConfirmModal from "@/components/confirmModal";
@@ -128,7 +128,8 @@ export default function UsersList() {
         ).map(o => ({
           id: o.organization_id,
           name: o.organization_name || 'Sem nome',
-          description: ''
+          description: '',
+          active: true
         }));
         setAllOrganizations(uniqueOrgs);
         console.log('✓ Organizações carregadas do Context:', uniqueOrgs.length);
@@ -142,7 +143,8 @@ export default function UsersList() {
           id: p.project_id,
           name: p.project_name || 'Sem nome',
           description: '',
-          organization_id: p.organization_id
+          organization_id: p.organization_id,
+          active: true
         }));
         setAllProjects(uniqueProjs);
         console.log('✓ Projetos carregados do Context:', uniqueProjs.length);
