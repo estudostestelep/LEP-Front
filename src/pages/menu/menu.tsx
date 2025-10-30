@@ -18,7 +18,6 @@ import { Menu, menuService } from "@/api/menuService";
 import { Category, categoryService } from "@/api/categoryService";
 import { Tag, tagService } from "@/api/tagService";
 import { useAuth } from "@/context/authContext";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { CategoryImage } from "@/components/CategoryImage";
 
 export default function MenuPage() {
@@ -187,12 +186,9 @@ export default function MenuPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="flex items-center justify-center space-x-2 mb-4 relative">
+          <div className="flex items-center justify-center space-x-2 mb-4">
             <ChefHat className="h-8 w-8 text-foreground" />
             <h1 className="text-4xl font-bold text-foreground">Cardápio Digital</h1>
-            <div className="absolute right-0 top-0">
-              <ThemeToggle />
-            </div>
           </div>
           <p className="text-xl text-muted-foreground">
             Conheça nossos pratos deliciosos

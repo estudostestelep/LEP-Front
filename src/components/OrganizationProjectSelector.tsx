@@ -1,6 +1,21 @@
 import { useAuth } from '@/context/authContext';
-import { Building2, FolderKanban, ChevronDown, Loader2 } from 'lucide-react';
+import { Building2, FolderKanban, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
 
 export const OrganizationProjectSelector = () => {
   const {
@@ -15,22 +30,10 @@ export const OrganizationProjectSelector = () => {
     loading
   } = useAuth();
 
-  // ✅ CORREÇÃO: Filtrar projetos pela organização selecionada
+  // Filtrar projetos pela organização selecionada
   const filteredProjects = projects.filter(p =>
     p.active && p.organization_id === currentOrganization
   );
-
-  // DEBUG - Log para verificar dados
-  console.log('OrganizationProjectSelector - Estado:', {
-    orgsCount: organizations.length,
-    projsCount: projects.length,
-    filteredProjsCount: filteredProjects.length,
-    currentOrg: currentOrganization,
-    currentProj: currentProject,
-    orgDetails: organizationDetails,
-    projDetails: projectDetails,
-    loading
-  });
 
   const handleOrgChange = async (orgId: string) => {
     try {
@@ -55,8 +58,8 @@ export const OrganizationProjectSelector = () => {
   // Mostra aviso se não houver organizações
   if (organizations.length === 0) {
     return (
-      <div className="flex items-center gap-2 px-3 py-1 bg-yellow-50 border border-yellow-200 rounded-lg">
-        <span className="text-xs text-yellow-700">
+      <div className="flex items-center gap-2 px-3 py-1.5 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+        <span className="text-xs text-yellow-600 dark:text-yellow-500">
           ⚠️ Nenhuma organização vinculada
         </span>
       </div>
@@ -66,7 +69,7 @@ export const OrganizationProjectSelector = () => {
   // Mostra loader se ainda está carregando dados
   if (loading && !organizationDetails) {
     return (
-      <div className="flex items-center gap-2 px-3 py-1 bg-muted/40 rounded-lg border border-border">
+      <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/40 rounded-lg border border-border">
         <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
         <span className="text-sm text-muted-foreground">Carregando...</span>
       </div>
@@ -74,61 +77,139 @@ export const OrganizationProjectSelector = () => {
   }
 
   return (
-    <div className="flex items-center gap-2 px-3 py-1 bg-muted/40 rounded-lg border border-border">
-      {/* Seletor de Organização */}
-      <div className="relative group">
-        <label className="flex items-center gap-2 cursor-pointer">
-          <Building2 className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
-          <div className="flex items-center gap-1.5">
-            <select
-              value={currentOrganization || ''}
-              onChange={(e) => handleOrgChange(e.target.value)}
-              className="appearance-none bg-transparent border-none text-sm font-medium text-foreground cursor-pointer focus:outline-none focus:ring-0 pr-5 max-w-[150px] truncate [&>option]:bg-background [&>option]:text-foreground [&>option]:dark:bg-slate-950 [&>option]:dark:text-slate-50"
-              title={organizationDetails?.name || 'Organização'}
-            >
-              {organizations.map((userOrg) => (
-                <option key={userOrg.id} value={userOrg.organization_id}>
-                  {userOrg.organization_name
-                    ? `${userOrg.organization_name} (${userOrg.role})`
-                    : `Org ${userOrg.organization_id.slice(0, 8)} (${userOrg.role})`}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="h-3.5 w-3.5 text-muted-foreground pointer-events-none absolute right-0" />
-          </div>
-        </label>
-      </div>
+    <TooltipProvider delayDuration={300}>
+      <div className="flex items-center gap-3 px-3 py-1.5 bg-muted/40 rounded-lg border border-border transition-all duration-200 hover:bg-muted/60">
+        {/* Seletor de Organização */}
+        <div className="flex items-center gap-2 min-w-0">
+          <Building2 className="h-4 w-4 text-muted-foreground shrink-0" />
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="min-w-0">
+                <Select
+                  value={currentOrganization || ''}
+                  onValueChange={handleOrgChange}
+                >
+                  <SelectTrigger
+                    className={cn(
+                      "h-7 border-none bg-transparent px-0 hover:bg-transparent focus:ring-0 focus:ring-offset-0",
+                      "min-w-[120px] max-w-[180px] lg:max-w-[220px]"
+                    )}
+                  >
+                    <SelectValue>
+                      <span className="text-sm font-medium truncate">
+                        {organizationDetails?.name || 'Organização'}
+                      </span>
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent
+                    position="popper"
+                    align="start"
+                    sideOffset={8}
+                    alignOffset={-28}
+                    className="min-w-[280px]"
+                  >
+                    {organizations.map((userOrg) => {
+                      const orgName = userOrg.organization_name || `Org ${userOrg.organization_id.slice(0, 8)}`;
 
-      {/* Separador */}
-      {filteredProjects.length > 0 && (
-        <div className="h-5 w-px bg-border" />
-      )}
-
-      {/* Seletor de Projeto */}
-      {filteredProjects.length > 0 && (
-        <div className="relative group">
-          <label className="flex items-center gap-2 cursor-pointer">
-            <FolderKanban className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
-            <div className="flex items-center gap-1.5">
-              <select
-                value={currentProject || ''}
-                onChange={(e) => handleProjectChange(e.target.value)}
-                className="appearance-none bg-transparent border-none text-sm font-medium text-foreground cursor-pointer focus:outline-none focus:ring-0 pr-5 max-w-[150px] truncate [&>option]:bg-background [&>option]:text-foreground [&>option]:dark:bg-slate-950 [&>option]:dark:text-slate-50"
-                title={projectDetails?.name || 'Projeto'}
-              >
-                {filteredProjects.map((userProj) => (
-                  <option key={userProj.id} value={userProj.project_id}>
-                    {userProj.project_name
-                      ? `${userProj.project_name} (${userProj.role})`
-                      : `Projeto ${userProj.project_id.slice(0, 8)} (${userProj.role})`}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="h-3.5 w-3.5 text-muted-foreground pointer-events-none absolute right-0" />
-            </div>
-          </label>
+                      return (
+                        <SelectItem
+                          key={userOrg.id}
+                          value={userOrg.organization_id}
+                          className="cursor-pointer"
+                        >
+                          <div className="flex flex-col items-start w-full gap-0.5">
+                            <span className="font-medium text-sm leading-tight">{orgName}</span>
+                            <span className="text-xs text-muted-foreground capitalize leading-tight">
+                              {userOrg.role}
+                            </span>
+                          </div>
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" className="max-w-[250px]">
+              <p className="font-medium">{organizationDetails?.name}</p>
+              {organizationDetails?.description && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  {organizationDetails.description}
+                </p>
+              )}
+            </TooltipContent>
+          </Tooltip>
         </div>
-      )}
-    </div>
+
+        {/* Separador */}
+        {filteredProjects.length > 0 && (
+          <Separator orientation="vertical" className="h-6" />
+        )}
+
+        {/* Seletor de Projeto */}
+        {filteredProjects.length > 0 && (
+          <div className="flex items-center gap-2 min-w-0">
+            <FolderKanban className="h-4 w-4 text-muted-foreground shrink-0" />
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="min-w-0">
+                  <Select
+                    value={currentProject || ''}
+                    onValueChange={handleProjectChange}
+                  >
+                    <SelectTrigger
+                      className={cn(
+                        "h-7 border-none bg-transparent px-0 hover:bg-transparent focus:ring-0 focus:ring-offset-0",
+                        "min-w-[120px] max-w-[180px] lg:max-w-[220px]"
+                      )}
+                    >
+                      <SelectValue>
+                        <span className="text-sm font-medium truncate">
+                          {projectDetails?.name || 'Projeto'}
+                        </span>
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent
+                      position="popper"
+                      align="start"
+                      sideOffset={8}
+                      alignOffset={-28}
+                      className="min-w-[280px]"
+                    >
+                      {filteredProjects.map((userProj) => {
+                        const projName = userProj.project_name || `Projeto ${userProj.project_id.slice(0, 8)}`;
+
+                        return (
+                          <SelectItem
+                            key={userProj.id}
+                            value={userProj.project_id}
+                            className="cursor-pointer"
+                          >
+                            <div className="flex flex-col items-start w-full gap-0.5">
+                              <span className="font-medium text-sm leading-tight">{projName}</span>
+                              <span className="text-xs text-muted-foreground capitalize leading-tight">
+                                {userProj.role}
+                              </span>
+                            </div>
+                          </SelectItem>
+                        );
+                      })}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="max-w-[250px]">
+                <p className="font-medium">{projectDetails?.name}</p>
+                {projectDetails?.description && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {projectDetails.description}
+                  </p>
+                )}
+              </TooltipContent>
+            </Tooltip>
+          </div>
+        )}
+      </div>
+    </TooltipProvider>
   );
 };

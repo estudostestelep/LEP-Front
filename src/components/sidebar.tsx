@@ -9,7 +9,6 @@ import {
   ShoppingCart,
   Users,
   Package,
-  LogOut,
   Utensils,
   Building,
   FolderOpen,
@@ -28,7 +27,7 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
-  const { user, logout, isMasterAdmin } = useAuth();
+  const { user, isMasterAdmin } = useAuth();
   const location = useLocation();
   const [isMobile, setIsMobile] = useState(false);
 
@@ -175,10 +174,10 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
                   to={item.to}
                   onClick={closeSidebarOnMobile}
                   className={`
-                    flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
+                    flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200
                     ${isActive
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+                      ? 'bg-primary text-primary-foreground shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-accent hover:translate-x-1'
                     }
                   `}
                 >
@@ -204,10 +203,10 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
                   to={item.to}
                   onClick={closeSidebarOnMobile}
                   className={`
-                    flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
+                    flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200
                     ${isActive
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+                      ? 'bg-primary text-primary-foreground shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-accent hover:translate-x-1'
                     }
                   `}
                 >
@@ -235,10 +234,10 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
                       to={item.to}
                       onClick={closeSidebarOnMobile}
                       className={`
-                        flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
+                        flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200
                         ${isActive
-                          ? 'bg-primary text-primary-foreground'
-                          : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+                          ? 'bg-primary text-primary-foreground shadow-sm'
+                          : 'text-muted-foreground hover:text-foreground hover:bg-accent hover:translate-x-1'
                         }
                       `}
                     >
@@ -252,31 +251,17 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
           </div>
         </nav>
 
-        {/* User Section */}
-        {user && (
-          <div className="border-t border-border p-4">
-            <div className="flex items-center space-x-3 mb-3">
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-foreground truncate">
-                  {user.name}
-                </p>
-                <p className="text-xs text-muted-foreground truncate">
-                  {user.email}
-                </p>
-              </div>
-            </div>
-
-            <Button
-              onClick={logout}
-              variant="outline"
-              size="sm"
-              className="w-full flex items-center space-x-2"
-            >
-              <LogOut className="h-4 w-4" />
-              <span>Sair</span>
-            </Button>
-          </div>
-        )}
+        {/* Footer - Version Info */}
+        <div className="border-t border-border p-4">
+          <p className="text-xs text-muted-foreground text-center">
+            LEP System v1.0
+          </p>
+          {user && (
+            <p className="text-xs text-muted-foreground text-center mt-1">
+              Logado como <span className="font-medium text-foreground">{user.name}</span>
+            </p>
+          )}
+        </div>
       </motion.aside>
     </>
   );
