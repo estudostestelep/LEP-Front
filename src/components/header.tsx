@@ -77,14 +77,10 @@ export default function Header({ toggleSidebar }: HeaderProps) {
             variant="ghost"
             size="sm"
             onClick={toggleTheme}
-            className="h-9 w-9 p-0 hover:bg-accent transition-all duration-200 hover:scale-105"
+            className="h-9 w-9 p-0 hover:bg-accent transition-colors duration-200"
             aria-label="Alternar tema"
           >
-            {resolvedTheme === 'light' ? (
-              <Moon className="h-[1.2rem] w-[1.2rem] transition-transform duration-200" />
-            ) : (
-              <Sun className="h-[1.2rem] w-[1.2rem] transition-transform duration-200" />
-            )}
+            {resolvedTheme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
             <span className="sr-only">Alternar tema</span>
           </Button>
 

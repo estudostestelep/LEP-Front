@@ -5,8 +5,13 @@ import { useTheme } from "@/components/theme-provider"
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme()
 
+  // Resolve the actual theme (handle 'system' preference)
+  const resolvedTheme = theme === 'system'
+    ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+    : theme
+
   const toggleTheme = () => {
-    setTheme(theme === "light" ? "dark" : "light")
+    setTheme(resolvedTheme === 'light' ? 'dark' : 'light')
   }
 
   return (
@@ -14,11 +19,14 @@ export function ThemeToggle() {
       variant="ghost"
       size="icon"
       onClick={toggleTheme}
-      className="rounded-full"
+      className="rounded-full transition-all duration-200 hover:scale-105"
       aria-label="Alternar tema"
     >
-      <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-      <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+      {resolvedTheme === 'light' ? (
+        <Moon className="h-5 w-5 transition-transform duration-200" />
+      ) : (
+        <Sun className="h-5 w-5 transition-transform duration-200" />
+      )}
       <span className="sr-only">Alternar tema</span>
     </Button>
   )
