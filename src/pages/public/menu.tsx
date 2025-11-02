@@ -19,7 +19,7 @@ import {
   ChevronUp
 } from "lucide-react";
 import { publicService } from "@/api/publicService";
-import { Product, productService } from "@/api/productService";
+import { Product } from "@/api/productService";
 import { Menu, menuService } from "@/api/menuService";
 import { Category, categoryService } from "@/api/categoryService";
 import { Tag, tagService } from "@/api/tagService";
@@ -82,14 +82,11 @@ export default function PublicMenu() {
         setCategories(categoriesRes.data.filter((c: Category) => c.active));
         setTags(tagsRes.data.filter((t: Tag) => t.active && t.entity_type === 'product'));
 
-        // Carregar tags de cada produto
+        // ✨ OTIMIZAÇÃO: Construir mapa de tags a partir dos dados já carregados
         const tagsMap = new Map<string, Tag[]>();
         for (const product of productsResponse.data) {
-          try {
-            const productTagsRes = await productService.getProductTags(product.id);
-            tagsMap.set(product.id, productTagsRes.data);
-          } catch (err) {
-            console.error(`Erro ao carregar tags do produto ${product.id}:`, err);
+          if (product.tags && product.tags.length > 0) {
+            tagsMap.set(product.id, product.tags);
           }
         }
         setProductTags(tagsMap);

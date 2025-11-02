@@ -30,17 +30,16 @@ export default function ProductList() {
     try {
       setLoading(true);
       setError("");
-      const response = await productService.getAll();
+      // ✨ OTIMIZAÇÃO: Carregar produtos com tags em uma única requisição
+      const response = await productService.getAll({ includeTags: true });
       setProducts(response.data);
 
-      // Carregar tags de cada produto
+      // ✨ OTIMIZAÇÃO: Construir mapa de tags a partir dos dados já carregados
       const tagsMap = new Map<string, Tag[]>();
       for (const product of response.data) {
-        try {
-          const tagsResponse = await productService.getProductTags(product.id);
-          tagsMap.set(product.id, tagsResponse.data);
-        } catch (error) {
-          console.error(`Erro ao carregar tags do produto ${product.id}:`, error);
+        if (product.tags && product.tags.length > 0) {
+          tagsMap.set(product.id, product.tags);
+        } else {
           tagsMap.set(product.id, []);
         }
       }

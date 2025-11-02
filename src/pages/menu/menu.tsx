@@ -47,8 +47,9 @@ export default function MenuPage() {
   const fetchData = async () => {
     try {
       setLoading(true);
+      // ✨ OTIMIZAÇÃO: Carregar produtos com tags em uma única requisição
       const [productsRes, menusRes, categoriesRes, tagsRes] = await Promise.all([
-        productService.getAll(),
+        productService.getAll({ includeTags: true }),
         menuService.getActive(),
         categoryService.getAll(),
         tagService.listActiveTags()
@@ -59,14 +60,11 @@ export default function MenuPage() {
       setCategories(categoriesRes.data.filter((c: Category) => c.active));
       setTags(tagsRes.data.filter((t: Tag) => t.active && t.entity_type === 'product'));
 
-      // Carregar tags de cada produto
+      // ✨ OTIMIZAÇÃO: Construir mapa de tags a partir dos dados já carregados
       const tagsMap = new Map<string, Tag[]>();
       for (const product of productsRes.data) {
-        try {
-          const productTagsRes = await productService.getProductTags(product.id);
-          tagsMap.set(product.id, productTagsRes.data);
-        } catch (err) {
-          console.error(`Erro ao carregar tags do produto ${product.id}:`, err);
+        if (product.tags && product.tags.length > 0) {
+          tagsMap.set(product.id, product.tags);
         }
       }
       setProductTags(tagsMap);
