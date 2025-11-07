@@ -1,43 +1,8 @@
 import api from "./api";
+import { Menu, CreateMenuDTO, UpdateMenuDTO } from "@/types/menu";
 
-export interface Menu {
-  id: string;
-  organization_id: string;
-  project_id: string;
-  name: string;
-  styling?: {
-    colors?: {
-      primary?: string;
-      secondary?: string;
-      accent?: string;
-    };
-    fonts?: {
-      title?: string;
-      body?: string;
-    };
-    layout?: "grid" | "list" | "cards";
-  };
-  order: number;
-  active: boolean;
-  created_at: string;
-  updated_at: string;
-  deleted_at?: string;
-}
-
-export interface CreateMenuDTO {
-  name: string;
-  styling?: Menu["styling"];
-  order?: number;
-  active?: boolean;
-}
-
-export interface UpdateMenuDTO {
-  id: string;
-  name?: string;
-  styling?: Menu["styling"];
-  order?: number;
-  active?: boolean;
-}
+// Exportar Menu para compatibilidade com outros arquivos que fazem import de menuService
+export type { Menu, CreateMenuDTO, UpdateMenuDTO };
 
 export const menuService = {
   // Listar todos
@@ -66,6 +31,21 @@ export const menuService = {
 
   // Deletar
   remove: (id: string) => api.delete(`/menu/${id}`),
+
+  // ✨ Novos métodos para seleção inteligente
+  // Obter o cardápio ativo agora (com lógica automática)
+  getActiveMenu: () => api.get<Menu>("/menu/active-now"),
+
+  // Obter opções de cardápio
+  getMenuOptions: () => api.get<Menu[]>("/menu/options"),
+
+  // Definir como override manual
+  setMenuAsManualOverride: (id: string) =>
+    api.put(`/menu/${id}/manual-override`, {}),
+
+  // Remover override manual (voltar a automático)
+  removeManualOverride: () =>
+    api.delete("/menu/manual-override"),
 };
 
 // Validação de Menu
@@ -82,6 +62,11 @@ export const validateMenu = (menu: Partial<CreateMenuDTO>): string[] => {
 
   if (menu.order !== undefined && menu.order < 0) {
     errors.push("Ordem deve ser maior ou igual a 0");
+  }
+
+  // ✨ Validações para novos campos
+  if (menu.priority !== undefined && menu.priority < 0) {
+    errors.push("Prioridade deve ser maior ou igual a 0");
   }
 
   return errors;

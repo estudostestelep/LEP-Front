@@ -1,19 +1,23 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Menu, menuService } from "../../api/menuService";
-import { Plus, Edit, Trash2, Power, PowerOff, Loader2 } from "lucide-react";
+import { Plus, Edit, Trash2, Power, PowerOff, Loader2, Clock } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import ConfirmModal from "@/components/confirmModal";
 import FormModal from "@/components/formModal";
+import MenuConfigModal from "@/components/MenuConfigModal";
+import { useAuth } from "@/context/authContext";
 
 export default function AdminMenuPage() {
   const navigate = useNavigate();
+  const { isMasterAdmin } = useAuth();
   const [menus, setMenus] = useState<Menu[]>([]);
   const [loading, setLoading] = useState(true);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
   const [selectedMenu, setSelectedMenu] = useState<Menu | null>(null);
   const [formData, setFormData] = useState({
     name: "",
@@ -95,6 +99,16 @@ export default function AdminMenuPage() {
     } catch (error) {
       console.error("Erro ao atualizar status:", error);
     }
+  };
+
+  const handleOpenConfigModal = (menu: Menu) => {
+    setSelectedMenu(menu);
+    setIsConfigModalOpen(true);
+  };
+
+  const handleSaveMenuConfig = async (updatedMenu: Menu) => {
+    setSelectedMenu(updatedMenu);
+    await loadMenus();
   };
 
   if (loading) {
@@ -179,6 +193,18 @@ export default function AdminMenuPage() {
                     <Edit className="h-4 w-4 mr-1" />
                     Editar
                   </Button>
+                  {isMasterAdmin && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleOpenConfigModal(menu)}
+                      title="Configurar horários, dias e prioridade"
+                      className="flex-1"
+                    >
+                      <Clock className="h-4 w-4 mr-1" />
+                      Configurar
+                    </Button>
+                  )}
                   <Button
                     variant="outline"
                     size="sm"
@@ -282,6 +308,16 @@ export default function AdminMenuPage() {
         title="Deletar Cardápio"
         message={`Tem certeza que deseja deletar o cardápio "${selectedMenu?.name}"? Esta ação não pode ser desfeita.`}
       />
+
+      {/* Modal de configuração (horários, dias, prioridade) */}
+      {selectedMenu && (
+        <MenuConfigModal
+          isOpen={isConfigModalOpen}
+          onClose={() => setIsConfigModalOpen(false)}
+          menu={selectedMenu}
+          onSave={handleSaveMenuConfig}
+        />
+      )}
     </div>
   );
 }

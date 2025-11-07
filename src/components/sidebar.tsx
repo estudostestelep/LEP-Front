@@ -73,7 +73,8 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
 
   const masterAdminMenuItems = [
     { to: '/organizations', icon: Building, label: 'Organizações' },
-    { to: '/projects', icon: FolderOpen, label: 'Projetos' }
+    { to: '/projects', icon: FolderOpen, label: 'Projetos' },
+    { to: '/general-stats', icon: SettingsIcon, label: 'Status Gerais' }
   ];
 
   const isActiveRoute = (path: string) => {

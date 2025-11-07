@@ -421,19 +421,19 @@ export default function PublicMenu() {
           {filteredProducts.length} {filteredProducts.length === 1 ? 'produto encontrado' : 'produtos encontrados'}
         </div>
 
-        {/* Products Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {/* Products List */}
+        <div className="space-y-3 sm:space-y-4">
           {filteredProducts.map((product) => {
             const prodTags = productTags.get(product.id) || [];
 
             return (
-              <Card
+              <div
                 key={product.id}
-                className="overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1"
                 onClick={() => handleProductClick(product)}
+                className="flex gap-3 sm:gap-4 p-3 sm:p-4 border border-border rounded-lg hover:bg-accent transition-colors duration-200 cursor-pointer"
               >
-                {/* Product Image - Hero Style */}
-                <div className="aspect-square relative overflow-hidden bg-muted">
+                {/* Product Image Thumbnail */}
+                <div className="flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-lg overflow-hidden bg-muted">
                   {product.image_url ? (
                     <img
                       src={product.image_url}
@@ -442,41 +442,36 @@ export default function PublicMenu() {
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
-                      <ChefHat className="h-16 w-16 text-muted-foreground/50" />
+                      <ChefHat className="h-8 w-8 text-muted-foreground/50" />
                     </div>
                   )}
-
-                  {/* Price overlay */}
-                  <div className="absolute top-4 right-4">
-                    <Badge className="bg-green-600 text-white font-bold text-lg px-3 py-1">
-                      R$ {product.price_normal.toFixed(2)}
-                    </Badge>
-                  </div>
-
-                  {/* Type badge */}
-                  <div className="absolute top-4 left-4">
-                    <Badge variant="secondary" className="capitalize">
-                      {product.type || 'Produto'}
-                    </Badge>
-                  </div>
                 </div>
 
-                <CardContent className="p-4">
-                  <div className="space-y-2">
-                    <h3 className="font-semibold text-lg line-clamp-1">{product.name}</h3>
+                {/* Product Content */}
+                <div className="flex-1 min-w-0 flex flex-col justify-between py-1">
+                  {/* Header: Name and Price */}
+                  <div className="flex items-start justify-between gap-2 mb-1">
+                    <h3 className="font-semibold text-sm sm:text-base line-clamp-1">{product.name}</h3>
+                    <span className="text-green-600 font-bold text-sm sm:text-base flex-shrink-0 whitespace-nowrap">
+                      R$ {product.price_normal.toFixed(2)}
+                    </span>
+                  </div>
 
-                    <p className="text-sm text-muted-foreground line-clamp-2">
-                      {product.description}
-                    </p>
+                  {/* Description */}
+                  <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 mb-2">
+                    {product.description}
+                  </p>
 
-                    {/* Tags do produto */}
+                  {/* Tags and Meta Info */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    {/* Tags */}
                     {prodTags.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-2">
-                        {prodTags.map(tag => (
+                      <div className="flex flex-wrap gap-1">
+                        {prodTags.slice(0, 2).map(tag => (
                           <Badge
                             key={tag.id}
                             variant="outline"
-                            className="text-xs"
+                            className="text-xs py-0"
                             style={{
                               borderColor: tag.color,
                               color: tag.color
@@ -488,8 +483,8 @@ export default function PublicMenu() {
                       </div>
                     )}
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             );
           })}
         </div>
