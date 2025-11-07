@@ -25,8 +25,8 @@ export interface ThemeColors {
 }
 
 export const DEFAULT_THEME_COLORS: ThemeColors = {
-  primaryColor: '#3b82f6',
-  secondaryColor: '#8b5cf6',
+  primaryColor: '#0F172A',
+  secondaryColor: '#1E293B',
   backgroundColor: '#09090b',
   cardBackgroundColor: '#18181b',
   textColor: '#fafafa',

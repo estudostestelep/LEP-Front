@@ -83,7 +83,7 @@ export default function ThemeCustomizationTab() {
                 <button
                   className="px-3 py-2 rounded font-medium text-sm text-white"
                   style={{
-                    backgroundColor: theme.primary_color || "#3b82f6",
+                    backgroundColor: theme.primary_color || "#FF6B35",
                   }}
                 >
                   Botão Primário
@@ -91,7 +91,7 @@ export default function ThemeCustomizationTab() {
                 <button
                   className="px-3 py-2 rounded font-medium text-sm text-white"
                   style={{
-                    backgroundColor: theme.secondary_color || "#8b5cf6",
+                    backgroundColor: theme.secondary_color || "#F4A261",
                   }}
                 >
                   Botão Secundário
@@ -99,7 +99,7 @@ export default function ThemeCustomizationTab() {
                 <button
                   className="px-3 py-2 rounded font-medium text-sm text-white"
                   style={{
-                    backgroundColor: theme.accent_color || "#ec4899",
+                    backgroundColor: theme.accent_color || "#FF9F1C",
                   }}
                 >
                   Destaque
