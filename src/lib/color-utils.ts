@@ -345,3 +345,55 @@ export function getColorInfo(hex: string): ColorInfo {
     isLight: luminance >= 0.5,
   };
 }
+
+// ============================================================================
+// SEMANTIC COLOR VALIDATION
+// ============================================================================
+
+export interface SemanticColorValidation {
+  colorName: string;
+  backgroundColor: string;
+  valid: boolean;
+  warnings: string[];
+}
+
+/**
+ * Valida cores semânticas (success, warning, destructive) contra o fundo
+ * Garante que cores semânticas sejam distinguíveis e acessíveis
+ *
+ * @param semanticColor - Cor semântica em HEX
+ * @param backgroundColor - Cor de fundo em HEX
+ * @param colorName - Nome da cor (ex: 'success', 'warning', 'destructive')
+ * @returns Resultado da validação
+ */
+export function validateSemanticColor(
+  semanticColor: string,
+  backgroundColor: string,
+  colorName: string = 'semantic'
+): SemanticColorValidation {
+  const warnings: string[] = [];
+
+  if (!isValidHex(semanticColor) || !isValidHex(backgroundColor)) {
+    return {
+      colorName,
+      backgroundColor,
+      valid: false,
+      warnings: ['Cores inválidas'],
+    };
+  }
+
+  const contrast = validateContrast(semanticColor, backgroundColor);
+
+  if (contrast.level === 'FAIL') {
+    warnings.push(`⚠️ ${colorName}: Contraste insuficiente (${contrast.ratio.toFixed(2)}:1)`);
+  } else if (contrast.level === 'AA') {
+    warnings.push(`ℹ️ ${colorName}: Contraste AA, recomenda-se AAA (${contrast.ratio.toFixed(2)}:1)`);
+  }
+
+  return {
+    colorName,
+    backgroundColor,
+    valid: contrast.isAccessible,
+    warnings,
+  };
+}

@@ -2,6 +2,8 @@ export interface ThemeCustomization {
   id: string;
   project_id: string;
   organization_id: string;
+
+  // Cores Principais (7 campos originais)
   primary_color: string;           // Cor primária (#3b82f6)
   secondary_color: string;         // Cor secundária (#8b5cf6)
   background_color: string;        // Fundo (#09090b)
@@ -9,6 +11,19 @@ export interface ThemeCustomization {
   text_color: string;              // Texto principal (#fafafa)
   text_secondary_color: string;    // Texto secundário (#a1a1aa)
   accent_color: string;            // Cor de destaque (#ec4899)
+
+  // Cores Semânticas (4 novos campos)
+  destructive_color?: string;      // Cor para erros/delete (#EF4444)
+  success_color?: string;          // Cor para sucesso (#10B981)
+  warning_color?: string;          // Cor para aviso (#F59E0B)
+  border_color?: string;           // Cor para bordas (#E5E7EB)
+
+  // Configurações do Sistema (4 novos campos)
+  disabled_opacity?: number;       // Opacidade para disabled (0.5)
+  focus_ring_color?: string;       // Cor para focus ring (#3B82F6)
+  input_background_color?: string; // Fundo de inputs (diferente de card)
+  shadow_intensity?: number;       // Intensidade de shadows (1.0)
+
   is_active: boolean;
   created_at: string;
   updated_at: string;

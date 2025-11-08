@@ -83,15 +83,27 @@ export default function ThemeCustomizationModal({ isOpen, onClose }: ThemeCustom
     setContrastWarnings(warnings);
   }, [colors]);
 
-  const colorFields = [
-    { key: "primary_color", label: "Cor Primária", description: "Cor principal do sistema" },
-    { key: "secondary_color", label: "Cor Secundária", description: "Cor secundária para destaques" },
-    { key: "background_color", label: "Fundo", description: "Cor de fundo principal" },
-    { key: "card_background_color", label: "Fundo do Card", description: "Fundo dos cards e modais" },
-    { key: "text_color", label: "Texto Principal", description: "Cor do texto principal" },
-    { key: "text_secondary_color", label: "Texto Secundário", description: "Cor do texto secundário" },
-    { key: "accent_color", label: "Cor de Destaque", description: "Cor para elementos de destaque" },
-  ];
+  const colorFieldsByCategory = {
+    "Cores Principais": [
+      { key: "primary_color", label: "Cor Primária", description: "Cor principal do sistema", required: true },
+      { key: "secondary_color", label: "Cor Secundária", description: "Cor secundária para destaques", required: true },
+      { key: "background_color", label: "Fundo", description: "Cor de fundo principal", required: true },
+      { key: "card_background_color", label: "Fundo do Card", description: "Fundo dos cards e modais", required: true },
+      { key: "text_color", label: "Texto Principal", description: "Cor do texto principal", required: true },
+      { key: "text_secondary_color", label: "Texto Secundário", description: "Cor do texto secundário", required: true },
+      { key: "accent_color", label: "Cor de Destaque", description: "Cor para elementos de destaque", required: true },
+    ],
+    "Cores Semânticas": [
+      { key: "destructive_color", label: "Cor de Erro", description: "Cor para erros e ações destrutivas", required: false },
+      { key: "success_color", label: "Cor de Sucesso", description: "Cor para ações bem-sucedidas", required: false },
+      { key: "warning_color", label: "Cor de Aviso", description: "Cor para avisos e atenção", required: false },
+      { key: "border_color", label: "Cor de Bordas", description: "Cor padrão para bordas e divisores", required: false },
+    ],
+    "Configurações do Sistema": [
+      { key: "focus_ring_color", label: "Cor de Focus Ring", description: "Cor para outline de foco", required: false },
+      { key: "input_background_color", label: "Fundo de Inputs", description: "Fundo específico para campos de entrada", required: false },
+    ],
+  };
 
   const handleColorChange = (key: string, value: string) => {
     setColors((prev) => ({
@@ -197,43 +209,52 @@ export default function ThemeCustomizationModal({ isOpen, onClose }: ThemeCustom
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-4">
-          {colorFields.map((field) => (
-            <Card key={field.key} className="p-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">{field.label}</label>
-                <p className="text-xs text-gray-500">{field.description}</p>
-                <div className="flex gap-2">
-                  <Input
-                    type="color"
-                    value={String(colors[field.key as keyof typeof colors]) || "#000000"}
-                    onChange={(e) =>
-                      handleColorChange(field.key, e.target.value)
-                    }
-                    className="h-10 w-20 cursor-pointer"
-                  />
-                  <Input
-                    type="text"
-                    value={String(colors[field.key as keyof typeof colors]) || "#000000"}
-                    onChange={(e) =>
-                      handleColorChange(field.key, e.target.value)
-                    }
-                    placeholder="#RRGGBB"
-                    className="flex-1 text-sm font-mono"
-                  />
-                </div>
-                {/* Preview da cor */}
-                <div
-                  className="h-8 w-full rounded border border-gray-300"
-                  style={{
-                    backgroundColor:
-                      String(colors[field.key as keyof typeof colors]) || "#000000",
-                  }}
-                />
-              </div>
-            </Card>
-          ))}
-        </div>
+        {/* Campos de cores organizados por categoria */}
+        {Object.entries(colorFieldsByCategory).map(([category, fields]) => (
+          <div key={category}>
+            <h3 className="text-sm font-semibold mb-3 text-foreground">{category}</h3>
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              {fields.map((field) => (
+                <Card key={field.key} className="p-4">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <label className="text-sm font-medium">{field.label}</label>
+                      {field.required && <span className="text-xs text-red-500">*</span>}
+                    </div>
+                    <p className="text-xs text-gray-500">{field.description}</p>
+                    <div className="flex gap-2">
+                      <Input
+                        type="color"
+                        value={String(colors[field.key as keyof typeof colors]) || "#000000"}
+                        onChange={(e) =>
+                          handleColorChange(field.key, e.target.value)
+                        }
+                        className="h-10 w-20 cursor-pointer"
+                      />
+                      <Input
+                        type="text"
+                        value={String(colors[field.key as keyof typeof colors]) || "#000000"}
+                        onChange={(e) =>
+                          handleColorChange(field.key, e.target.value)
+                        }
+                        placeholder="#RRGGBB"
+                        className="flex-1 text-sm font-mono"
+                      />
+                    </div>
+                    {/* Preview da cor */}
+                    <div
+                      className="h-8 w-full rounded border border-gray-300"
+                      style={{
+                        backgroundColor:
+                          String(colors[field.key as keyof typeof colors]) || "#000000",
+                      }}
+                    />
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+        ))}
 
         {/* Preview do tema */}
         <Card className="p-4">

@@ -47,26 +47,28 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const validateColors = (colors: Record<string, string>) => {
     const warnings: string[] = [];
 
-    // Validar contraste entre pares de cores
+    // Validar contraste entre pares de cores (cores principais)
     const pairs = [
-      { fg: 'primary', bg: 'background' },
-      { fg: 'foreground', bg: 'background' },
-      { fg: 'destructive', bg: 'background' },
+      { fg: 'primary_color', bg: 'background_color', label: 'Primária vs Fundo' },
+      { fg: 'text_color', bg: 'background_color', label: 'Texto vs Fundo' },
+      { fg: 'destructive_color', bg: 'background_color', label: 'Erro vs Fundo' },
     ];
 
-    pairs.forEach(({ fg, bg }) => {
+    pairs.forEach(({ fg, bg, label }) => {
       const fgColor = colors[fg];
       const bgColor = colors[bg];
       if (fgColor && bgColor) {
         const result = validateContrast(fgColor, bgColor);
         if (!result.isAccessible) {
-          warnings.push(`⚠️ Contraste baixo entre ${fg} e ${bg}: ${result.message}`);
+          warnings.push(`⚠️ ${label}: Contraste insuficiente (${result.ratio.toFixed(2)}:1)`);
+        } else if (result.level === 'AA') {
+          warnings.push(`ℹ️ ${label}: ${result.message}`);
         }
       }
     });
 
     return {
-      valid: warnings.length === 0,
+      valid: warnings.filter((w) => w.includes('⚠️')).length === 0,
       warnings,
     };
   };

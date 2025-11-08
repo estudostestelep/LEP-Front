@@ -15,15 +15,27 @@ export default function ThemeCustomizationTab() {
   const { theme, loading } = useTheme();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const colorFields = [
-    { key: "primary_color", label: "Cor Primária", description: "Cor principal do sistema" },
-    { key: "secondary_color", label: "Cor Secundária", description: "Cor secundária para destaques" },
-    { key: "background_color", label: "Fundo", description: "Cor de fundo principal" },
-    { key: "card_background_color", label: "Fundo do Card", description: "Fundo dos cards e modais" },
-    { key: "text_color", label: "Texto Principal", description: "Cor do texto principal" },
-    { key: "text_secondary_color", label: "Texto Secundário", description: "Cor do texto secundário" },
-    { key: "accent_color", label: "Cor de Destaque", description: "Cor para elementos de destaque" },
-  ];
+  const colorFieldsByCategory = {
+    "Cores Principais": [
+      { key: "primary_color", label: "Cor Primária", description: "Cor principal do sistema" },
+      { key: "secondary_color", label: "Cor Secundária", description: "Cor secundária para destaques" },
+      { key: "background_color", label: "Fundo", description: "Cor de fundo principal" },
+      { key: "card_background_color", label: "Fundo do Card", description: "Fundo dos cards e modais" },
+      { key: "text_color", label: "Texto Principal", description: "Cor do texto principal" },
+      { key: "text_secondary_color", label: "Texto Secundário", description: "Cor do texto secundário" },
+      { key: "accent_color", label: "Cor de Destaque", description: "Cor para elementos de destaque" },
+    ],
+    "Cores Semânticas": [
+      { key: "destructive_color", label: "Cor de Erro", description: "Cor para erros e ações destrutivas" },
+      { key: "success_color", label: "Cor de Sucesso", description: "Cor para ações bem-sucedidas" },
+      { key: "warning_color", label: "Cor de Aviso", description: "Cor para avisos e atenção" },
+      { key: "border_color", label: "Cor de Bordas", description: "Cor padrão para bordas e divisores" },
+    ],
+    "Configurações do Sistema": [
+      { key: "focus_ring_color", label: "Cor de Focus Ring", description: "Cor para outline de foco" },
+      { key: "input_background_color", label: "Fundo de Inputs", description: "Fundo específico para campos de entrada" },
+    ],
+  };
 
   return (
     <>
@@ -39,43 +51,45 @@ export default function ThemeCustomizationTab() {
               Personalize as cores do sistema de acordo com a identidade da sua marca
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Grid de Cores */}
-            <div>
-              <h3 className="text-sm font-semibold mb-4">Cores do Sistema</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {colorFields.map((field) => (
-                  <Card key={field.key} className="p-4 bg-muted/50">
-                    <div className="space-y-3">
-                      <div>
-                        <label className="text-sm font-medium">{field.label}</label>
-                        <p className="text-xs text-muted-foreground">{field.description}</p>
-                      </div>
-                      <div className="flex gap-2">
-                        <Input
-                          type="color"
-                          value={String(theme[field.key as keyof typeof theme]) || "#000000"}
-                          disabled
-                          className="h-10 w-20 cursor-default"
+          <CardContent className="space-y-8">
+            {/* Cores Organizadas por Categoria */}
+            {Object.entries(colorFieldsByCategory).map(([category, fields]) => (
+              <div key={category}>
+                <h3 className="text-sm font-semibold mb-4 text-foreground">{category}</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {fields.map((field) => (
+                    <Card key={field.key} className="p-4 bg-muted/50">
+                      <div className="space-y-3">
+                        <div>
+                          <label className="text-sm font-medium">{field.label}</label>
+                          <p className="text-xs text-muted-foreground">{field.description}</p>
+                        </div>
+                        <div className="flex gap-2">
+                          <Input
+                            type="color"
+                            value={String(theme[field.key as keyof typeof theme]) || "#000000"}
+                            disabled
+                            className="h-10 w-20 cursor-default"
+                          />
+                          <Input
+                            type="text"
+                            value={String(theme[field.key as keyof typeof theme]) || "#000000"}
+                            disabled
+                            className="flex-1 text-sm font-mono cursor-default"
+                          />
+                        </div>
+                        <div
+                          className="h-8 w-full rounded border border-border"
+                          style={{
+                            backgroundColor: String(theme[field.key as keyof typeof theme]) || "#000000",
+                          }}
                         />
-                        <Input
-                          type="text"
-                          value={String(theme[field.key as keyof typeof theme]) || "#000000"}
-                          disabled
-                          className="flex-1 text-sm font-mono cursor-default"
-                        />
                       </div>
-                      <div
-                        className="h-8 w-full rounded border border-border"
-                        style={{
-                          backgroundColor: String(theme[field.key as keyof typeof theme]) || "#000000",
-                        }}
-                      />
-                    </div>
-                  </Card>
-                ))}
+                    </Card>
+                  ))}
+                </div>
               </div>
-            </div>
+            ))}
 
             {/* Preview do Tema */}
             <div>
