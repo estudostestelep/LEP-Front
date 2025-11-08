@@ -439,7 +439,7 @@ function ProductsDisplay({
                 {/* Name and Price */}
                 <div className="mb-2">
                   <h3 className="font-semibold text-sm line-clamp-2 mb-1">{product.name}</h3>
-                  <span className="text-green-600 font-bold text-base">
+                  <span className="text-price font-bold text-base">
                     R$ {product.price_normal.toFixed(2)}
                   </span>
                 </div>
@@ -558,7 +558,7 @@ function ProductsDisplay({
                   <h3 className="font-semibold text-sm sm:text-base line-clamp-1">
                     {product.name}
                   </h3>
-                  <span className="text-green-600 font-bold text-sm sm:text-base flex-shrink-0 whitespace-nowrap">
+                  <span className="text-price font-bold text-sm sm:text-base flex-shrink-0 whitespace-nowrap">
                     R$ {product.price_normal.toFixed(2)}
                   </span>
                 </div>
