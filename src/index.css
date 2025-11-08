@@ -3,7 +3,8 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
+  :root,
+  .light {
     /* LIGHT MODE - Tema Claro */
     /* Backgrounds */
     --background: 0 0% 100%;               /* #FFFFFF - Branco puro */
