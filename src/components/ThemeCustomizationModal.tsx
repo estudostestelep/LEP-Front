@@ -5,9 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
 import { useAuth } from "@/context/authContext";
 import { useTheme } from "@/context/themeContext";
-import { Loader2, AlertCircle, CheckCircle, RotateCcw } from "lucide-react";
+import { Loader2, AlertCircle, CheckCircle, RotateCcw, AlertTriangle, Eye, Zap } from "lucide-react";
 import { validateThemeColors } from "@/api/themeCustomizationService";
 import { ThemeCustomization } from "@/types/theme";
+import { validateContrast, getAutoTextColor, isValidHex } from "@/lib/color-utils";
 
 interface ThemeCustomizationModalProps {
   isOpen: boolean;
@@ -22,10 +23,65 @@ export default function ThemeCustomizationModal({ isOpen, onClose }: ThemeCustom
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [contrastWarnings, setContrastWarnings] = useState<string[]>([]);
 
   useEffect(() => {
     setColors(theme);
   }, [theme, isOpen]);
+
+  // Validar contraste em tempo real
+  useEffect(() => {
+    const warnings: string[] = [];
+
+    // Validar se as cores são válidas
+    const validColors = {
+      primary_color: colors.primary_color,
+      text_color: colors.text_color,
+      background_color: colors.background_color,
+    };
+
+    // Verificar contraste primary_color vs background_color
+    if (
+      validColors.primary_color &&
+      validColors.background_color &&
+      isValidHex(validColors.primary_color) &&
+      isValidHex(validColors.background_color)
+    ) {
+      const result = validateContrast(
+        validColors.primary_color,
+        validColors.background_color
+      );
+      if (result.level === 'FAIL') {
+        warnings.push(
+          `⚠️ Contraste baixo: cor primária vs fundo (${result.ratio.toFixed(2)}:1)`
+        );
+      } else if (result.level === 'AA') {
+        warnings.push(
+          `ℹ️ Contraste AA: cor primária vs fundo (${result.ratio.toFixed(2)}:1) - Recomenda-se AAA`
+        );
+      }
+    }
+
+    // Verificar contraste text_color vs background_color
+    if (
+      validColors.text_color &&
+      validColors.background_color &&
+      isValidHex(validColors.text_color) &&
+      isValidHex(validColors.background_color)
+    ) {
+      const result = validateContrast(
+        validColors.text_color,
+        validColors.background_color
+      );
+      if (result.level === 'FAIL') {
+        warnings.push(
+          `⚠️ Contraste baixo: texto vs fundo (${result.ratio.toFixed(2)}:1)`
+        );
+      }
+    }
+
+    setContrastWarnings(warnings);
+  }, [colors]);
 
   const colorFields = [
     { key: "primary_color", label: "Cor Primária", description: "Cor principal do sistema" },
@@ -115,6 +171,29 @@ export default function ThemeCustomizationModal({ isOpen, onClose }: ThemeCustom
           <div className="flex items-center gap-2 p-3 bg-green-500/10 border border-green-500/20 rounded-lg text-sm text-green-600">
             <CheckCircle className="h-4 w-4" />
             Tema salvo com sucesso!
+          </div>
+        )}
+
+        {/* Avisos de Contraste */}
+        {contrastWarnings.length > 0 && (
+          <div className="space-y-2">
+            {contrastWarnings.map((warning, idx) => (
+              <div
+                key={idx}
+                className={`flex items-start gap-2 p-3 rounded-lg text-sm ${
+                  warning.includes('⚠️')
+                    ? 'bg-yellow-500/10 border border-yellow-500/20 text-yellow-700'
+                    : 'bg-blue-500/10 border border-blue-500/20 text-blue-700'
+                }`}
+              >
+                {warning.includes('⚠️') ? (
+                  <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                ) : (
+                  <Eye className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                )}
+                <span>{warning}</span>
+              </div>
+            ))}
           </div>
         )}
 
