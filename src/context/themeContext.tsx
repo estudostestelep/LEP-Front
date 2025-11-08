@@ -76,11 +76,20 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   // Aplicar tema ao DOM (versão legada para compatibilidade)
   const applyTheme = (themeData: ThemeCustomization) => {
     const cssVariables = themeToCSSVariables(themeData);
+    // Aplicar variáveis CSS imediatamente ao DOM
     Object.entries(cssVariables).forEach(([key, value]) => {
       document.documentElement.style.setProperty(key, value);
     });
+
+    // Atualizar o estado e persistir
     setTheme(themeData);
     saveThemeToLocalStorage(themeData);
+
+    // Forçar uma renderização imediata para garantir que o tema seja aplicado sem precisar trocar de página
+    // Leitura de offsetHeight causa um reflow que força o navegador a aplicar as mudanças de CSS
+    if (typeof document !== 'undefined') {
+      void document.documentElement.offsetHeight;
+    }
   };
 
   // Carregar tema da API ou localStorage (com auto-load na inicialização)

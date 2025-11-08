@@ -473,13 +473,13 @@ function ProductsDisplay({
                   {/* Prep Time and Rating */}
                   <div className="flex items-center gap-3">
                     {product.prep_time_minutes && (
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-1 text-time">
                         <Clock className="h-3 w-3" />
                         <span>{product.prep_time_minutes}min</span>
                       </div>
                     )}
-                    <div className="flex items-center gap-1">
-                      <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                    <div className="flex items-center gap-1 text-rating">
+                      <Star className="h-3 w-3 fill-rating" />
                       <span>4.8</span>
                     </div>
                   </div>
@@ -591,15 +591,15 @@ function ProductsDisplay({
 
                   {/* Prep Time */}
                   {product.prep_time_minutes && (
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-1 text-xs text-time">
                       <Clock className="h-3 w-3" />
                       <span>{product.prep_time_minutes}min</span>
                     </div>
                   )}
 
                   {/* Rating */}
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                  <div className="flex items-center gap-1 text-xs text-rating">
+                    <Star className="h-3 w-3 fill-rating" />
                     <span>4.8</span>
                   </div>
                 </div>
