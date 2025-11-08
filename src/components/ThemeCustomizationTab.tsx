@@ -18,25 +18,39 @@ export default function ThemeCustomizationTab() {
 
   const colorFieldsByCategory = {
     "Cores Principais": [
-      { key: "primary_color", label: "Cor Primária", description: "Cor principal do sistema" },
-      { key: "secondary_color", label: "Cor Secundária", description: "Cor secundária para destaques" },
-      { key: "background_color", label: "Fundo", description: "Cor de fundo principal" },
-      { key: "card_background_color", label: "Fundo do Card", description: "Fundo dos cards e modais" },
-      { key: "text_color", label: "Texto Principal", description: "Cor do texto principal" },
-      { key: "text_secondary_color", label: "Texto Secundário", description: "Cor do texto secundário" },
-      { key: "accent_color", label: "Cor de Destaque", description: "Cor para elementos de destaque" },
+      { baseKey: "primary_color", label: "Cor Primária", description: "Cor principal do sistema" },
+      { baseKey: "secondary_color", label: "Cor Secundária", description: "Cor secundária para destaques" },
+      { baseKey: "background_color", label: "Fundo", description: "Cor de fundo principal" },
+      { baseKey: "card_background_color", label: "Fundo do Card", description: "Fundo dos cards e modais" },
+      { baseKey: "text_color", label: "Texto Principal", description: "Cor do texto principal" },
+      { baseKey: "text_secondary_color", label: "Texto Secundário", description: "Cor do texto secundário" },
+      { baseKey: "accent_color", label: "Cor de Destaque", description: "Cor para elementos de destaque" },
     ],
     "Cores Semânticas": [
-      { key: "destructive_color", label: "Cor de Erro", description: "Cor para erros e ações destrutivas" },
-      { key: "success_color", label: "Cor de Sucesso", description: "Cor para ações bem-sucedidas" },
-      { key: "warning_color", label: "Cor de Aviso", description: "Cor para avisos e atenção" },
-      { key: "border_color", label: "Cor de Bordas", description: "Cor padrão para bordas e divisores" },
-      { key: "price_color", label: "Cor do Preço", description: "Cor customizável para preços no cardápio" },
+      { baseKey: "destructive_color", label: "Cor de Erro", description: "Cor para erros e ações destrutivas" },
+      { baseKey: "success_color", label: "Cor de Sucesso", description: "Cor para ações bem-sucedidas" },
+      { baseKey: "warning_color", label: "Cor de Aviso", description: "Cor para avisos e atenção" },
+      { baseKey: "border_color", label: "Cor de Bordas", description: "Cor padrão para bordas e divisores" },
+      { baseKey: "price_color", label: "Cor do Preço", description: "Cor customizável para preços no cardápio" },
     ],
     "Configurações do Sistema": [
-      { key: "focus_ring_color", label: "Cor de Focus Ring", description: "Cor para outline de foco" },
-      { key: "input_background_color", label: "Fundo de Inputs", description: "Fundo específico para campos de entrada" },
+      { baseKey: "focus_ring_color", label: "Cor de Focus Ring", description: "Cor para outline de foco" },
+      { baseKey: "input_background_color", label: "Fundo de Inputs", description: "Fundo específico para campos de entrada" },
     ],
+  };
+
+  const getFieldKey = (baseKey: string): string => {
+    if (showDarkMode) {
+      return `${baseKey}_dark`;
+    }
+    return `${baseKey}_light`;
+  };
+
+  const getFieldLabel = (label: string): string => {
+    if (showDarkMode) {
+      return `${label} (Escuro)`;
+    }
+    return `${label} (Claro)`;
   };
 
   return (
@@ -88,36 +102,39 @@ export default function ThemeCustomizationTab() {
               <div key={category}>
                 <h3 className="text-sm font-semibold mb-4 text-foreground">{category}</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {fields.map((field) => (
-                    <Card key={field.key} className="p-4 bg-muted/50">
-                      <div className="space-y-3">
-                        <div>
-                          <label className="text-sm font-medium">{field.label}</label>
-                          <p className="text-xs text-muted-foreground">{field.description}</p>
-                        </div>
-                        <div className="flex gap-2">
-                          <Input
-                            type="color"
-                            value={String(theme[field.key as keyof typeof theme]) || "#000000"}
-                            disabled
-                            className="h-10 w-20 cursor-default"
+                  {fields.map((field) => {
+                    const fieldKey = getFieldKey(field.baseKey);
+                    return (
+                      <Card key={fieldKey} className="p-4 bg-muted/50">
+                        <div className="space-y-3">
+                          <div>
+                            <label className="text-sm font-medium">{getFieldLabel(field.label)}</label>
+                            <p className="text-xs text-muted-foreground">{field.description}</p>
+                          </div>
+                          <div className="flex gap-2">
+                            <Input
+                              type="color"
+                              value={String(theme[fieldKey as keyof typeof theme]) || "#000000"}
+                              disabled
+                              className="h-10 w-20 cursor-default"
+                            />
+                            <Input
+                              type="text"
+                              value={String(theme[fieldKey as keyof typeof theme]) || "#000000"}
+                              disabled
+                              className="flex-1 text-sm font-mono cursor-default"
+                            />
+                          </div>
+                          <div
+                            className="h-8 w-full rounded border border-border"
+                            style={{
+                              backgroundColor: String(theme[fieldKey as keyof typeof theme]) || "#000000",
+                            }}
                           />
-                          <Input
-                            type="text"
-                            value={String(theme[field.key as keyof typeof theme]) || "#000000"}
-                            disabled
-                            className="flex-1 text-sm font-mono cursor-default"
-                          />
                         </div>
-                        <div
-                          className="h-8 w-full rounded border border-border"
-                          style={{
-                            backgroundColor: String(theme[field.key as keyof typeof theme]) || "#000000",
-                          }}
-                        />
-                      </div>
-                    </Card>
-                  ))}
+                      </Card>
+                    );
+                  })}
                 </div>
               </div>
             ))}
@@ -125,23 +142,32 @@ export default function ThemeCustomizationTab() {
 
             {/* Preview do Tema */}
             <div>
-              <h3 className="text-sm font-semibold mb-4">Pré-visualização</h3>
+              <h3 className="text-sm font-semibold mb-4">
+                Pré-visualização - Modo {showDarkMode ? "Escuro" : "Claro"}
+              </h3>
               <div
                 className="p-6 rounded-lg border"
                 style={{
-                  backgroundColor: theme.background_color || "#09090b",
-                  color: theme.text_color || "#fafafa",
+                  backgroundColor:
+                    String(theme[getFieldKey("background_color") as keyof typeof theme]) || "#09090b",
+                  color: String(theme[getFieldKey("text_color") as keyof typeof theme]) || "#fafafa",
                 }}
               >
                 <h4 className="font-semibold mb-2">Texto Principal</h4>
-                <p className="text-sm mb-4" style={{ color: theme.text_secondary_color }}>
+                <p
+                  className="text-sm mb-4"
+                  style={{
+                    color: String(theme[getFieldKey("text_secondary_color") as keyof typeof theme]) || "#999999",
+                  }}
+                >
                   Texto secundário apareceria aqui
                 </p>
                 <div className="flex gap-2 flex-wrap">
                   <button
                     className="px-3 py-2 rounded font-medium text-sm text-white"
                     style={{
-                      backgroundColor: theme.primary_color || "#0F172A",
+                      backgroundColor:
+                        String(theme[getFieldKey("primary_color") as keyof typeof theme]) || "#0F172A",
                     }}
                   >
                     Botão Primário
@@ -149,7 +175,8 @@ export default function ThemeCustomizationTab() {
                   <button
                     className="px-3 py-2 rounded font-medium text-sm text-white"
                     style={{
-                      backgroundColor: theme.secondary_color || "#1E293B",
+                      backgroundColor:
+                        String(theme[getFieldKey("secondary_color") as keyof typeof theme]) || "#1E293B",
                     }}
                   >
                     Botão Secundário
@@ -157,7 +184,8 @@ export default function ThemeCustomizationTab() {
                   <button
                     className="px-3 py-2 rounded font-medium text-sm text-white"
                     style={{
-                      backgroundColor: theme.accent_color || "#ec4899",
+                      backgroundColor:
+                        String(theme[getFieldKey("accent_color") as keyof typeof theme]) || "#ec4899",
                     }}
                   >
                     Destaque

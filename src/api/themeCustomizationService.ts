@@ -87,17 +87,67 @@ export const validateThemeColors = (theme: Partial<ThemeCustomization>): string[
 
 /**
  * Converter tema para CSS variables
+ * Suporta tanto campos legados quanto variantes light/dark
  */
 export const themeToCSSVariables = (theme: ThemeCustomization): Record<string, string> => {
-  return {
-    "--color-primary": theme.primary_color,
-    "--color-secondary": theme.secondary_color,
-    "--color-background": theme.background_color,
-    "--color-card-background": theme.card_background_color,
-    "--color-text": theme.text_color,
-    "--color-text-secondary": theme.text_secondary_color,
-    "--color-accent": theme.accent_color,
-  };
+  // Usar variantes light/dark se disponíveis, senão usar legado como fallback
+  const variables: Record<string, string> = {};
+
+  // Cores principais
+  if (theme.primary_color_light) variables["--primary-light"] = theme.primary_color_light;
+  if (theme.primary_color_dark) variables["--primary-dark"] = theme.primary_color_dark;
+  if (!theme.primary_color_light && theme.primary_color) variables["--primary-light"] = theme.primary_color;
+  if (!theme.primary_color_dark && theme.primary_color) variables["--primary-dark"] = theme.primary_color;
+
+  if (theme.secondary_color_light) variables["--secondary-light"] = theme.secondary_color_light;
+  if (theme.secondary_color_dark) variables["--secondary-dark"] = theme.secondary_color_dark;
+  if (!theme.secondary_color_light && theme.secondary_color) variables["--secondary-light"] = theme.secondary_color;
+  if (!theme.secondary_color_dark && theme.secondary_color) variables["--secondary-dark"] = theme.secondary_color;
+
+  if (theme.background_color_light) variables["--background-light"] = theme.background_color_light;
+  if (theme.background_color_dark) variables["--background-dark"] = theme.background_color_dark;
+  if (!theme.background_color_light && theme.background_color) variables["--background-light"] = theme.background_color;
+  if (!theme.background_color_dark && theme.background_color) variables["--background-dark"] = theme.background_color;
+
+  if (theme.card_background_color_light) variables["--card-light"] = theme.card_background_color_light;
+  if (theme.card_background_color_dark) variables["--card-dark"] = theme.card_background_color_dark;
+  if (!theme.card_background_color_light && theme.card_background_color) variables["--card-light"] = theme.card_background_color;
+  if (!theme.card_background_color_dark && theme.card_background_color) variables["--card-dark"] = theme.card_background_color;
+
+  if (theme.text_color_light) variables["--text-light"] = theme.text_color_light;
+  if (theme.text_color_dark) variables["--text-dark"] = theme.text_color_dark;
+  if (!theme.text_color_light && theme.text_color) variables["--text-light"] = theme.text_color;
+  if (!theme.text_color_dark && theme.text_color) variables["--text-dark"] = theme.text_color;
+
+  if (theme.text_secondary_color_light) variables["--text-secondary-light"] = theme.text_secondary_color_light;
+  if (theme.text_secondary_color_dark) variables["--text-secondary-dark"] = theme.text_secondary_color_dark;
+  if (!theme.text_secondary_color_light && theme.text_secondary_color) variables["--text-secondary-light"] = theme.text_secondary_color;
+  if (!theme.text_secondary_color_dark && theme.text_secondary_color) variables["--text-secondary-dark"] = theme.text_secondary_color;
+
+  if (theme.accent_color_light) variables["--accent-light"] = theme.accent_color_light;
+  if (theme.accent_color_dark) variables["--accent-dark"] = theme.accent_color_dark;
+  if (!theme.accent_color_light && theme.accent_color) variables["--accent-light"] = theme.accent_color;
+  if (!theme.accent_color_dark && theme.accent_color) variables["--accent-dark"] = theme.accent_color;
+
+  // Cores semânticas
+  if (theme.destructive_color_light) variables["--destructive-light"] = theme.destructive_color_light;
+  if (theme.destructive_color_dark) variables["--destructive-dark"] = theme.destructive_color_dark;
+  if (theme.success_color_light) variables["--success-light"] = theme.success_color_light;
+  if (theme.success_color_dark) variables["--success-dark"] = theme.success_color_dark;
+  if (theme.warning_color_light) variables["--warning-light"] = theme.warning_color_light;
+  if (theme.warning_color_dark) variables["--warning-dark"] = theme.warning_color_dark;
+  if (theme.border_color_light) variables["--border-light"] = theme.border_color_light;
+  if (theme.border_color_dark) variables["--border-dark"] = theme.border_color_dark;
+  if (theme.price_color_light) variables["--price-light"] = theme.price_color_light;
+  if (theme.price_color_dark) variables["--price-dark"] = theme.price_color_dark;
+
+  // Configurações do sistema
+  if (theme.focus_ring_color_light) variables["--focus-ring-light"] = theme.focus_ring_color_light;
+  if (theme.focus_ring_color_dark) variables["--focus-ring-dark"] = theme.focus_ring_color_dark;
+  if (theme.input_background_color_light) variables["--input-bg-light"] = theme.input_background_color_light;
+  if (theme.input_background_color_dark) variables["--input-bg-dark"] = theme.input_background_color_dark;
+
+  return variables;
 };
 
 /**
