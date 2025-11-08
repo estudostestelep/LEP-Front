@@ -237,8 +237,8 @@ export default function GeneralStats() {
               {currentOrganization ? (
                 <>
                   <div className="flex items-center space-x-3 pb-3 border-b">
-                    <div className="h-12 w-12 rounded-full bg-blue-500/10 flex items-center justify-center">
-                      <Building className="h-6 w-6 text-blue-500" />
+                    <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Building className="h-6 w-6 text-primary" />
                     </div>
                     <div>
                       <p className="font-medium text-lg">{displayOrgName}</p>
@@ -340,8 +340,8 @@ export default function GeneralStats() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-4">
                     <div className="flex items-center space-x-3 pb-3 border-b">
-                      <div className="h-12 w-12 rounded-full bg-green-500/10 flex items-center justify-center">
-                        <FolderOpen className="h-6 w-6 text-green-500" />
+                      <div className="h-12 w-12 rounded-full bg-success/10 flex items-center justify-center">
+                        <FolderOpen className="h-6 w-6 text-success" />
                       </div>
                       <div>
                         <p className="font-medium text-lg">{displayProjName}</p>
