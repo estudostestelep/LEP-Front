@@ -5,10 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
 import { useAuth } from "@/context/authContext";
 import { useTheme } from "@/context/themeContext";
-import { Loader2, AlertCircle, CheckCircle, RotateCcw, AlertTriangle, Eye, Zap } from "lucide-react";
+import { Loader2, AlertCircle, CheckCircle, RotateCcw, AlertTriangle, Eye } from "lucide-react";
 import { validateThemeColors } from "@/api/themeCustomizationService";
 import { ThemeCustomization } from "@/types/theme";
-import { validateContrast, getAutoTextColor, isValidHex } from "@/lib/color-utils";
+import { validateContrast, isValidHex } from "@/lib/color-utils";
 
 interface ThemeCustomizationModalProps {
   isOpen: boolean;

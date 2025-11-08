@@ -31,8 +31,6 @@ const GeneralStats = lazy(() => import('@/pages/general-stats/general-stats'));
 const CreateOrganization = lazy(() => import('@/pages/organizations/create'));
 const PublicMenu = lazy(() => import('@/pages/public/menu'));
 const PublicReservation = lazy(() => import('@/pages/public/reservation'));
-const ColorPalette = lazy(() => import('@/components/ColorPalette'));
-const ComponentShowcase = lazy(() => import('@/pages/component-showcase/component-showcase'));
 
 function PrivateRoute({ children }: { children: React.ReactElement }) {
   const { user } = useAuth();
@@ -119,10 +117,6 @@ export default function AppRoutes() {
                 <Route path="/organizations" element={<MasterAdminRoute><Organizations /></MasterAdminRoute>} />
                 <Route path="/projects" element={<MasterAdminRoute><Projects /></MasterAdminRoute>} />
                 <Route path="/general-stats" element={<MasterAdminRoute><GeneralStats /></MasterAdminRoute>} />
-
-                {/* Debug routes - Design System */}
-                <Route path="/colors" element={<ColorPalette />} />
-                <Route path="/components" element={<ComponentShowcase />} />
 
                 {/* Rota catch-all para páginas não encontradas */}
                 <Route path="*" element={<NotFound />} />

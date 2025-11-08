@@ -133,9 +133,6 @@ export function validateContrast(
 ): AccessibilityCheckResult {
   const ratio = getContrastRatio(foreground, background);
 
-  const targetRatio = level === 'AAA' ? 7 : 4.5;
-  const isAccessible = ratio >= targetRatio;
-
   let resultLevel: AccessibilityLevel;
   let message: string;
 

@@ -1,13 +1,12 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import {
   themeCustomizationService,
-  getThemeFromLocalStorage,
   saveThemeToLocalStorage,
   getDefaultTheme,
   themeToCSSVariables,
 } from '@/api/themeCustomizationService';
 import { ThemeCustomization, ThemeDefinition, DEFAULT_THEME_LIGHT, DEFAULT_THEME_DARK } from '@/types/theme';
-import { applyTheme as applyThemeVariables, saveThemeToStorage, getThemeFromStorage } from '@/lib/theme-generator';
+import { applyTheme as applyThemeVariables, getThemeFromStorage } from '@/lib/theme-generator';
 import { validateContrast } from '@/lib/color-utils';
 
 interface ThemeContextType {
@@ -36,7 +35,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [currentTheme, setCurrentTheme] = useState<ThemeDefinition | undefined>();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isDarkMode, setIsDarkMode] = useState(() => {
+  const [isDarkMode] = useState(() => {
     // Detectar preferência do sistema
     if (typeof window !== 'undefined') {
       return window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -120,12 +119,34 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
       console.warn('Failed to load theme from API, using fallback:', err);
 
       // Fallback para localStorage (novo sistema)
-      const storedTheme = getThemeFromStorage();
-      if (storedTheme) {
-        applyThemeVariables(storedTheme);
+      const storedThemeColors = getThemeFromStorage();
+      if (storedThemeColors) {
+        applyThemeVariables(storedThemeColors);
+        // Mapear ThemeColors para ThemeDefinition.colors
+        const mappedColors: ThemeDefinition['colors'] = {
+          background: storedThemeColors.backgroundColor || '#FFFFFF',
+          card: storedThemeColors.cardBackgroundColor || '#FFFFFF',
+          popover: storedThemeColors.backgroundColor || '#FFFFFF',
+          foreground: storedThemeColors.textColor || '#0F172A',
+          cardForeground: storedThemeColors.textColor || '#0F172A',
+          popoverForeground: storedThemeColors.textColor || '#0F172A',
+          primary: storedThemeColors.primaryColor || '#1E293B',
+          primaryForeground: '#F8FAFC',
+          secondary: storedThemeColors.secondaryColor || '#F0F4F8',
+          secondaryForeground: storedThemeColors.textSecondaryColor || '#0F172A',
+          muted: '#F0F4F8',
+          mutedForeground: storedThemeColors.textSecondaryColor || '#64748B',
+          accent: storedThemeColors.accentColor || '#F0F4F8',
+          accentForeground: '#1E293B',
+          destructive: '#EF4444',
+          destructiveForeground: '#F8FAFC',
+          border: '#E2E8F0',
+          input: '#E2E8F0',
+          ring: storedThemeColors.primaryColor || '#0F172A',
+        };
         setCurrentTheme({
           name: 'Stored Theme',
-          colors: storedTheme,
+          colors: mappedColors,
           isCustom: true,
         });
       } else {

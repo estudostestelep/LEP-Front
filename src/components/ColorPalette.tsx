@@ -10,8 +10,8 @@
  * - Tipografia
  */
 
-import React, { useState } from 'react';
-import { COLORS, SPACING_VALUES, SHADOWS_VALUES, BORDER_RADIUS_VALUES, TRANSITIONS_VALUES, FONT_SIZE, FONT_WEIGHT } from '@/tokens/design-tokens';
+import { useState } from 'react';
+import { SPACING_VALUES, SHADOWS_VALUES, BORDER_RADIUS_VALUES, TRANSITIONS_VALUES, FONT_SIZE, FONT_WEIGHT } from '@/tokens/design-tokens';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Copy, Check } from 'lucide-react';
 

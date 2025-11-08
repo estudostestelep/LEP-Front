@@ -1,12 +1,16 @@
+import { lazy } from "react";
 import ProductDisplaySettings from "@/components/ProductDisplaySettings";
 import ThemeCustomizationTab from "@/components/ThemeCustomizationTab";
-import { Settings as SettingsIcon } from "lucide-react";
+import { Settings as SettingsIcon, Palette, Package } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+const ColorPalette = lazy(() => import("@/components/ColorPalette"));
+const ComponentShowcase = lazy(() => import("@/pages/component-showcase/component-showcase"));
 
 export default function Settings() {
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground flex items-center space-x-2">
@@ -20,9 +24,19 @@ export default function Settings() {
 
         {/* Settings Tabs */}
         <Tabs defaultValue="display" className="w-full">
-          <TabsList className="grid w-full max-w-md grid-cols-2">
+          <TabsList className="grid w-full max-w-4xl grid-cols-4">
             <TabsTrigger value="display">Exibição de Produtos</TabsTrigger>
             <TabsTrigger value="theme">Tema e Cores</TabsTrigger>
+            <TabsTrigger value="palette" className="flex items-center gap-2">
+              <Palette className="h-4 w-4" />
+              <span className="hidden sm:inline">Paleta de Cores</span>
+              <span className="sm:hidden">Cores</span>
+            </TabsTrigger>
+            <TabsTrigger value="components" className="flex items-center gap-2">
+              <Package className="h-4 w-4" />
+              <span className="hidden sm:inline">Componentes</span>
+              <span className="sm:hidden">Comps</span>
+            </TabsTrigger>
           </TabsList>
 
           {/* Display Settings Tab */}
@@ -33,6 +47,16 @@ export default function Settings() {
           {/* Theme Customization Tab */}
           <TabsContent value="theme" className="mt-6">
             <ThemeCustomizationTab />
+          </TabsContent>
+
+          {/* Color Palette Tab */}
+          <TabsContent value="palette" className="mt-6">
+            <ColorPalette />
+          </TabsContent>
+
+          {/* Component Showcase Tab */}
+          <TabsContent value="components" className="mt-6">
+            <ComponentShowcase />
           </TabsContent>
         </Tabs>
       </div>
