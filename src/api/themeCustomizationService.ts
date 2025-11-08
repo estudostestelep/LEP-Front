@@ -56,6 +56,7 @@ export const validateThemeColors = (theme: Partial<ThemeCustomization>): string[
   const errors: string[] = [];
 
   const colorFields = [
+    // Cores principais (obrigatórias)
     { key: "primary_color", label: "Cor Primária" },
     { key: "secondary_color", label: "Cor Secundária" },
     { key: "background_color", label: "Fundo" },
@@ -63,6 +64,15 @@ export const validateThemeColors = (theme: Partial<ThemeCustomization>): string[
     { key: "text_color", label: "Texto Principal" },
     { key: "text_secondary_color", label: "Texto Secundário" },
     { key: "accent_color", label: "Cor de Destaque" },
+    // Cores semânticas (opcionais)
+    { key: "destructive_color", label: "Cor de Erro" },
+    { key: "success_color", label: "Cor de Sucesso" },
+    { key: "warning_color", label: "Cor de Aviso" },
+    { key: "border_color", label: "Cor de Bordas" },
+    { key: "price_color", label: "Cor do Preço" },
+    // Configurações do sistema (opcionais)
+    { key: "focus_ring_color", label: "Cor de Focus Ring" },
+    { key: "input_background_color", label: "Fundo de Inputs" },
   ];
 
   for (const field of colorFields) {
