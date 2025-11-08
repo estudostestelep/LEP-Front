@@ -25,6 +25,9 @@ import { Category, categoryService } from "@/api/categoryService";
 import { Tag, tagService } from "@/api/tagService";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { CategoryImage } from "@/components/CategoryImage";
+import { displaySettingsService } from "@/api/displaySettingsService";
+import type { ProductDisplaySettings } from "@/types/settings";
+import { DEFAULT_DISPLAY_SETTINGS } from "@/types/settings";
 
 export default function PublicMenu() {
   const { orgId, projId } = useParams<{ orgId: string; projId: string }>();
@@ -33,6 +36,7 @@ export default function PublicMenu() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [productTags, setProductTags] = useState<Map<string, Tag[]>>(new Map());
+  const [displaySettings, setDisplaySettings] = useState<ProductDisplaySettings>(DEFAULT_DISPLAY_SETTINGS);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -68,12 +72,13 @@ export default function PublicMenu() {
         setLoading(true);
         setError(null);
 
-        const [productsResponse, projectResponse, menusRes, categoriesRes, tagsRes] = await Promise.all([
+        const [productsResponse, projectResponse, menusRes, categoriesRes, tagsRes, displayRes] = await Promise.all([
           publicService.getMenuProducts(orgId, projId),
           publicService.getProjectInfo(orgId, projId).catch(() => ({ data: { name: "Restaurante" } })),
           menuService.getActive().catch(() => ({ data: [] })),
           categoryService.getAll().catch(() => ({ data: [] })),
-          tagService.listActiveTags().catch(() => ({ data: [] }))
+          tagService.listActiveTags().catch(() => ({ data: [] })),
+          displaySettingsService.getSettings().catch(() => ({ data: DEFAULT_DISPLAY_SETTINGS }))
         ]);
 
         setProducts(productsResponse.data);
@@ -81,6 +86,7 @@ export default function PublicMenu() {
         setMenus(menusRes.data.filter((m: Menu) => m.active));
         setCategories(categoriesRes.data.filter((c: Category) => c.active));
         setTags(tagsRes.data.filter((t: Tag) => t.active && t.entity_type === 'product'));
+        setDisplaySettings(displayRes.data || DEFAULT_DISPLAY_SETTINGS);
 
         // ✨ OTIMIZAÇÃO: Construir mapa de tags a partir dos dados já carregados
         const tagsMap = new Map<string, Tag[]>();
@@ -550,20 +556,24 @@ export default function PublicMenu() {
                   {selectedProduct.description}
                 </p>
 
-                <div className="flex items-center space-x-6 pt-4 border-t">
-                  <div className="flex items-center space-x-2">
-                    <Star className="h-5 w-5 fill-warning text-warning" />
-                    <span className="text-lg font-semibold">4.8</span>
-                    <span className="text-muted-foreground">(124 avaliações)</span>
-                  </div>
+                {(displaySettings.show_rating || displaySettings.show_prep_time) && (
+                  <div className="flex items-center space-x-6 pt-4 border-t">
+                    {displaySettings.show_rating && (
+                      <div className="flex items-center space-x-2">
+                        <Star className="h-5 w-5 fill-warning text-warning" />
+                        <span className="text-lg font-semibold">4.8</span>
+                        <span className="text-muted-foreground">(124 avaliações)</span>
+                      </div>
+                    )}
 
-                  {selectedProduct.prep_time_minutes && (
-                    <div className="flex items-center space-x-2 text-muted-foreground">
-                      <Clock className="h-5 w-5" />
-                      <span>Tempo de preparo: {selectedProduct.prep_time_minutes} minutos</span>
-                    </div>
-                  )}
-                </div>
+                    {displaySettings.show_prep_time && selectedProduct.prep_time_minutes && (
+                      <div className="flex items-center space-x-2 text-muted-foreground">
+                        <Clock className="h-5 w-5" />
+                        <span>Tempo de preparo: {selectedProduct.prep_time_minutes} minutos</span>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {/* Action Button */}
                 <div className="pt-4">
