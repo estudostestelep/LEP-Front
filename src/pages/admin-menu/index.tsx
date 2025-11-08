@@ -114,7 +114,7 @@ export default function AdminMenuPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -152,9 +152,8 @@ export default function AdminMenuPage() {
           {menus.map((menu) => (
             <Card
               key={menu.id}
-              className={`hover:shadow-lg transition-shadow ${
-                !menu.active ? "opacity-60" : ""
-              }`}
+              className={`hover:shadow-lg transition-shadow ${!menu.active ? "opacity-60" : ""
+                }`}
             >
               <CardContent className="p-6">
                 <div className="flex justify-between items-start mb-4">
@@ -165,13 +164,11 @@ export default function AdminMenuPage() {
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <button
+                    <Button
                       onClick={() => handleToggleStatus(menu)}
-                      className={`p-2 rounded-lg transition-colors ${
-                        menu.active
-                          ? "bg-green-100 text-green-700 hover:bg-green-200"
-                          : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-                      }`}
+                      variant={menu.active ? "default" : "outline"}
+                      size="sm"
+                      className="px-2"
                       title={menu.active ? "Pausar" : "Ativar"}
                     >
                       {menu.active ? (
@@ -179,7 +176,7 @@ export default function AdminMenuPage() {
                       ) : (
                         <PowerOff className="h-4 w-4" />
                       )}
-                    </button>
+                    </Button>
                   </div>
                 </div>
 
@@ -187,7 +184,7 @@ export default function AdminMenuPage() {
                   <Button
                     size="sm"
                     onClick={() => handleOpenEditModal(menu)}
-                    className="flex-1 border border-primary text-primary bg-transparent hover:bg-primary/10 transition-colors"
+                    className="flex-1 border border-border bg-card text-foreground hover:bg-muted transition-colors"
                   >
                     <Edit className="h-4 w-4 mr-1" />
                     Editar
@@ -218,7 +215,7 @@ export default function AdminMenuPage() {
                 <div className="mt-4 pt-4 border-t border-border">
                   <Button
                     size="sm"
-                    className="w-full border border-primary text-primary bg-transparent hover:bg-primary/10 font-semibold transition-all"
+                    className="w-full border border-border text-primary bg-transparent hover:bg-primary/10 font-semibold transition-all"
                     onClick={() => {
                       // Navegar para categorias do menu
                       navigate(`/admin-menu/${menu.id}/categories`);
@@ -242,7 +239,7 @@ export default function AdminMenuPage() {
       >
         <div className="space-y-4">
           {formErrors.length > 0 && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+            <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded">
               <ul className="list-disc list-inside">
                 {formErrors.map((error, index) => (
                   <li key={index}>{error}</li>
@@ -287,9 +284,9 @@ export default function AdminMenuPage() {
               onChange={(e) =>
                 setFormData({ ...formData, active: e.target.checked })
               }
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              className="h-4 w-4 text-primary focus:ring-primary border-input rounded"
             />
-            <label htmlFor="active" className="ml-2 block text-sm text-gray-700">
+            <label htmlFor="active" className="ml-2 block text-sm text-foreground">
               Cardápio ativo
             </label>
           </div>
