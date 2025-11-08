@@ -17,10 +17,12 @@ import { Product, productService } from "@/api/productService";
 import { Menu, menuService } from "@/api/menuService";
 import { Category, categoryService } from "@/api/categoryService";
 import { Tag, tagService } from "@/api/tagService";
+import type { ProductDisplaySettings } from "@/types/settings";
 import { useAuth } from "@/context/authContext";
 import { CategoryImage } from "@/components/CategoryImage";
 import MenuSelector from "@/components/MenuSelector";
 import { useIsDesktop } from "@/hooks/useMediaQuery";
+import { useDisplaySettings } from "@/hooks/useDisplaySettings";
 
 export default function MenuPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -41,6 +43,9 @@ export default function MenuPage() {
   const [expandedProducts, setExpandedProducts] = useState<Set<string>>(new Set());
   const [showFilters, setShowFilters] = useState(true);
   const { user, currentProject, currentOrganization } = useAuth();
+
+  // Carregar configurações de exibição (mostra/oculta prep_time e rating)
+  const { settings: displaySettings } = useDisplaySettings();
 
   useEffect(() => {
     fetchData();
@@ -363,7 +368,7 @@ export default function MenuPage() {
           {filteredProducts.length} {filteredProducts.length === 1 ? 'produto encontrado' : 'produtos encontrados'}
         </div>
 
-        <ProductsDisplay products={filteredProducts} expandedProducts={expandedProducts} toggleProductExpansion={toggleProductExpansion} user={user} productTags={productTags} />
+        <ProductsDisplay products={filteredProducts} expandedProducts={expandedProducts} toggleProductExpansion={toggleProductExpansion} user={user} productTags={productTags} displaySettings={displaySettings} />
 
 
         {filteredProducts.length === 0 && (
@@ -394,6 +399,7 @@ interface ProductsDisplayProps {
   toggleProductExpansion: (id: string) => void;
   user: any;
   productTags: Map<string, Tag[]>;
+  displaySettings: ProductDisplaySettings;
 }
 
 function ProductsDisplay({
@@ -402,6 +408,7 @@ function ProductsDisplay({
   toggleProductExpansion,
   user,
   productTags,
+  displaySettings,
 }: ProductsDisplayProps) {
   const isDesktop = useIsDesktop();
 
@@ -472,16 +479,18 @@ function ProductsDisplay({
 
                   {/* Prep Time and Rating */}
                   <div className="flex items-center gap-3">
-                    {product.prep_time_minutes && (
+                    {displaySettings.show_prep_time && product.prep_time_minutes && (
                       <div className="flex items-center gap-1 text-time">
                         <Clock className="h-3 w-3" />
                         <span>{product.prep_time_minutes}min</span>
                       </div>
                     )}
-                    <div className="flex items-center gap-1 text-rating">
-                      <Star className="h-3 w-3 fill-rating" />
-                      <span>4.8</span>
-                    </div>
+                    {displaySettings.show_rating && (
+                      <div className="flex items-center gap-1 text-rating">
+                        <Star className="h-3 w-3 fill-rating" />
+                        <span>4.8</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </CardContent>
@@ -590,7 +599,7 @@ function ProductsDisplay({
                   )}
 
                   {/* Prep Time */}
-                  {product.prep_time_minutes && (
+                  {displaySettings.show_prep_time && product.prep_time_minutes && (
                     <div className="flex items-center gap-1 text-xs text-time">
                       <Clock className="h-3 w-3" />
                       <span>{product.prep_time_minutes}min</span>
@@ -598,10 +607,12 @@ function ProductsDisplay({
                   )}
 
                   {/* Rating */}
-                  <div className="flex items-center gap-1 text-xs text-rating">
-                    <Star className="h-3 w-3 fill-rating" />
-                    <span>4.8</span>
-                  </div>
+                  {displaySettings.show_rating && (
+                    <div className="flex items-center gap-1 text-xs text-rating">
+                      <Star className="h-3 w-3 fill-rating" />
+                      <span>4.8</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
