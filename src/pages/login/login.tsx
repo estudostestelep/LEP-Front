@@ -79,9 +79,9 @@ export default function Login() {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               {successMessage && (
-                <div className="p-3 rounded-md bg-green-50 border border-green-200 flex items-center space-x-2">
-                  <LogIn className="h-4 w-4 text-green-600" />
-                  <span className="text-sm text-green-700">{successMessage}</span>
+                <div className="p-3 rounded-md bg-success/10 border border-success/20 flex items-center space-x-2">
+                  <LogIn className="h-4 w-4 text-success" />
+                  <span className="text-sm text-success">{successMessage}</span>
                 </div>
               )}
 
