@@ -113,6 +113,13 @@ export default function ThemeCustomizationModal({ isOpen, onClose }: ThemeCustom
     ],
   };
 
+  const numericFieldsByCategory = {
+    "Configurações Numéricas": [
+      { key: "disabled_opacity", label: "Opacidade Desabilitada", description: "Opacidade para estados desabilitados (0.0-1.0)", min: 0, max: 1, step: 0.05 },
+      { key: "shadow_intensity", label: "Intensidade de Sombras", description: "Intensidade de sombras e profundidade (0.0-2.0)", min: 0, max: 2, step: 0.1 },
+    ],
+  };
+
   const getFieldKey = (baseKey: string): string => {
     if (showDarkMode) {
       return `${baseKey}_dark`;
@@ -125,6 +132,38 @@ export default function ThemeCustomizationModal({ isOpen, onClose }: ThemeCustom
       return `${label} (Modo Escuro)`;
     }
     return `${label} (Modo Claro)`;
+  };
+
+  // Default colors for light and dark modes
+  const defaultColors = {
+    light: {
+      primary_color: "#1E293B",
+      background_color: "#FFFFFF",
+      text_color: "#0F172A",
+      secondary_color: "#8B5CF6",
+      accent_color: "#EC4899",
+    },
+    dark: {
+      primary_color: "#F8FAFC",
+      background_color: "#0F172A",
+      text_color: "#F8FAFC",
+      secondary_color: "#A78BFA",
+      accent_color: "#F472B6",
+    },
+  };
+
+  const getColorValue = (baseKey: string): string => {
+    const fieldKey = getFieldKey(baseKey);
+    const value = colors[fieldKey as keyof typeof colors];
+    if (value && typeof value === "string" && value.trim()) {
+      return value;
+    }
+    // Use default based on mode
+    const mode = showDarkMode ? "dark" : "light";
+    return (
+      defaultColors[mode][baseKey as keyof (typeof defaultColors)[typeof mode]] ||
+      (mode === "dark" ? "#09090b" : "#ffffff")
+    );
   };
 
   const handleColorChange = (key: string, value: string) => {
@@ -328,17 +367,86 @@ export default function ThemeCustomizationModal({ isOpen, onClose }: ThemeCustom
           </div>
         ))}
 
+        {/* Campos Numéricos */}
+        {Object.entries(numericFieldsByCategory).map(([category, fields]) => (
+          <div key={category}>
+            <h3 className="text-sm font-semibold mb-3 text-foreground">{category}</h3>
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              {fields.map((field) => {
+                const fieldValue = colors[field.key as keyof typeof colors] as number | undefined;
+                return (
+                  <Card key={field.key} className="p-4">
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <label className="text-sm font-medium">{field.label}</label>
+                        <div className="flex items-center gap-2">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <button
+                                type="button"
+                                className="h-5 w-5 rounded-full text-muted-foreground hover:text-foreground transition-colors"
+                                title="Informações sobre este campo"
+                              >
+                                <HelpCircle className="h-4 w-4" />
+                              </button>
+                            </TooltipTrigger>
+                            <TooltipContent side="right" className="max-w-xs text-xs">
+                              {colorImpactMap[field.key] || field.description}
+                            </TooltipContent>
+                          </Tooltip>
+                        </div>
+                      </div>
+                      <p className="text-xs text-gray-500">{field.description}</p>
+                      <div className="space-y-1">
+                        <Input
+                          type="range"
+                          min={field.min}
+                          max={field.max}
+                          step={field.step}
+                          value={fieldValue !== undefined ? fieldValue : field.min}
+                          onChange={(e) =>
+                            handleColorChange(field.key, e.target.value)
+                          }
+                          className="w-full"
+                        />
+                        <div className="flex items-center gap-2">
+                          <Input
+                            type="number"
+                            min={field.min}
+                            max={field.max}
+                            step={field.step}
+                            value={fieldValue !== undefined ? fieldValue.toFixed(2) : field.min}
+                            onChange={(e) =>
+                              handleColorChange(field.key, e.target.value)
+                            }
+                            className="flex-1 text-sm"
+                          />
+                          <span className="text-xs text-muted-foreground w-8 text-center">
+                            {fieldValue !== undefined ? fieldValue.toFixed(2) : field.min}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+
         {/* Preview do tema */}
         <Card className="p-4">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm">Pré-visualização</CardTitle>
+            <CardTitle className="text-sm">
+              Pré-visualização - Modo {showDarkMode ? "Escuro" : "Claro"}
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             <div
               className="p-4 rounded-lg border"
               style={{
-                backgroundColor: colors.background_color || "#09090b",
-                color: colors.text_color || "#fafafa",
+                backgroundColor: getColorValue("background_color"),
+                color: getColorValue("text_color"),
               }}
             >
               <h3 className="font-semibold mb-2">Texto Principal</h3>
@@ -347,7 +455,7 @@ export default function ThemeCustomizationModal({ isOpen, onClose }: ThemeCustom
                 <button
                   className="px-3 py-1 rounded text-sm font-medium text-white"
                   style={{
-                    backgroundColor: colors.primary_color || "#0F172A",
+                    backgroundColor: getColorValue("primary_color"),
                   }}
                 >
                   Primário
@@ -355,7 +463,7 @@ export default function ThemeCustomizationModal({ isOpen, onClose }: ThemeCustom
                 <button
                   className="px-3 py-1 rounded text-sm font-medium text-white"
                   style={{
-                    backgroundColor: colors.secondary_color || "#1E293B",
+                    backgroundColor: getColorValue("secondary_color"),
                   }}
                 >
                   Secundário
@@ -363,7 +471,7 @@ export default function ThemeCustomizationModal({ isOpen, onClose }: ThemeCustom
                 <button
                   className="px-3 py-1 rounded text-sm font-medium text-white"
                   style={{
-                    backgroundColor: colors.accent_color || "#ec4899",
+                    backgroundColor: getColorValue("accent_color"),
                   }}
                 >
                   Destaque

@@ -61,9 +61,11 @@ export interface ThemeCustomization {
   input_background_color_light?: string;  // Light mode (#F3F4F6)
   input_background_color_dark?: string;   // Dark mode (#1F2937)
 
-  // Configurações numéricas (aplicadas a ambos os modos)
-  disabled_opacity?: number;              // Opacidade para disabled (0.5)
-  shadow_intensity?: number;              // Intensidade de shadows (1.0)
+  // ============================================================================
+  // NOVO - Configurações Numéricas do Sistema (2 campos)
+  // ============================================================================
+  disabled_opacity?: number;              // Opacidade para estados desabilitados (0.0-1.0, padrão 0.5)
+  shadow_intensity?: number;              // Intensidade de shadows e efeitos de profundidade (0.0-2.0, padrão 1.0)
 
   is_active: boolean;
   created_at: string;

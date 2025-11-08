@@ -50,7 +50,23 @@ export const validateHexColor = (color: string): boolean => {
 };
 
 /**
- * Validar todas as cores de tema
+ * Validar opacidade (0.0 - 1.0)
+ */
+export const validateOpacity = (value: number | undefined): boolean => {
+  if (value === undefined) return true;
+  return value >= 0 && value <= 1;
+};
+
+/**
+ * Validar intensidade de sombras (0.0 - 2.0)
+ */
+export const validateShadowIntensity = (value: number | undefined): boolean => {
+  if (value === undefined) return true;
+  return value >= 0 && value <= 2;
+};
+
+/**
+ * Validar todas as cores e configurações de tema
  */
 export const validateThemeColors = (theme: Partial<ThemeCustomization>): string[] => {
   const errors: string[] = [];
@@ -75,11 +91,22 @@ export const validateThemeColors = (theme: Partial<ThemeCustomization>): string[
     { key: "input_background_color", label: "Fundo de Inputs" },
   ];
 
+  // Validar cores HEX
   for (const field of colorFields) {
     const value = theme[field.key as keyof ThemeCustomization] as string;
     if (value && !validateHexColor(value)) {
       errors.push(`${field.label} deve estar em formato HEX válido (#RRGGBB)`);
     }
+  }
+
+  // Validar opacidade desabilitada
+  if (theme.disabled_opacity !== undefined && !validateOpacity(theme.disabled_opacity)) {
+    errors.push('Opacidade deve estar entre 0.0 e 1.0');
+  }
+
+  // Validar intensidade de sombras
+  if (theme.shadow_intensity !== undefined && !validateShadowIntensity(theme.shadow_intensity)) {
+    errors.push('Intensidade de sombras deve estar entre 0.0 e 2.0');
   }
 
   return errors;
@@ -147,6 +174,10 @@ export const themeToCSSVariables = (theme: ThemeCustomization): Record<string, s
   if (theme.input_background_color_light) variables["--input-bg-light"] = theme.input_background_color_light;
   if (theme.input_background_color_dark) variables["--input-bg-dark"] = theme.input_background_color_dark;
 
+  // Configurações numéricas
+  if (theme.disabled_opacity !== undefined) variables["--disabled-opacity"] = theme.disabled_opacity.toString();
+  if (theme.shadow_intensity !== undefined) variables["--shadow-intensity"] = theme.shadow_intensity.toString();
+
   return variables;
 };
 
@@ -177,12 +208,13 @@ export const saveThemeToLocalStorage = (theme: ThemeCustomization): void => {
 };
 
 /**
- * Obter tema padrão
+ * Obter tema padrão com todos os campos
  */
 export const getDefaultTheme = (): ThemeCustomization => ({
   id: "",
   project_id: "",
   organization_id: "",
+  // Cores principais (legado)
   primary_color: DEFAULT_THEME_COLORS.primaryColor,
   secondary_color: DEFAULT_THEME_COLORS.secondaryColor,
   background_color: DEFAULT_THEME_COLORS.backgroundColor,
@@ -190,6 +222,10 @@ export const getDefaultTheme = (): ThemeCustomization => ({
   text_color: DEFAULT_THEME_COLORS.textColor,
   text_secondary_color: DEFAULT_THEME_COLORS.textSecondaryColor,
   accent_color: DEFAULT_THEME_COLORS.accentColor,
+  // Configurações numéricas
+  disabled_opacity: 0.5,
+  shadow_intensity: 1.0,
+  // Metadados
   is_active: false,
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),

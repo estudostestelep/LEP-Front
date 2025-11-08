@@ -22,4 +22,8 @@ export const colorImpactMap: Record<string, string> = {
   // Configurações do Sistema
   focus_ring_color: "Outline de foco para acessibilidade (keyboard navigation e focus visible)",
   input_background_color: "Fundo específico de campos de entrada, textareas e inputs de formulário",
+
+  // Configurações Numéricas
+  disabled_opacity: "Opacidade aplicada a elementos desabilitados (0.0-1.0) - controla visualização de estados inativos",
+  shadow_intensity: "Intensidade de sombras e efeitos de profundidade em cards e modais (0.0-2.0) - 1.0 é padrão",
 };
