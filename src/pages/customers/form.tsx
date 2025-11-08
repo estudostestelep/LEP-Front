@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { userService, User, CreateUserRequest } from "@/api/userService";
 import { useCurrentTenant } from '@/hooks/useCurrentTenant';
+import { Button } from "@/components/ui/button";
 
 interface Props {
   initialData?: User;
@@ -83,19 +84,19 @@ export default function UserForm({ initialData, onSuccess, onCancel }: Props) {
       />
 
       <div className="flex gap-2">
-        <button
+        <Button
           type="submit"
-          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+          variant="default"
         >
           {initialData?.id ? "Update" : "Create"}
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
+          variant="outline"
           onClick={onCancel}
-          className="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded"
         >
           Cancel
-        </button>
+        </Button>
       </div>
     </form>
   );
