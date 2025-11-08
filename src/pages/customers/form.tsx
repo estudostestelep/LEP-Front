@@ -2,6 +2,7 @@ import { useState } from "react";
 import { userService, User, CreateUserRequest } from "@/api/userService";
 import { useCurrentTenant } from '@/hooks/useCurrentTenant';
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 interface Props {
   initialData?: User;
@@ -56,31 +57,28 @@ export default function UserForm({ initialData, onSuccess, onCancel }: Props) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="bg-white p-4 rounded shadow space-y-4"
+      className="bg-card p-4 rounded shadow space-y-4"
     >
-      <input
+      <Input
         type="text"
         name="name"
         value={form.name}
         onChange={handleChange}
         placeholder="Name"
-        className="w-full border px-3 py-2 rounded"
       />
-      <input
+      <Input
         type="email"
         name="email"
         value={form.email}
         onChange={handleChange}
         placeholder="Email"
-        className="w-full border px-3 py-2 rounded"
       />
-      <input
+      <Input
         type="text"
         name="role"
         value={form.role}
         onChange={handleChange}
         placeholder="Role"
-        className="w-full border px-3 py-2 rounded"
       />
 
       <div className="flex gap-2">
