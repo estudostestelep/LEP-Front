@@ -17,6 +17,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import ConfirmModal from "@/components/confirmModal";
 import FormModal from "@/components/formModal";
 import ImageUpload, { ImageUploadRef } from "@/components/ImageUpload";
@@ -542,18 +543,16 @@ export default function CategoriesPage() {
             />
           </div>
 
-          <div className="flex items-center">
-            <input
-              type="checkbox"
+          <div className="flex items-center gap-2">
+            <Checkbox
               id="active"
               checked={formData.active}
-              onChange={(e) =>
-                setFormData({ ...formData, active: e.target.checked })
+              onCheckedChange={(checked) =>
+                setFormData({ ...formData, active: checked as boolean })
               }
               disabled={isSaving}
-              className="h-4 w-4 text-primary focus:ring-primary border-input rounded"
             />
-            <label htmlFor="active" className="ml-2 block text-sm text-foreground">
+            <label htmlFor="active" className="text-sm font-medium text-foreground cursor-pointer">
               Categoria ativa
             </label>
           </div>
