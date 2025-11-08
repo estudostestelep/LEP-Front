@@ -12,11 +12,12 @@ export interface ThemeCustomization {
   text_secondary_color: string;    // Texto secundário (#a1a1aa)
   accent_color: string;            // Cor de destaque (#ec4899)
 
-  // Cores Semânticas (4 novos campos)
+  // Cores Semânticas (5 novos campos)
   destructive_color?: string;      // Cor para erros/delete (#EF4444)
   success_color?: string;          // Cor para sucesso (#10B981)
   warning_color?: string;          // Cor para aviso (#F59E0B)
   border_color?: string;           // Cor para bordas (#E5E7EB)
+  price_color?: string;            // Cor para preços (#10B981 padrão, mas customizável)
 
   // Configurações do Sistema (4 novos campos)
   disabled_opacity?: number;       // Opacidade para disabled (0.5)

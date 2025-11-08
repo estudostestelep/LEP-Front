@@ -458,7 +458,7 @@ export default function PublicMenu() {
                   {/* Header: Name and Price */}
                   <div className="flex items-start justify-between gap-2 mb-1">
                     <h3 className="font-semibold text-sm sm:text-base line-clamp-1">{product.name}</h3>
-                    <span className="text-success font-bold text-sm sm:text-base flex-shrink-0 whitespace-nowrap">
+                    <span className="text-price font-bold text-sm sm:text-base flex-shrink-0 whitespace-nowrap">
                       R$ {product.price_normal.toFixed(2)}
                     </span>
                   </div>
@@ -546,7 +546,7 @@ export default function PublicMenu() {
                     </Badge>
                   </div>
                   <div className="text-right">
-                    <div className="text-3xl font-bold text-success">
+                    <div className="text-3xl font-bold text-price">
                       R$ {selectedProduct.price_normal.toFixed(2)}
                     </div>
                   </div>
