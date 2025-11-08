@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Modal } from "@/components/ui/modal";
 import {
-  //  Clock,
-  //  Star,
+  Clock,
+  Star,
   ChefHat,
   Loader2,
   AlertCircle,
@@ -452,7 +452,7 @@ export default function PublicMenu() {
                   {/* Header: Name and Price */}
                   <div className="flex items-start justify-between gap-2 mb-1">
                     <h3 className="font-semibold text-sm sm:text-base line-clamp-1">{product.name}</h3>
-                    <span className="text-green-600 font-bold text-sm sm:text-base flex-shrink-0 whitespace-nowrap">
+                    <span className="text-success font-bold text-sm sm:text-base flex-shrink-0 whitespace-nowrap">
                       R$ {product.price_normal.toFixed(2)}
                     </span>
                   </div>
@@ -540,7 +540,7 @@ export default function PublicMenu() {
                     </Badge>
                   </div>
                   <div className="text-right">
-                    <div className="text-3xl font-bold text-green-600">
+                    <div className="text-3xl font-bold text-success">
                       R$ {selectedProduct.price_normal.toFixed(2)}
                     </div>
                   </div>
@@ -549,11 +549,11 @@ export default function PublicMenu() {
                 <p className="text-muted-foreground leading-relaxed">
                   {selectedProduct.description}
                 </p>
-                {/* 
+
                 <div className="flex items-center space-x-6 pt-4 border-t">
                   <div className="flex items-center space-x-2">
-                    <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-                    <span className="text-lg">4.8</span>
+                    <Star className="h-5 w-5 fill-warning text-warning" />
+                    <span className="text-lg font-semibold">4.8</span>
                     <span className="text-muted-foreground">(124 avaliações)</span>
                   </div>
 
@@ -563,7 +563,7 @@ export default function PublicMenu() {
                       <span>Tempo de preparo: {selectedProduct.prep_time_minutes} minutos</span>
                     </div>
                   )}
-                </div> */}
+                </div>
 
                 {/* Action Button */}
                 <div className="pt-4">
