@@ -104,6 +104,7 @@ export default function ThemeCustomizationModal({ isOpen, onClose }: ThemeCustom
       { key: "success_color", label: "Cor de Sucesso", description: "Cor para ações bem-sucedidas", required: false },
       { key: "warning_color", label: "Cor de Aviso", description: "Cor para avisos e atenção", required: false },
       { key: "border_color", label: "Cor de Bordas", description: "Cor padrão para bordas e divisores", required: false },
+      { key: "price_color", label: "Cor do Preço", description: "Cor customizável para preços no cardápio", required: false },
     ],
     "Configurações do Sistema": [
       { key: "focus_ring_color", label: "Cor de Focus Ring", description: "Cor para outline de foco", required: false },

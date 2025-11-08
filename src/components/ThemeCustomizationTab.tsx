@@ -31,6 +31,7 @@ export default function ThemeCustomizationTab() {
       { key: "success_color", label: "Cor de Sucesso", description: "Cor para ações bem-sucedidas" },
       { key: "warning_color", label: "Cor de Aviso", description: "Cor para avisos e atenção" },
       { key: "border_color", label: "Cor de Bordas", description: "Cor padrão para bordas e divisores" },
+      { key: "price_color", label: "Cor do Preço", description: "Cor customizável para preços no cardápio" },
     ],
     "Configurações do Sistema": [
       { key: "focus_ring_color", label: "Cor de Focus Ring", description: "Cor para outline de foco" },
