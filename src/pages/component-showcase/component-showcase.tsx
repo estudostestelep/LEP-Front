@@ -13,8 +13,8 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { COLORS, SPACING, SHADOWS, TRANSITIONS, FONT_SIZE, BORDER_RADIUS } from '@/tokens/design-tokens';
-import { Eye, Moon, Sun } from 'lucide-react';
+import { COLORS, SPACING, FONT_SIZE } from '@/tokens/design-tokens';
+import { Moon, Sun } from 'lucide-react';
 
 export default function ComponentShowcase() {
   const [isDarkMode, setIsDarkMode] = useState(() => {
