@@ -34,6 +34,9 @@ export default function ThemeCustomizationModal({ isOpen, onClose }: ThemeCustom
 
   useEffect(() => {
     setColors(theme);
+    // Sincronizar showDarkMode com o tema atual do sistema
+    const isDarkMode = document.documentElement.classList.contains("dark");
+    setShowDarkMode(isDarkMode);
   }, [theme, isOpen]);
 
   // Validar contraste em tempo real
