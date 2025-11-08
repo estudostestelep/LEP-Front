@@ -5,13 +5,28 @@ After implementing the extended theme customization system, several pages still 
 
 ## Status: IN PROGRESS ✅
 
-**Completed:** 1/9 pages migrated
+**Completed:** 3/9 pages migrated (33%)
 
 ### Completed Pages
-- ✅ [src/pages/admin-menu/categories.tsx](src/pages/admin-menu/categories.tsx) - **Done**
+- ✅ [src/pages/admin-menu/categories.tsx](src/pages/admin-menu/categories.tsx) - **DONE**
   - Replaced green/gray colors with Button component using theme
   - Updated text colors to use `text-muted-foreground` and `text-foreground`
   - Updated error alert to use `destructive` semantic color
+  - Commit: 41ce2d1
+
+- ✅ [src/pages/admin-menu/index.tsx](src/pages/admin-menu/index.tsx) - **DONE**
+  - Updated status buttons to use Button component variants
+  - Fixed error alert colors to destructive semantic
+  - Updated checkbox to use primary/input theme colors
+  - Fixed loader color to text-muted-foreground
+  - Commit: 8286d92
+
+- ✅ [src/pages/admin-menu/category-products.tsx](src/pages/admin-menu/category-products.tsx) - **DONE**
+  - Updated status buttons to use Button component variants
+  - Changed price badge from bg-green-600 to bg-success
+  - Fixed all text-gray-* colors to text-muted-foreground
+  - Updated loader color
+  - Commit: 40c1be2
 
 ---
 
@@ -178,9 +193,9 @@ When updating a page, follow this pattern:
 
 ### Phase 1 (NEXT - Critical User Experience)
 1. ✅ categories.tsx - DONE
-2. admin-menu/index.tsx - Main menu
-3. category-products.tsx - Product management
-4. orders/list.tsx - Order status
+2. ✅ admin-menu/index.tsx - DONE
+3. ✅ category-products.tsx - DONE
+4. ⏳ orders/list.tsx - Order status (NEXT)
 
 ### Phase 2 (Important - User-facing)
 5. reservations/calendar.tsx - Reservation status
@@ -213,4 +228,5 @@ After each migration:
 - Use Tailwind's arbitrary value support: `bg-[var(--success)/10]`
 - For opacity: `bg-color/10` = 10% opacity, `bg-color/20` = 20% opacity
 - Prefer Shadcn Button component for interactive elements
-- File last updated: 2025-11-08
+- File last updated: 2025-11-08 (Session 2)
+- Latest commit: 40c1be2 (category-products theme fixes)
