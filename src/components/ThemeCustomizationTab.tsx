@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useTheme } from "@/context/themeContext";
-import { Palette, Loader2, RotateCcw } from "lucide-react";
+import { Palette, Loader2, RotateCcw, Sun, Moon } from "lucide-react";
 import ThemeCustomizationModal from "./ThemeCustomizationModal";
 
 /**
@@ -14,6 +14,7 @@ import ThemeCustomizationModal from "./ThemeCustomizationModal";
 export default function ThemeCustomizationTab() {
   const { theme, loading } = useTheme();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showDarkMode, setShowDarkMode] = useState(false);
 
   const colorFieldsByCategory = {
     "Cores Principais": [
@@ -43,17 +44,46 @@ export default function ThemeCustomizationTab() {
         {/* Customização de Cores */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Palette className="h-5 w-5" />
-              Customização de Tema
-            </CardTitle>
-            <CardDescription>
-              Personalize as cores do sistema de acordo com a identidade da sua marca
-            </CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Palette className="h-5 w-5" />
+                  Customização de Tema
+                </CardTitle>
+                <CardDescription>
+                  Personalize as cores do sistema de acordo com a identidade da sua marca
+                </CardDescription>
+              </div>
+              <div className="flex items-center gap-2">
+                <Sun className="h-4 w-4 text-amber-500" />
+                <button
+                  onClick={() => setShowDarkMode(!showDarkMode)}
+                  className={`relative inline-flex h-8 w-14 flex-shrink-0 items-center rounded-full transition-colors ${
+                    showDarkMode ? "bg-slate-600" : "bg-amber-100"
+                  }`}
+                  title={showDarkMode ? "Mostrar tema claro" : "Mostrar tema escuro"}
+                >
+                  <span
+                    className={`inline-block h-7 w-7 transform rounded-full bg-white transition-transform ${
+                      showDarkMode ? "translate-x-7" : "translate-x-0"
+                    }`}
+                  />
+                </button>
+                <Moon className="h-4 w-4 text-slate-500" />
+              </div>
+            </div>
           </CardHeader>
           <CardContent className="space-y-8">
-            {/* Cores Organizadas por Categoria */}
-            {Object.entries(colorFieldsByCategory).map(([category, fields]) => (
+            {/* Tema Visual Wrapper */}
+            <div
+              className={`p-6 rounded-lg border transition-colors ${
+                showDarkMode
+                  ? "dark bg-slate-900 border-slate-700"
+                  : "bg-slate-50 border-slate-200"
+              }`}
+            >
+              {/* Cores Organizadas por Categoria */}
+              {Object.entries(colorFieldsByCategory).map(([category, fields]) => (
               <div key={category}>
                 <h3 className="text-sm font-semibold mb-4 text-foreground">{category}</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -90,6 +120,7 @@ export default function ThemeCustomizationTab() {
                 </div>
               </div>
             ))}
+            </div>
 
             {/* Preview do Tema */}
             <div>
