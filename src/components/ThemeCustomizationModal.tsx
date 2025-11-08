@@ -175,7 +175,7 @@ export default function ThemeCustomizationModal({ isOpen, onClose }: ThemeCustom
                 <button
                   className="px-3 py-1 rounded text-sm font-medium text-white"
                   style={{
-                    backgroundColor: colors.primary_color || "#FF6B35",
+                    backgroundColor: colors.primary_color || "#0F172A",
                   }}
                 >
                   Primário
@@ -183,7 +183,7 @@ export default function ThemeCustomizationModal({ isOpen, onClose }: ThemeCustom
                 <button
                   className="px-3 py-1 rounded text-sm font-medium text-white"
                   style={{
-                    backgroundColor: colors.secondary_color || "#F4A261",
+                    backgroundColor: colors.secondary_color || "#1E293B",
                   }}
                 >
                   Secundário
@@ -191,7 +191,7 @@ export default function ThemeCustomizationModal({ isOpen, onClose }: ThemeCustom
                 <button
                   className="px-3 py-1 rounded text-sm font-medium text-white"
                   style={{
-                    backgroundColor: colors.accent_color || "#FF9F1C",
+                    backgroundColor: colors.accent_color || "#ec4899",
                   }}
                 >
                   Destaque

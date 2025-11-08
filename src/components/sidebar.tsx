@@ -178,7 +178,7 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
                     flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200
                     ${isActive
                       ? 'bg-primary text-primary-foreground shadow-sm'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-accent hover:translate-x-1'
+                      : 'text-foreground hover:bg-accent hover:translate-x-1'
                     }
                   `}
                 >
@@ -207,7 +207,7 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
                     flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200
                     ${isActive
                       ? 'bg-primary text-primary-foreground shadow-sm'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-accent hover:translate-x-1'
+                      : 'text-foreground hover:bg-accent hover:translate-x-1'
                     }
                   `}
                 >
@@ -238,7 +238,7 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
                         flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200
                         ${isActive
                           ? 'bg-primary text-primary-foreground shadow-sm'
-                          : 'text-muted-foreground hover:text-foreground hover:bg-accent hover:translate-x-1'
+                          : 'text-foreground hover:bg-accent hover:translate-x-1'
                         }
                       `}
                     >

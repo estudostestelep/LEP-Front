@@ -21,15 +21,14 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
-  // Inicializar com localStorage se disponível (que contém o último tema carregado da API)
-  // Senão usar padrão
+  // Usar apenas o tema padrão (sem customizações)
+  // Não usar localStorage para evitar conflitos com tema customizado anterior
   const getInitialTheme = () => {
-    const stored = getThemeFromLocalStorage();
-    return stored || getDefaultTheme();
+    return getDefaultTheme();
   };
 
   const [theme, setTheme] = useState<ThemeCustomization>(getInitialTheme());
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Aplicar tema ao DOM
@@ -95,10 +94,8 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Carregar tema ao inicializar
-  useEffect(() => {
-    loadTheme();
-  }, []);
+  // Nota: loadTheme() será chamado manualmente quando necessário (ex: após login)
+  // Não chamamos automaticamente aqui para evitar erro ao tentar buscar API sem autenticação
 
   return (
     <ThemeContext.Provider

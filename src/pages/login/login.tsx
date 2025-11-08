@@ -122,7 +122,7 @@ export default function Login() {
 
               <ShimmerButton
                 type="submit"
-                className="w-full bg-primary hover:bg-primary/90"
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
                 disabled={!email || !password || loading}
               >
                 <LogIn className="h-4 w-4 mr-2" />

@@ -140,7 +140,7 @@ export default function ReservationForm({ initialData, onSuccess, onCancel }: Pr
                 name="customer_id"
                 value={form.customer_id}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-input bg-background text-foreground text-sm ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 rounded-md"
+                className="w-full px-3 py-2 border border-input bg-card text-card-foreground text-sm ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 rounded-md"
                 required
                 disabled={isSubmitting}
               >
@@ -200,7 +200,7 @@ export default function ReservationForm({ initialData, onSuccess, onCancel }: Pr
                 name="table_id"
                 value={form.table_id}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-input bg-background text-foreground text-sm ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 rounded-md"
+                className="w-full px-3 py-2 border border-input bg-card text-card-foreground text-sm ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 rounded-md"
                 required
                 disabled={isSubmitting}
               >
@@ -236,7 +236,7 @@ export default function ReservationForm({ initialData, onSuccess, onCancel }: Pr
                   name="status"
                   value={form.status}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-input bg-background text-foreground text-sm ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 rounded-md"
+                  className="w-full px-3 py-2 border border-input bg-card text-card-foreground text-sm ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 rounded-md"
                   disabled={isSubmitting}
                 >
                   <option value="confirmed">Confirmada</option>
@@ -257,7 +257,7 @@ export default function ReservationForm({ initialData, onSuccess, onCancel }: Pr
                 value={form.note}
                 onChange={handleChange}
                 placeholder="Observações da reserva (alergias, preferências, etc.)"
-                className="w-full min-h-[80px] px-3 py-2 border border-input bg-background text-foreground text-sm ring-offset-background placeholder:text-muted-foreground focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none rounded-md"
+                className="w-full min-h-[80px] px-3 py-2 border border-input bg-card text-card-foreground text-sm ring-offset-background placeholder:text-muted-foreground focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none rounded-md"
                 disabled={isSubmitting}
               />
             </div>

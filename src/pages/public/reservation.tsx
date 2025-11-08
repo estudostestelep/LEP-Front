@@ -344,7 +344,7 @@ export default function PublicReservation() {
                   <select
                     value={reservationData.party_size}
                     onChange={(e) => setReservationData(prev => ({ ...prev, party_size: Number(e.target.value), time: "" }))}
-                    className="w-full px-3 py-2 border border-input bg-background text-foreground text-sm ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-md"
+                    className="w-full px-3 py-2 border border-input bg-card text-card-foreground text-sm ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-md"
                   >
                     {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(size => (
                       <option key={size} value={size}>
@@ -499,7 +499,7 @@ export default function PublicReservation() {
                       value={reservationData.note}
                       onChange={(e) => setReservationData(prev => ({ ...prev, note: e.target.value }))}
                       placeholder="Alguma observação especial? (opcional)"
-                      className="w-full px-3 py-2 border border-input bg-background text-foreground text-sm ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-md"
+                      className="w-full px-3 py-2 border border-input bg-card text-card-foreground text-sm ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-md"
                       rows={3}
                     />
                   </div>

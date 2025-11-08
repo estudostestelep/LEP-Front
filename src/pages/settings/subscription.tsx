@@ -170,8 +170,8 @@ export default function SubscriptionPage() {
           <button
             onClick={() => setBillingCycle('monthly')}
             className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${billingCycle === 'monthly'
-                ? 'bg-background text-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground'
+                ? 'bg-primary text-primary-foreground shadow-sm font-semibold'
+                : 'text-foreground hover:bg-muted/50'
               }`}
           >
             Mensal
@@ -179,8 +179,8 @@ export default function SubscriptionPage() {
           <button
             onClick={() => setBillingCycle('yearly')}
             className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${billingCycle === 'yearly'
-                ? 'bg-background text-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground'
+                ? 'bg-primary text-primary-foreground shadow-sm font-semibold'
+                : 'text-foreground hover:bg-muted/50'
               }`}
           >
             Anual <Badge variant="secondary" className="ml-1">-20%</Badge>

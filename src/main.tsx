@@ -7,7 +7,6 @@ import { AuthProvider } from "./context/authContext";
 import { ThemeProvider } from "./components/theme-provider";
 import { ThemeProvider as CustomThemeProvider } from "./context/themeContext";
 import "./index.css";
-import "./theme-colors.css";
 
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>

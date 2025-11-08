@@ -123,14 +123,14 @@ export default function AdminMenuPage() {
     <div className="p-6 max-w-7xl mx-auto">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold">Admin Menu</h1>
-          <p className="text-gray-600 mt-1">
+          <h1 className="text-3xl font-bold text-foreground">Admin Menu</h1>
+          <p className="text-muted-foreground mt-1">
             Gerencie seus cardápios, categorias e produtos
           </p>
         </div>
         <Button
           onClick={handleOpenCreateModal}
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
         >
           <Plus className="h-5 w-5" />
           Novo Cardápio
@@ -140,8 +140,8 @@ export default function AdminMenuPage() {
       {menus.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <p className="text-gray-500 mb-4">Nenhum cardápio cadastrado</p>
-            <Button onClick={handleOpenCreateModal}>
+            <p className="text-muted-foreground mb-4">Nenhum cardápio cadastrado</p>
+            <Button onClick={handleOpenCreateModal} className="bg-primary text-primary-foreground hover:bg-primary/90">
               <Plus className="h-4 w-4 mr-2" />
               Criar Primeiro Cardápio
             </Button>
@@ -159,8 +159,8 @@ export default function AdminMenuPage() {
               <CardContent className="p-6">
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex-1">
-                    <h3 className="text-xl font-semibold">{menu.name}</h3>
-                    <p className="text-sm text-gray-500 mt-1">
+                    <h3 className="text-xl font-semibold text-foreground">{menu.name}</h3>
+                    <p className="text-sm text-muted-foreground mt-1">
                       Ordem: {menu.order}
                     </p>
                   </div>
@@ -185,44 +185,40 @@ export default function AdminMenuPage() {
 
                 <div className="flex gap-2 mt-4">
                   <Button
-                    variant="outline"
                     size="sm"
                     onClick={() => handleOpenEditModal(menu)}
-                    className="flex-1"
+                    className="flex-1 border border-primary text-primary bg-transparent hover:bg-primary/10 transition-colors"
                   >
                     <Edit className="h-4 w-4 mr-1" />
                     Editar
                   </Button>
                   {isMasterAdmin && (
                     <Button
-                      variant="outline"
                       size="sm"
                       onClick={() => handleOpenConfigModal(menu)}
                       title="Configurar horários, dias e prioridade"
-                      className="flex-1"
+                      className="flex-1 border border-border bg-card text-foreground hover:bg-muted transition-colors"
                     >
                       <Clock className="h-4 w-4 mr-1" />
                       Configurar
                     </Button>
                   )}
                   <Button
-                    variant="outline"
                     size="sm"
                     onClick={() => {
                       setSelectedMenu(menu);
                       setIsDeleteModalOpen(true);
                     }}
-                    className="text-red-600 hover:text-red-700"
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
 
-                <div className="mt-4 pt-4 border-t">
+                <div className="mt-4 pt-4 border-t border-border">
                   <Button
-                    variant="default"
                     size="sm"
-                    className="w-full"
+                    className="w-full border border-primary text-primary bg-transparent hover:bg-primary/10 font-semibold transition-all"
                     onClick={() => {
                       // Navegar para categorias do menu
                       navigate(`/admin-menu/${menu.id}/categories`);
