@@ -5,10 +5,16 @@ import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
 import { useAuth } from "@/context/authContext";
 import { useTheme } from "@/context/themeContext";
-import { Loader2, AlertCircle, CheckCircle, RotateCcw, AlertTriangle, Eye } from "lucide-react";
+import { Loader2, AlertCircle, CheckCircle, RotateCcw, AlertTriangle, Eye, HelpCircle } from "lucide-react";
 import { validateThemeColors } from "@/api/themeCustomizationService";
 import { ThemeCustomization } from "@/types/theme";
 import { validateContrast, isValidHex } from "@/lib/color-utils";
+import { colorImpactMap } from "@/lib/color-impact";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 
 interface ThemeCustomizationModalProps {
   isOpen: boolean;
@@ -219,7 +225,23 @@ export default function ThemeCustomizationModal({ isOpen, onClose }: ThemeCustom
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <label className="text-sm font-medium">{field.label}</label>
-                      {field.required && <span className="text-xs text-red-500">*</span>}
+                      <div className="flex items-center gap-2">
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              type="button"
+                              className="h-5 w-5 rounded-full text-muted-foreground hover:text-foreground transition-colors"
+                              title="Clique para ver onde essa cor é aplicada"
+                            >
+                              <HelpCircle className="h-4 w-4" />
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent side="right" className="max-w-xs text-xs">
+                            {colorImpactMap[field.key] || "Cor customizável para o sistema"}
+                          </TooltipContent>
+                        </Tooltip>
+                        {field.required && <span className="text-xs text-red-500">*</span>}
+                      </div>
                     </div>
                     <p className="text-xs text-gray-500">{field.description}</p>
                     <div className="flex gap-2">
