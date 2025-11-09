@@ -42,7 +42,14 @@ vi.mock('@/context/authContext', async () => {
       isAuthenticated: true,
       loading: false,
       login: vi.fn(),
-      logout: vi.fn()
+      logout: vi.fn(),
+      organizations: [],
+      projects: [],
+      currentOrganization: 'org-123',
+      currentProject: 'project-123',
+      selectOrganization: vi.fn(),
+      selectProject: vi.fn(),
+      isMasterAdmin: false
     })
   }
 })
