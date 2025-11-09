@@ -62,6 +62,26 @@ export interface ThemeCustomization {
   input_background_color_dark?: string;   // Dark mode (#1F2937)
 
   // ============================================================================
+  // NOVO - Cores Adicionais Light/Dark para sincronização completa (8 cores)
+  // ============================================================================
+  card_foreground_color_light?: string;   // Light mode (#0F172A)
+  card_foreground_color_dark?: string;    // Dark mode (#F8FAFC)
+  popover_foreground_color_light?: string; // Light mode (#0F172A)
+  popover_foreground_color_dark?: string;  // Dark mode (#F8FAFC)
+  secondary_foreground_color_light?: string; // Light mode (#1E293B)
+  secondary_foreground_color_dark?: string;  // Dark mode (#F8FAFC)
+  accent_foreground_color_light?: string;  // Light mode (#1E293B)
+  accent_foreground_color_dark?: string;   // Dark mode (#F8FAFC)
+  muted_color_light?: string;             // Light mode (#F0F4F8)
+  muted_color_dark?: string;              // Dark mode (#334155)
+  info_color_light?: string;              // Light mode (#3B82F6)
+  info_color_dark?: string;               // Dark mode (#60A5FA)
+  rating_color_light?: string;            // Light mode (#FBBF24)
+  rating_color_dark?: string;             // Dark mode (#FBBF24)
+  time_color_light?: string;              // Light mode (#64748B)
+  time_color_dark?: string;               // Dark mode (#94A3B8)
+
+  // ============================================================================
   // NOVO - Configurações Numéricas do Sistema (2 campos)
   // ============================================================================
   disabled_opacity?: number;              // Opacidade para estados desabilitados (0.0-1.0, padrão 0.5)

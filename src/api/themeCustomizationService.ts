@@ -214,14 +214,19 @@ export const themeToCSSVariables = (theme: ThemeCustomization, isDarkMode: boole
   const variables: Record<string, string> = {};
 
   if (isDarkMode) {
-    // DARK MODE - Mapeamento para variáveis shadcn/ui
+    // DARK MODE - Cores principais
     if (theme.primary_color_dark) variables["--primary"] = hexToHsl(theme.primary_color_dark);
     if (theme.secondary_color_dark) variables["--secondary"] = hexToHsl(theme.secondary_color_dark);
     if (theme.background_color_dark) variables["--background"] = hexToHsl(theme.background_color_dark);
     if (theme.card_background_color_dark) variables["--card"] = hexToHsl(theme.card_background_color_dark);
     if (theme.text_color_dark) variables["--foreground"] = hexToHsl(theme.text_color_dark);
+    if (theme.card_foreground_color_dark) variables["--card-foreground"] = hexToHsl(theme.card_foreground_color_dark);
+    if (theme.popover_foreground_color_dark) variables["--popover-foreground"] = hexToHsl(theme.popover_foreground_color_dark);
     if (theme.text_secondary_color_dark) variables["--muted-foreground"] = hexToHsl(theme.text_secondary_color_dark);
     if (theme.accent_color_dark) variables["--accent"] = hexToHsl(theme.accent_color_dark);
+    if (theme.secondary_foreground_color_dark) variables["--secondary-foreground"] = hexToHsl(theme.secondary_foreground_color_dark);
+    if (theme.accent_foreground_color_dark) variables["--accent-foreground"] = hexToHsl(theme.accent_foreground_color_dark);
+    if (theme.muted_color_dark) variables["--muted"] = hexToHsl(theme.muted_color_dark);
 
     // Semânticas dark
     if (theme.destructive_color_dark) variables["--destructive"] = hexToHsl(theme.destructive_color_dark);
@@ -229,19 +234,27 @@ export const themeToCSSVariables = (theme: ThemeCustomization, isDarkMode: boole
     if (theme.warning_color_dark) variables["--warning"] = hexToHsl(theme.warning_color_dark);
     if (theme.border_color_dark) variables["--border"] = hexToHsl(theme.border_color_dark);
     if (theme.price_color_dark) variables["--price"] = hexToHsl(theme.price_color_dark);
+    if (theme.info_color_dark) variables["--info"] = hexToHsl(theme.info_color_dark);
+    if (theme.rating_color_dark) variables["--rating"] = hexToHsl(theme.rating_color_dark);
+    if (theme.time_color_dark) variables["--time"] = hexToHsl(theme.time_color_dark);
 
     // Sistema dark
     if (theme.focus_ring_color_dark) variables["--ring"] = hexToHsl(theme.focus_ring_color_dark);
     if (theme.input_background_color_dark) variables["--input"] = hexToHsl(theme.input_background_color_dark);
   } else {
-    // LIGHT MODE - Mapeamento para variáveis shadcn/ui
+    // LIGHT MODE - Cores principais
     if (theme.primary_color_light) variables["--primary"] = hexToHsl(theme.primary_color_light);
     if (theme.secondary_color_light) variables["--secondary"] = hexToHsl(theme.secondary_color_light);
     if (theme.background_color_light) variables["--background"] = hexToHsl(theme.background_color_light);
     if (theme.card_background_color_light) variables["--card"] = hexToHsl(theme.card_background_color_light);
     if (theme.text_color_light) variables["--foreground"] = hexToHsl(theme.text_color_light);
+    if (theme.card_foreground_color_light) variables["--card-foreground"] = hexToHsl(theme.card_foreground_color_light);
+    if (theme.popover_foreground_color_light) variables["--popover-foreground"] = hexToHsl(theme.popover_foreground_color_light);
     if (theme.text_secondary_color_light) variables["--muted-foreground"] = hexToHsl(theme.text_secondary_color_light);
     if (theme.accent_color_light) variables["--accent"] = hexToHsl(theme.accent_color_light);
+    if (theme.secondary_foreground_color_light) variables["--secondary-foreground"] = hexToHsl(theme.secondary_foreground_color_light);
+    if (theme.accent_foreground_color_light) variables["--accent-foreground"] = hexToHsl(theme.accent_foreground_color_light);
+    if (theme.muted_color_light) variables["--muted"] = hexToHsl(theme.muted_color_light);
 
     // Semânticas light
     if (theme.destructive_color_light) variables["--destructive"] = hexToHsl(theme.destructive_color_light);
@@ -249,6 +262,9 @@ export const themeToCSSVariables = (theme: ThemeCustomization, isDarkMode: boole
     if (theme.warning_color_light) variables["--warning"] = hexToHsl(theme.warning_color_light);
     if (theme.border_color_light) variables["--border"] = hexToHsl(theme.border_color_light);
     if (theme.price_color_light) variables["--price"] = hexToHsl(theme.price_color_light);
+    if (theme.info_color_light) variables["--info"] = hexToHsl(theme.info_color_light);
+    if (theme.rating_color_light) variables["--rating"] = hexToHsl(theme.rating_color_light);
+    if (theme.time_color_light) variables["--time"] = hexToHsl(theme.time_color_light);
 
     // Sistema light
     if (theme.focus_ring_color_light) variables["--ring"] = hexToHsl(theme.focus_ring_color_light);
@@ -300,30 +316,43 @@ export const getDefaultTheme = (): ThemeCustomization => ({
   project_id: "",
   organization_id: "",
 
-  // LIGHT MODE - 11 cores principais
+  // LIGHT MODE - Cores principais
   primary_color_light: "#1E293B",
-  secondary_color_light: "#8B5CF6",
+  secondary_color_light: "#F0F4F8",
   background_color_light: "#FFFFFF",
   card_background_color_light: "#FFFFFF",
+  card_foreground_color_light: "#0F172A",
+  popover_foreground_color_light: "#0F172A",
   text_color_light: "#0F172A",
   text_secondary_color_light: "#64748B",
-  accent_color_light: "#EC4899",
+  accent_color_light: "#F0F4F8",
+  secondary_foreground_color_light: "#0F172A",
+  accent_foreground_color_light: "#0F172A",
+  muted_color_light: "#F0F4F8",
 
-  // DARK MODE - 11 cores principais
+  // DARK MODE - Cores principais
   primary_color_dark: "#F8FAFC",
-  secondary_color_dark: "#A78BFA",
+  secondary_color_dark: "#334155",
   background_color_dark: "#0F172A",
   card_background_color_dark: "#1E293B",
+  card_foreground_color_dark: "#F8FAFC",
+  popover_foreground_color_dark: "#F8FAFC",
   text_color_dark: "#F8FAFC",
   text_secondary_color_dark: "#94A3B8",
-  accent_color_dark: "#F472B6",
+  accent_color_dark: "#475569",
+  secondary_foreground_color_dark: "#F8FAFC",
+  accent_foreground_color_dark: "#F8FAFC",
+  muted_color_dark: "#334155",
 
   // LIGHT MODE - 5 cores semânticas
   destructive_color_light: "#EF4444",
   success_color_light: "#10B981",
   warning_color_light: "#F59E0B",
-  border_color_light: "#E5E7EB",
+  border_color_light: "#E2E8F0",
   price_color_light: "#10B981",
+  info_color_light: "#0891B2",
+  rating_color_light: "#FBBF24",
+  time_color_light: "#64748B",
 
   // DARK MODE - 5 cores semânticas
   destructive_color_dark: "#DC2626",
@@ -331,14 +360,17 @@ export const getDefaultTheme = (): ThemeCustomization => ({
   warning_color_dark: "#FBBF24",
   border_color_dark: "#475569",
   price_color_dark: "#34D399",
+  info_color_dark: "#22D3EE",
+  rating_color_dark: "#FBBF24",
+  time_color_dark: "#94A3B8",
 
   // LIGHT MODE - 2 cores sistema
-  focus_ring_color_light: "#3B82F6",
-  input_background_color_light: "#F3F4F6",
+  focus_ring_color_light: "#0F172A",
+  input_background_color_light: "#E2E8F0",
 
   // DARK MODE - 2 cores sistema
-  focus_ring_color_dark: "#93C5FD",
-  input_background_color_dark: "#1F2937",
+  focus_ring_color_dark: "#CBD5E1",
+  input_background_color_dark: "#334155",
 
   // Configurações numéricas
   disabled_opacity: 0.5,
