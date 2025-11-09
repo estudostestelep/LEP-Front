@@ -36,8 +36,10 @@
     --destructive: 0 84.2% 60.2%;          /* #EF4444 - Vermelho */
     --destructive-foreground: 210 40% 98%; /* #F8FAFC - Branco quase puro */
 
-    /* Semantic Colors - Price */
-    --price: 132.4 72.6% 39.2%;            /* #10B981 - Verde (padrão) */
+    /* Semantic Colors - Success, Warning, Price */
+    --success: 142.1 76.2% 36.3%;          /* #10B981 - Verde */
+    --warning: 38 92% 50%;                 /* #F59E0B - Laranja/Amarelo */
+    --price: 142.1 76.2% 36.3%;            /* #10B981 - Verde (padrão) */
 
     /* Semantic Colors - Rating and Time */
     --rating: 45 93.4% 47.5%;              /* #FBBF24 - Amarelo/Ouro (para estrelas) */
@@ -123,8 +125,10 @@
     --destructive: 0 62.8% 30.6%;          /* #DC2626 - Vermelho escuro */
     --destructive-foreground: 210 40% 98%; /* #F8FAFC - Branco quase puro */
 
-    /* Semantic Colors - Price */
-    --price: 132.4 72.6% 39.2%;            /* #10B981 - Verde (padrão, mesmo em dark mode) */
+    /* Semantic Colors - Success, Warning, Price */
+    --success: 142.1 70.6% 45.3%;          /* #34D399 - Verde mais claro para dark mode */
+    --warning: 45 93.4% 47.5%;             /* #FBBF24 - Amarelo/Ouro mais claro */
+    --price: 142.1 70.6% 45.3%;            /* #34D399 - Verde mais claro (padrão) */
 
     /* Semantic Colors - Rating and Time */
     --rating: 45 93.4% 47.5%;              /* #FBBF24 - Amarelo/Ouro (para estrelas) */

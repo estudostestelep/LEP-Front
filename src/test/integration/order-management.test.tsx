@@ -1,16 +1,64 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@/test/utils'
 import OrderForm from '@/pages/orders/form'
-import * as orderService from '@/api/ordersService'
-import * as productService from '@/api/productService'
-import * as tableService from '@/api/tableService'
-import * as customerService from '@/api/customerService'
+import { orderService } from '@/api/ordersService'
+import { productService } from '@/api/productService'
+import { tableService } from '@/api/tableService'
+import { customerService } from '@/api/customerService'
 
 // Mock the services
-vi.mock('@/api/ordersService')
-vi.mock('@/api/productService')
-vi.mock('@/api/tableService')
-vi.mock('@/api/customerService')
+vi.mock('@/api/ordersService', () => ({
+  orderService: {
+    getAll: vi.fn(),
+    getById: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    remove: vi.fn(),
+    getKitchenQueue: vi.fn(),
+  }
+}))
+
+vi.mock('@/api/productService', () => ({
+  productService: {
+    getAll: vi.fn(),
+    getAllWithFilters: vi.fn(),
+    getById: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    remove: vi.fn(),
+    uploadImage: vi.fn(),
+    updateImage: vi.fn(),
+    updateOrder: vi.fn(),
+    updateStatus: vi.fn(),
+    getByType: vi.fn(),
+    getByCategory: vi.fn(),
+    getBySubcategory: vi.fn(),
+    getProductTags: vi.fn(),
+    addTagToProduct: vi.fn(),
+    removeTagFromProduct: vi.fn(),
+    getProductsByTag: vi.fn(),
+  }
+}))
+
+vi.mock('@/api/tableService', () => ({
+  tableService: {
+    getAll: vi.fn(),
+    getById: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    remove: vi.fn(),
+  }
+}))
+
+vi.mock('@/api/customerService', () => ({
+  customerService: {
+    getAll: vi.fn(),
+    getById: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    remove: vi.fn(),
+  }
+}))
 
 const mockOrderService = vi.mocked(orderService)
 const mockProductService = vi.mocked(productService)

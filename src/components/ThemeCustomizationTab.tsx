@@ -16,6 +16,11 @@ export default function ThemeCustomizationTab() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showDarkMode, setShowDarkMode] = useState(true);
 
+  // Guard: se theme não está carregado, não renderizar
+  if (!theme) {
+    return <div>Carregando tema...</div>;
+  }
+
   useEffect(() => {
     // Sincronizar showDarkMode com o tema atual do sistema
     // Se a classe 'dark' está no html, então estamos em dark mode

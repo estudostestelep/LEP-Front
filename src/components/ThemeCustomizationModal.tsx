@@ -25,7 +25,7 @@ export default function ThemeCustomizationModal({ isOpen, onClose }: ThemeCustom
   const { currentProject } = useAuth();
   const { theme, updateTheme, resetTheme, loading: themeLoading } = useTheme();
 
-  const [colors, setColors] = useState<Partial<ThemeCustomization>>(theme);
+  const [colors, setColors] = useState<Partial<ThemeCustomization>>(theme || {});
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -33,7 +33,7 @@ export default function ThemeCustomizationModal({ isOpen, onClose }: ThemeCustom
   const [showDarkMode, setShowDarkMode] = useState(false);
 
   useEffect(() => {
-    setColors(theme);
+    setColors(theme || {});
     // Sincronizar showDarkMode com o tema atual do sistema
     const isDarkMode = document.documentElement.classList.contains("dark");
     setShowDarkMode(isDarkMode);

@@ -3,96 +3,53 @@ import {
   themeCustomizationService,
   saveThemeToLocalStorage,
   getDefaultTheme,
-  themeToCSSVariables,
+  applyThemeToDom,
+  isDarkModePreferred,
 } from '@/api/themeCustomizationService';
-import { ThemeCustomization, ThemeDefinition, DEFAULT_THEME_LIGHT, DEFAULT_THEME_DARK } from '@/types/theme';
-import { applyTheme as applyThemeVariables, getThemeFromStorage } from '@/lib/theme-generator';
-import { validateContrast } from '@/lib/color-utils';
+import { ThemeCustomization } from '@/types/theme';
 
 interface ThemeContextType {
-  theme: ThemeCustomization;
-  currentTheme?: ThemeDefinition;
+  theme: ThemeCustomization | null;
   loading: boolean;
   error: string | null;
+  isDarkMode: boolean;
+  setIsDarkMode: (isDark: boolean) => void;
   loadTheme: () => Promise<void>;
   updateTheme: (colors: Partial<ThemeCustomization>) => Promise<void>;
   resetTheme: () => Promise<void>;
-  applyTheme: (theme: ThemeCustomization) => void;
-  validateColors: (colors: Record<string, string>) => { valid: boolean; warnings: string[] };
-  isDarkMode: boolean;
+  applyTheme: (theme: ThemeCustomization, isDarkMode: boolean) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
-  // Usar apenas o tema padrão (sem customizações)
-  // Não usar localStorage para evitar conflitos com tema customizado anterior
-  const getInitialTheme = () => {
-    return getDefaultTheme();
-  };
-
-  const [theme, setTheme] = useState<ThemeCustomization>(getInitialTheme());
-  const [currentTheme, setCurrentTheme] = useState<ThemeDefinition | undefined>();
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [isDarkMode] = useState(() => {
-    // Detectar preferência do sistema
+  // Detectar preferência do sistema
+  const [isDarkMode, setIsDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
-      return window.matchMedia('(prefers-color-scheme: dark)').matches;
+      return isDarkModePreferred();
     }
     return false;
   });
 
-  // Validar cores e retornar warnings
-  const validateColors = (colors: Record<string, string>) => {
-    const warnings: string[] = [];
+  const [theme, setTheme] = useState<ThemeCustomization | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-    // Validar contraste entre pares de cores (cores principais)
-    const pairs = [
-      { fg: 'primary_color', bg: 'background_color', label: 'Primária vs Fundo' },
-      { fg: 'text_color', bg: 'background_color', label: 'Texto vs Fundo' },
-      { fg: 'destructive_color', bg: 'background_color', label: 'Erro vs Fundo' },
-    ];
-
-    pairs.forEach(({ fg, bg, label }) => {
-      const fgColor = colors[fg];
-      const bgColor = colors[bg];
-      if (fgColor && bgColor) {
-        const result = validateContrast(fgColor, bgColor);
-        if (!result.isAccessible) {
-          warnings.push(`⚠️ ${label}: Contraste insuficiente (${result.ratio.toFixed(2)}:1)`);
-        } else if (result.level === 'AA') {
-          warnings.push(`ℹ️ ${label}: ${result.message}`);
-        }
-      }
-    });
-
-    return {
-      valid: warnings.filter((w) => w.includes('⚠️')).length === 0,
-      warnings,
-    };
-  };
-
-  // Aplicar tema ao DOM (versão legada para compatibilidade)
-  const applyTheme = (themeData: ThemeCustomization) => {
-    const cssVariables = themeToCSSVariables(themeData);
-    // Aplicar variáveis CSS imediatamente ao DOM
-    Object.entries(cssVariables).forEach(([key, value]) => {
-      document.documentElement.style.setProperty(key, value);
-    });
+  // Aplicar tema ao DOM (novo sistema light/dark)
+  const applyTheme = (themeData: ThemeCustomization, isDark: boolean) => {
+    applyThemeToDom(themeData, isDark);
 
     // Atualizar o estado e persistir
     setTheme(themeData);
     saveThemeToLocalStorage(themeData);
 
-    // Forçar uma renderização imediata para garantir que o tema seja aplicado sem precisar trocar de página
-    // Leitura de offsetHeight causa um reflow que força o navegador a aplicar as mudanças de CSS
+    // Forçar uma renderização imediata
     if (typeof document !== 'undefined') {
       void document.documentElement.offsetHeight;
     }
   };
 
-  // Carregar tema da API ou localStorage (com auto-load na inicialização)
+  // Carregar tema da API ou usar defaults
   const loadTheme = async () => {
     try {
       setLoading(true);
@@ -100,72 +57,13 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
 
       // Tentar carregar da API
       const response = await themeCustomizationService.getTheme();
-      applyTheme(response.data);
-      setCurrentTheme({
-        name: 'Custom Theme',
-        colors: {
-          primary: response.data.primary_color || '#1E293B',
-          primaryForeground: '#FFFFFF',
-          background: response.data.background_color || '#FFFFFF',
-          card: response.data.card_background_color || '#FFFFFF',
-          foreground: response.data.text_color || '#0F172A',
-          cardForeground: response.data.text_color || '#0F172A',
-          popover: response.data.background_color || '#FFFFFF',
-          popoverForeground: response.data.text_color || '#0F172A',
-          secondary: response.data.secondary_color || '#F0F4F8',
-          secondaryForeground: response.data.text_secondary_color || '#0F172A',
-          muted: '#F0F4F8',
-          mutedForeground: response.data.text_secondary_color || '#64748B',
-          accent: response.data.accent_color || '#F0F4F8',
-          accentForeground: response.data.text_color || '#1E293B',
-          destructive: '#EF4444',
-          destructiveForeground: '#F8FAFC',
-          border: '#E2E8F0',
-          input: '#E2E8F0',
-          ring: response.data.primary_color || '#1E293B',
-        },
-        isCustom: true,
-      });
+      applyTheme(response.data, isDarkMode);
     } catch (err) {
-      console.warn('Failed to load theme from API, using fallback:', err);
+      console.warn('Failed to load theme from API, using defaults:', err);
 
-      // Fallback para localStorage (novo sistema)
-      const storedThemeColors = getThemeFromStorage();
-      if (storedThemeColors) {
-        applyThemeVariables(storedThemeColors);
-        // Mapear ThemeColors para ThemeDefinition.colors
-        const mappedColors: ThemeDefinition['colors'] = {
-          background: storedThemeColors.backgroundColor || '#FFFFFF',
-          card: storedThemeColors.cardBackgroundColor || '#FFFFFF',
-          popover: storedThemeColors.backgroundColor || '#FFFFFF',
-          foreground: storedThemeColors.textColor || '#0F172A',
-          cardForeground: storedThemeColors.textColor || '#0F172A',
-          popoverForeground: storedThemeColors.textColor || '#0F172A',
-          primary: storedThemeColors.primaryColor || '#1E293B',
-          primaryForeground: '#F8FAFC',
-          secondary: storedThemeColors.secondaryColor || '#F0F4F8',
-          secondaryForeground: storedThemeColors.textSecondaryColor || '#0F172A',
-          muted: '#F0F4F8',
-          mutedForeground: storedThemeColors.textSecondaryColor || '#64748B',
-          accent: storedThemeColors.accentColor || '#F0F4F8',
-          accentForeground: '#1E293B',
-          destructive: '#EF4444',
-          destructiveForeground: '#F8FAFC',
-          border: '#E2E8F0',
-          input: '#E2E8F0',
-          ring: storedThemeColors.primaryColor || '#0F172A',
-        };
-        setCurrentTheme({
-          name: 'Stored Theme',
-          colors: mappedColors,
-          isCustom: true,
-        });
-      } else {
-        // Usar tema padrão baseado em preferência do sistema
-        const defaultTheme = isDarkMode ? DEFAULT_THEME_DARK : DEFAULT_THEME_LIGHT;
-        applyThemeVariables(defaultTheme.colors);
-        setCurrentTheme(defaultTheme);
-      }
+      // Fallback para tema padrão profissional
+      const defaultTheme = getDefaultTheme();
+      applyTheme(defaultTheme, isDarkMode);
     } finally {
       setLoading(false);
     }
@@ -175,9 +73,14 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const updateTheme = async (colors: Partial<ThemeCustomization>) => {
     try {
       setError(null);
+
+      if (!theme) {
+        throw new Error('Theme not loaded');
+      }
+
       const updatedData = { ...theme, ...colors, is_active: true };
       const response = await themeCustomizationService.saveTheme(updatedData);
-      applyTheme(response.data);
+      applyTheme(response.data, isDarkMode);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Erro ao atualizar tema';
       setError(message);
@@ -190,10 +93,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     try {
       setError(null);
       const response = await themeCustomizationService.resetToDefaults();
-      applyTheme(response.data);
-      // Resetar para tema padrão do sistema
-      const defaultTheme = isDarkMode ? DEFAULT_THEME_DARK : DEFAULT_THEME_LIGHT;
-      setCurrentTheme(defaultTheme);
+      applyTheme(response.data, isDarkMode);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Erro ao resetar tema';
       setError(message);
@@ -203,36 +103,39 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
 
   // Auto-load do tema na inicialização
   useEffect(() => {
-    // Carregar tema com fallback para tema padrão
     const initTheme = async () => {
       try {
         await loadTheme();
       } catch (err) {
         console.warn('Theme initialization failed, using default:', err);
         // Fallback final - usar tema padrão
-        const defaultTheme = isDarkMode ? DEFAULT_THEME_DARK : DEFAULT_THEME_LIGHT;
-        applyThemeVariables(defaultTheme.colors);
-        setCurrentTheme(defaultTheme);
-        setLoading(false);
+        const defaultTheme = getDefaultTheme();
+        applyTheme(defaultTheme, isDarkMode);
       }
     };
 
     initTheme();
+  }, []);
+
+  // Recarregar tema quando modo muda
+  useEffect(() => {
+    if (theme) {
+      applyTheme(theme, isDarkMode);
+    }
   }, [isDarkMode]);
 
   return (
     <ThemeContext.Provider
       value={{
         theme,
-        currentTheme,
         loading,
         error,
+        isDarkMode,
+        setIsDarkMode,
         loadTheme,
         updateTheme,
         resetTheme,
         applyTheme,
-        validateColors,
-        isDarkMode,
       }}
     >
       {children}

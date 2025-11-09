@@ -65,11 +65,11 @@ describe('Input Component', () => {
 
     const input = screen.getByRole('textbox')
     expect(input).toHaveClass('flex')
-    expect(input).toHaveClass('h-9') // Corrected: it's h-9 not h-10
+    expect(input).toHaveClass('h-9')
     expect(input).toHaveClass('w-full')
     expect(input).toHaveClass('rounded-md')
     expect(input).toHaveClass('border')
-    expect(input).toHaveClass('bg-transparent') // Corrected: it's bg-transparent not bg-background
+    expect(input).toHaveClass('bg-card')
   })
 
   it('handles focus and blur events', () => {
