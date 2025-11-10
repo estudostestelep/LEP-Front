@@ -1,19 +1,24 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Menu, menuService } from "../../api/menuService";
-import { Plus, Edit, Trash2, Power, PowerOff, Loader2 } from "lucide-react";
+import { Plus, Edit, Trash2, Power, PowerOff, Loader2, Clock } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import ConfirmModal from "@/components/confirmModal";
 import FormModal from "@/components/formModal";
+import MenuConfigModal from "@/components/MenuConfigModal";
+import { useAuth } from "@/context/authContext";
 
 export default function AdminMenuPage() {
   const navigate = useNavigate();
+  const { isMasterAdmin } = useAuth();
   const [menus, setMenus] = useState<Menu[]>([]);
   const [loading, setLoading] = useState(true);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
   const [selectedMenu, setSelectedMenu] = useState<Menu | null>(null);
   const [formData, setFormData] = useState({
     name: "",
@@ -97,10 +102,20 @@ export default function AdminMenuPage() {
     }
   };
 
+  const handleOpenConfigModal = (menu: Menu) => {
+    setSelectedMenu(menu);
+    setIsConfigModalOpen(true);
+  };
+
+  const handleSaveMenuConfig = async (updatedMenu: Menu) => {
+    setSelectedMenu(updatedMenu);
+    await loadMenus();
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -109,14 +124,14 @@ export default function AdminMenuPage() {
     <div className="p-6 max-w-7xl mx-auto">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold">Admin Menu</h1>
-          <p className="text-gray-600 mt-1">
+          <h1 className="text-3xl font-bold text-foreground">Admin Menu</h1>
+          <p className="text-muted-foreground mt-1">
             Gerencie seus cardápios, categorias e produtos
           </p>
         </div>
         <Button
           onClick={handleOpenCreateModal}
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
         >
           <Plus className="h-5 w-5" />
           Novo Cardápio
@@ -126,8 +141,8 @@ export default function AdminMenuPage() {
       {menus.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <p className="text-gray-500 mb-4">Nenhum cardápio cadastrado</p>
-            <Button onClick={handleOpenCreateModal}>
+            <p className="text-muted-foreground mb-4">Nenhum cardápio cadastrado</p>
+            <Button onClick={handleOpenCreateModal} className="bg-primary text-primary-foreground hover:bg-primary/90">
               <Plus className="h-4 w-4 mr-2" />
               Criar Primeiro Cardápio
             </Button>
@@ -138,26 +153,23 @@ export default function AdminMenuPage() {
           {menus.map((menu) => (
             <Card
               key={menu.id}
-              className={`hover:shadow-lg transition-shadow ${
-                !menu.active ? "opacity-60" : ""
-              }`}
+              className={`hover:shadow-lg transition-shadow ${!menu.active ? "opacity-60" : ""
+                }`}
             >
               <CardContent className="p-6">
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex-1">
-                    <h3 className="text-xl font-semibold">{menu.name}</h3>
-                    <p className="text-sm text-gray-500 mt-1">
+                    <h3 className="text-xl font-semibold text-foreground">{menu.name}</h3>
+                    <p className="text-sm text-muted-foreground mt-1">
                       Ordem: {menu.order}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <button
+                    <Button
                       onClick={() => handleToggleStatus(menu)}
-                      className={`p-2 rounded-lg transition-colors ${
-                        menu.active
-                          ? "bg-green-100 text-green-700 hover:bg-green-200"
-                          : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-                      }`}
+                      variant={menu.active ? "default" : "outline"}
+                      size="sm"
+                      className="px-2"
                       title={menu.active ? "Pausar" : "Ativar"}
                     >
                       {menu.active ? (
@@ -165,38 +177,46 @@ export default function AdminMenuPage() {
                       ) : (
                         <PowerOff className="h-4 w-4" />
                       )}
-                    </button>
+                    </Button>
                   </div>
                 </div>
 
                 <div className="flex gap-2 mt-4">
                   <Button
-                    variant="outline"
                     size="sm"
                     onClick={() => handleOpenEditModal(menu)}
-                    className="flex-1"
+                    className="flex-1 border border-border bg-card text-foreground hover:bg-muted transition-colors"
                   >
                     <Edit className="h-4 w-4 mr-1" />
                     Editar
                   </Button>
+                  {isMasterAdmin && (
+                    <Button
+                      size="sm"
+                      onClick={() => handleOpenConfigModal(menu)}
+                      title="Configurar horários, dias e prioridade"
+                      className="flex-1 border border-border bg-card text-foreground hover:bg-muted transition-colors"
+                    >
+                      <Clock className="h-4 w-4 mr-1" />
+                      Configurar
+                    </Button>
+                  )}
                   <Button
-                    variant="outline"
                     size="sm"
                     onClick={() => {
                       setSelectedMenu(menu);
                       setIsDeleteModalOpen(true);
                     }}
-                    className="text-red-600 hover:text-red-700"
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
 
-                <div className="mt-4 pt-4 border-t">
+                <div className="mt-4 pt-4 border-t border-border">
                   <Button
-                    variant="default"
                     size="sm"
-                    className="w-full"
+                    className="w-full border border-border text-primary bg-transparent hover:bg-primary/10 font-semibold transition-all"
                     onClick={() => {
                       // Navegar para categorias do menu
                       navigate(`/admin-menu/${menu.id}/categories`);
@@ -220,7 +240,7 @@ export default function AdminMenuPage() {
       >
         <div className="space-y-4">
           {formErrors.length > 0 && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+            <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded">
               <ul className="list-disc list-inside">
                 {formErrors.map((error, index) => (
                   <li key={index}>{error}</li>
@@ -257,17 +277,15 @@ export default function AdminMenuPage() {
             />
           </div>
 
-          <div className="flex items-center">
-            <input
-              type="checkbox"
+          <div className="flex items-center gap-2">
+            <Checkbox
               id="active"
               checked={formData.active}
-              onChange={(e) =>
-                setFormData({ ...formData, active: e.target.checked })
+              onCheckedChange={(checked) =>
+                setFormData({ ...formData, active: checked as boolean })
               }
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
             />
-            <label htmlFor="active" className="ml-2 block text-sm text-gray-700">
+            <label htmlFor="active" className="text-sm font-medium text-foreground cursor-pointer">
               Cardápio ativo
             </label>
           </div>
@@ -282,6 +300,16 @@ export default function AdminMenuPage() {
         title="Deletar Cardápio"
         message={`Tem certeza que deseja deletar o cardápio "${selectedMenu?.name}"? Esta ação não pode ser desfeita.`}
       />
+
+      {/* Modal de configuração (horários, dias, prioridade) */}
+      {selectedMenu && (
+        <MenuConfigModal
+          isOpen={isConfigModalOpen}
+          onClose={() => setIsConfigModalOpen(false)}
+          menu={selectedMenu}
+          onSave={handleSaveMenuConfig}
+        />
+      )}
     </div>
   );
 }

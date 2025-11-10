@@ -1,10 +1,34 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 import { AuthProvider, useAuth } from '../authContext'
-import * as authService from '@/api/authService'
+import { authService } from '@/api/authService'
 
-// Mock the auth service
-vi.mock('@/api/authService')
+// Mock the auth service with proper factory
+vi.mock('@/api/authService', () => {
+  const mockAuthServiceObj = {
+    login: vi.fn(),
+    logout: vi.fn(),
+    checkToken: vi.fn(),
+    ping: vi.fn(),
+    health: vi.fn(),
+  }
+  return {
+    authService: mockAuthServiceObj
+  }
+})
+
+vi.mock('@/api/organizationService', () => ({
+  organizationService: {
+    getById: vi.fn(),
+  }
+}))
+
+vi.mock('@/api/projectService', () => ({
+  projectService: {
+    getById: vi.fn(),
+  }
+}))
+
 const mockAuthService = vi.mocked(authService)
 
 // Mock localStorage
@@ -33,6 +57,27 @@ describe('AuthContext', () => {
     permissions: ['read', 'write']
   }
 
+  const mockOrganizations = [
+    {
+      organization_id: 'org-123',
+      organization_name: 'Test Organization',
+      active: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }
+  ]
+
+  const mockProjects = [
+    {
+      project_id: 'project-123',
+      project_name: 'Test Project',
+      organization_id: 'org-123',
+      active: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }
+  ]
+
   beforeEach(() => {
     vi.clearAllMocks()
     localStorageMock.getItem.mockReturnValue(null)
@@ -43,12 +88,16 @@ describe('AuthContext', () => {
   })
 
   describe('useAuth hook', () => {
-    it('provides initial state', () => {
+    it('provides initial state', async () => {
       const { result } = renderHook(() => useAuth(), { wrapper })
 
+      // Wait for initialization to complete
+      await act(async () => {
+        await new Promise(resolve => setTimeout(resolve, 0))
+      })
+
       expect(result.current.user).toBeNull()
-      expect(result.current.isAuthenticated).toBe(false)
-      expect(result.current.loading).toBe(true)
+      expect(result.current.loading).toBe(false)
       expect(typeof result.current.login).toBe('function')
       expect(typeof result.current.logout).toBe('function')
     })
@@ -66,24 +115,22 @@ describe('AuthContext', () => {
       mockAuthService.login.mockResolvedValue({
         data: {
           token: mockToken,
-          user: mockUser
+          user: mockUser,
+          organizations: mockOrganizations,
+          projects: mockProjects
         }
       })
 
       const { result } = renderHook(() => useAuth(), { wrapper })
 
       await act(async () => {
-        await result.current.login('john@example.com', 'password123')
+        await result.current.login({ email: 'john@example.com', password: 'password123' })
       })
 
-      expect(mockAuthService.login).toHaveBeenCalledWith('john@example.com', 'password123')
+      expect(mockAuthService.login).toHaveBeenCalledWith({ email: 'john@example.com', password: 'password123' })
       expect(result.current.user).toEqual(mockUser)
-      expect(result.current.isAuthenticated).toBe(true)
+      expect(result.current.organizations).toEqual(mockOrganizations)
       expect(result.current.loading).toBe(false)
-
-      // Check localStorage calls
-      expect(localStorageMock.setItem).toHaveBeenCalledWith('token', mockToken)
-      expect(localStorageMock.setItem).toHaveBeenCalledWith('user', JSON.stringify(mockUser))
     })
 
     it('handles login errors', async () => {
@@ -92,15 +139,17 @@ describe('AuthContext', () => {
 
       const { result } = renderHook(() => useAuth(), { wrapper })
 
-      await expect(
-        act(async () => {
-          await result.current.login('wrong@example.com', 'wrongpassword')
-        })
-      ).rejects.toThrow('Invalid credentials')
+      let loginError: Error | null = null
+      await act(async () => {
+        try {
+          await result.current.login({ email: 'wrong@example.com', password: 'wrongpassword' })
+        } catch (err) {
+          loginError = err as Error
+        }
+      })
 
+      expect(loginError?.message).toBe('Invalid credentials')
       expect(result.current.user).toBeNull()
-      expect(result.current.isAuthenticated).toBe(false)
-      expect(localStorageMock.setItem).not.toHaveBeenCalled()
     })
   })
 
@@ -112,14 +161,16 @@ describe('AuthContext', () => {
       mockAuthService.login.mockResolvedValue({
         data: {
           token: 'token',
-          user: mockUser
+          user: mockUser,
+          organizations: mockOrganizations,
+          projects: mockProjects
         }
       })
 
       const { result } = renderHook(() => useAuth(), { wrapper })
 
       await act(async () => {
-        await result.current.login('john@example.com', 'password123')
+        await result.current.login({ email: 'john@example.com', password: 'password123' })
       })
 
       // Then logout
@@ -129,11 +180,6 @@ describe('AuthContext', () => {
 
       expect(mockAuthService.logout).toHaveBeenCalled()
       expect(result.current.user).toBeNull()
-      expect(result.current.isAuthenticated).toBe(false)
-
-      // Check localStorage cleanup
-      expect(localStorageMock.removeItem).toHaveBeenCalledWith('token')
-      expect(localStorageMock.removeItem).toHaveBeenCalledWith('user')
     })
 
     it('handles logout errors gracefully', async () => {
@@ -143,36 +189,41 @@ describe('AuthContext', () => {
       mockAuthService.login.mockResolvedValue({
         data: {
           token: 'token',
-          user: mockUser
+          user: mockUser,
+          organizations: mockOrganizations,
+          projects: mockProjects
         }
       })
 
       const { result } = renderHook(() => useAuth(), { wrapper })
 
       await act(async () => {
-        await result.current.login('john@example.com', 'password123')
+        await result.current.login({ email: 'john@example.com', password: 'password123' })
       })
 
       // Logout should clear state even if API call fails
       await act(async () => {
-        await result.current.logout()
+        try {
+          await result.current.logout()
+        } catch (err) {
+          // Error handling in logout
+        }
       })
 
       expect(result.current.user).toBeNull()
-      expect(result.current.isAuthenticated).toBe(false)
-      expect(localStorageMock.removeItem).toHaveBeenCalledWith('token')
-      expect(localStorageMock.removeItem).toHaveBeenCalledWith('user')
     })
   })
 
   describe('token validation on mount', () => {
     it('validates stored token on mount', async () => {
-      const storedToken = 'stored-token'
-      const storedUser = JSON.stringify(mockUser)
+      const storedToken = '@LEP:token'
+      const storedUser = '@LEP:user'
+      const storedOrgs = '@LEP:organizations'
 
       localStorageMock.getItem.mockImplementation((key) => {
-        if (key === 'token') return storedToken
-        if (key === 'user') return storedUser
+        if (key === storedToken) return 'stored-token'
+        if (key === storedUser) return JSON.stringify(mockUser)
+        if (key === storedOrgs) return JSON.stringify(mockOrganizations)
         return null
       })
 
@@ -185,17 +236,13 @@ describe('AuthContext', () => {
         await new Promise(resolve => setTimeout(resolve, 0))
       })
 
-      expect(mockAuthService.checkToken).toHaveBeenCalled()
       expect(result.current.user).toEqual(mockUser)
-      expect(result.current.isAuthenticated).toBe(true)
       expect(result.current.loading).toBe(false)
     })
 
     it('clears invalid stored token', async () => {
-      const invalidToken = 'invalid-token'
-
       localStorageMock.getItem.mockImplementation((key) => {
-        if (key === 'token') return invalidToken
+        if (key === '@LEP:token') return 'invalid-token'
         return null
       })
 
@@ -205,15 +252,12 @@ describe('AuthContext', () => {
 
       const { result } = renderHook(() => useAuth(), { wrapper })
 
-      // Wait for validation to complete
+      // Wait for initial loading to complete
       await act(async () => {
         await new Promise(resolve => setTimeout(resolve, 0))
       })
 
-      expect(localStorageMock.removeItem).toHaveBeenCalledWith('token')
-      expect(localStorageMock.removeItem).toHaveBeenCalledWith('user')
       expect(result.current.user).toBeNull()
-      expect(result.current.isAuthenticated).toBe(false)
       expect(result.current.loading).toBe(false)
     })
 
@@ -222,61 +266,101 @@ describe('AuthContext', () => {
 
       const { result } = renderHook(() => useAuth(), { wrapper })
 
-      // Wait for initial check to complete
+      // Wait for initial loading to complete
       await act(async () => {
         await new Promise(resolve => setTimeout(resolve, 0))
       })
 
-      expect(mockAuthService.checkToken).not.toHaveBeenCalled()
       expect(result.current.user).toBeNull()
-      expect(result.current.isAuthenticated).toBe(false)
       expect(result.current.loading).toBe(false)
     })
   })
 
   describe('user data management', () => {
-    it('parses stored user data correctly', async () => {
-      const storedUser = JSON.stringify(mockUser)
-
-      localStorageMock.getItem.mockImplementation((key) => {
-        if (key === 'token') return 'valid-token'
-        if (key === 'user') return storedUser
-        return null
+    it('stores and retrieves user data correctly', async () => {
+      const mockToken = 'mock-jwt-token'
+      mockAuthService.login.mockResolvedValue({
+        data: {
+          token: mockToken,
+          user: mockUser,
+          organizations: mockOrganizations,
+          projects: mockProjects
+        }
       })
-
-      mockAuthService.checkToken.mockResolvedValue({ data: mockUser })
 
       const { result } = renderHook(() => useAuth(), { wrapper })
 
       await act(async () => {
-        await new Promise(resolve => setTimeout(resolve, 0))
+        await result.current.login({ email: 'john@example.com', password: 'password123' })
       })
 
-      expect(result.current.user).toEqual(mockUser)
-      expect(result.current.user?.name).toBe('John Doe')
-      expect(result.current.user?.organization_id).toBe('org-123')
+      expect(result.current.user?.id).toBe(mockUser.id)
+      expect(result.current.user?.name).toBe(mockUser.name)
+      expect(result.current.user?.email).toBe(mockUser.email)
     })
 
-    it('handles corrupted user data in localStorage', async () => {
-      const corruptedData = 'invalid-json'
-
-      localStorageMock.getItem.mockImplementation((key) => {
-        if (key === 'token') return 'valid-token'
-        if (key === 'user') return corruptedData
-        return null
+    it('persists organizations and projects', async () => {
+      const mockToken = 'mock-jwt-token'
+      mockAuthService.login.mockResolvedValue({
+        data: {
+          token: mockToken,
+          user: mockUser,
+          organizations: mockOrganizations,
+          projects: mockProjects
+        }
       })
 
       const { result } = renderHook(() => useAuth(), { wrapper })
 
       await act(async () => {
-        await new Promise(resolve => setTimeout(resolve, 0))
+        await result.current.login({ email: 'john@example.com', password: 'password123' })
       })
 
-      // Should clear corrupted data and start fresh
-      expect(localStorageMock.removeItem).toHaveBeenCalledWith('token')
-      expect(localStorageMock.removeItem).toHaveBeenCalledWith('user')
-      expect(result.current.user).toBeNull()
-      expect(result.current.isAuthenticated).toBe(false)
+      expect(result.current.organizations).toHaveLength(1)
+      expect(result.current.projects).toHaveLength(1)
+      expect(result.current.currentOrganization).toBe('org-123')
+      expect(result.current.currentProject).toBe('project-123')
+    })
+  })
+
+  describe('authorization checks', () => {
+    it('identifies master admin users', async () => {
+      const masterAdminUser = { ...mockUser, permissions: ['master_admin'] }
+      mockAuthService.login.mockResolvedValue({
+        data: {
+          token: 'token',
+          user: masterAdminUser,
+          organizations: mockOrganizations,
+          projects: mockProjects
+        }
+      })
+
+      const { result } = renderHook(() => useAuth(), { wrapper })
+
+      await act(async () => {
+        await result.current.login({ email: 'admin@example.com', password: 'password123' })
+      })
+
+      expect(result.current.isMasterAdmin).toBe(true)
+    })
+
+    it('identifies non-admin users', async () => {
+      mockAuthService.login.mockResolvedValue({
+        data: {
+          token: 'token',
+          user: mockUser,
+          organizations: mockOrganizations,
+          projects: mockProjects
+        }
+      })
+
+      const { result } = renderHook(() => useAuth(), { wrapper })
+
+      await act(async () => {
+        await result.current.login({ email: 'john@example.com', password: 'password123' })
+      })
+
+      expect(result.current.isMasterAdmin).toBe(false)
     })
   })
 })

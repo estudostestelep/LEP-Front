@@ -198,7 +198,7 @@ export default function ReservationList() {
                   name="status"
                   value={filters.status || ""}
                   onChange={handleFilterChange}
-                  className="w-full px-3 py-2 border border-input bg-background text-foreground text-sm ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 rounded-md"
+                  className="w-full px-3 py-2 border border-input bg-card text-card-foreground text-sm ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 rounded-md"
                 >
                   <option value="">Todos os status</option>
                   <option value="confirmed">Confirmada</option>

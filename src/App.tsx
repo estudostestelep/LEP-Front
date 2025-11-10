@@ -27,6 +27,7 @@ const AdminMenu = lazy(() => import('@/pages/admin-menu'));
 const Categories = lazy(() => import('@/pages/admin-menu/categories'));
 const CategoryProducts = lazy(() => import('@/pages/admin-menu/category-products'));
 const Settings = lazy(() => import('@/pages/settings'));
+const GeneralStats = lazy(() => import('@/pages/general-stats/general-stats'));
 const CreateOrganization = lazy(() => import('@/pages/organizations/create'));
 const PublicMenu = lazy(() => import('@/pages/public/menu'));
 const PublicReservation = lazy(() => import('@/pages/public/reservation'));
@@ -115,6 +116,7 @@ export default function AppRoutes() {
                 {/* Lazy routes - Rotas restritas para Master Admin */}
                 <Route path="/organizations" element={<MasterAdminRoute><Organizations /></MasterAdminRoute>} />
                 <Route path="/projects" element={<MasterAdminRoute><Projects /></MasterAdminRoute>} />
+                <Route path="/general-stats" element={<MasterAdminRoute><GeneralStats /></MasterAdminRoute>} />
 
                 {/* Rota catch-all para páginas não encontradas */}
                 <Route path="*" element={<NotFound />} />
