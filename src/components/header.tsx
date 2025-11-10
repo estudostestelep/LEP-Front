@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '@/context/authContext';
-import { useTheme } from '@/hooks/useTheme';
+import { useTheme } from '@/components/theme-provider';
 import { Button } from '@/components/ui/button';
 import { OrganizationProjectSelector } from '@/components/OrganizationProjectSelector';
 import { OrgProjectDrawer } from '@/components/OrgProjectDrawer';
@@ -21,8 +21,17 @@ interface HeaderProps {
 
 export default function Header({ toggleSidebar }: HeaderProps) {
   const { user } = useAuth();
-  const { resolvedTheme, toggleTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
   const [showOrgDrawer, setShowOrgDrawer] = useState(false);
+
+  // Resolver tema atual (handle 'system' preference)
+  const resolvedTheme = theme === 'system'
+    ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+    : theme;
+
+  const toggleTheme = () => {
+    setTheme(resolvedTheme === 'light' ? 'dark' : 'light');
+  };
 
   return (
     <>

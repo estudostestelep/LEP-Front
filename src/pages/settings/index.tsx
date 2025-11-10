@@ -1,11 +1,9 @@
 import { lazy } from "react";
 import ProductDisplaySettings from "@/components/ProductDisplaySettings";
-import ThemeCustomizationTab from "@/components/ThemeCustomizationTab";
-import { Settings as SettingsIcon, Palette, Package, Lock } from "lucide-react";
+import { Settings as SettingsIcon, Package } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/context/authContext";
 
-const ColorPalette = lazy(() => import("@/components/ColorPalette"));
 const ComponentShowcase = lazy(() => import("@/pages/component-showcase/component-showcase"));
 
 export default function Settings() {
@@ -27,24 +25,16 @@ export default function Settings() {
 
         {/* Settings Tabs */}
         <Tabs defaultValue="display" className="w-full">
-          <TabsList className={`grid w-full ${isMasterAdmin ? 'max-w-4xl grid-cols-4' : 'max-w-2xl grid-cols-2'}`}>
+          <TabsList className={`grid w-full ${isMasterAdmin ? 'max-w-2xl grid-cols-2' : 'max-w-xl grid-cols-1'}`}>
             <TabsTrigger value="display">Exibição de Produtos</TabsTrigger>
-            <TabsTrigger value="theme">Tema e Cores</TabsTrigger>
 
             {/* Master Admin Only Tabs */}
             {isMasterAdmin && (
-              <>
-                <TabsTrigger value="palette" className="flex items-center gap-2">
-                  <Palette className="h-4 w-4" />
-                  <span className="hidden sm:inline">Paleta de Cores</span>
-                  <span className="sm:hidden">Cores</span>
-                </TabsTrigger>
-                <TabsTrigger value="components" className="flex items-center gap-2">
-                  <Package className="h-4 w-4" />
-                  <span className="hidden sm:inline">Componentes</span>
-                  <span className="sm:hidden">Comps</span>
-                </TabsTrigger>
-              </>
+              <TabsTrigger value="components" className="flex items-center gap-2">
+                <Package className="h-4 w-4" />
+                <span className="hidden sm:inline">Componentes</span>
+                <span className="sm:hidden">Comps</span>
+              </TabsTrigger>
             )}
           </TabsList>
 
@@ -53,18 +43,6 @@ export default function Settings() {
             <ProductDisplaySettings />
           </TabsContent>
 
-          {/* Theme Customization Tab */}
-          <TabsContent value="theme" className="mt-6">
-            <ThemeCustomizationTab />
-          </TabsContent>
-
-          {/* Color Palette Tab - Master Admin Only */}
-          {isMasterAdmin && (
-            <TabsContent value="palette" className="mt-6">
-              <ColorPalette />
-            </TabsContent>
-          )}
-
           {/* Component Showcase Tab - Master Admin Only */}
           {isMasterAdmin && (
             <TabsContent value="components" className="mt-6">
@@ -72,16 +50,6 @@ export default function Settings() {
             </TabsContent>
           )}
         </Tabs>
-
-        {/* Master Admin Notice */}
-        {!isMasterAdmin && (
-          <div className="mt-8 p-4 bg-muted rounded-lg border border-border flex items-center gap-2">
-            <Lock className="h-5 w-5 text-muted-foreground" />
-            <p className="text-sm text-muted-foreground">
-              As abas "Paleta de Cores" e "Componentes" estão disponíveis apenas para Master Admin
-            </p>
-          </div>
-        )}
       </div>
     </div>
   );

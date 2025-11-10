@@ -25,7 +25,18 @@
       "Bash(npx vitest run src/test/integration/order-management.test.tsx --no-coverage)",
       "Bash(node -e:*)",
       "Bash(npx vitest:*)",
-      "Bash(test-output.log)"
+      "Bash(test-output.log)",
+      "Bash(git rm:*)",
+      "Bash(src/types/theme.ts )",
+      "Bash(src/api/themeCustomizationService.ts )",
+      "Bash(src/context/themeContext.tsx )",
+      "Bash(src/components/ThemeCustomizationTab.tsx )",
+      "Bash(src/components/ThemeCustomizationModal.tsx )",
+      "Bash(src/components/ColorPalette.tsx )",
+      "Bash(src/lib/theme-generator.ts )",
+      "Bash(src/lib/color-utils.ts )",
+      "Bash(src/lib/color-impact.ts )",
+      "Bash(src/hooks/useTheme.ts)"
     ],
     "deny": [],
     "ask": []
