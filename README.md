@@ -37,7 +37,7 @@ Modern React 19 + Vite frontend for complete restaurant management system with r
 
 - **Node.js 18+**
 - **npm or yarn**
-- **Backend running on http://localhost:8080**
+- **Backend running on https://lep-system-341885235510.us-central1.run.app (production) or http://localhost:8080 (development)**
 
 ### Installation & Running
 
@@ -193,7 +193,10 @@ Create `.env` file based on `.env.example`:
 
 ```bash
 # Backend API URL
+# Development:
 VITE_API_BASE_URL=http://localhost:8080
+# Production:
+# VITE_API_BASE_URL=https://lep-system-341885235510.us-central1.run.app
 
 # Optional: Enable mock data
 VITE_ENABLE_MOCKS=false

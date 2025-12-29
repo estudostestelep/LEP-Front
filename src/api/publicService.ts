@@ -6,7 +6,7 @@ import { Category } from "./categoryService";
 import { Menu } from "./menuService";
 
 const publicApi = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || "https://lep-system-516622888070.us-central1.run.app",
+  baseURL: import.meta.env.VITE_API_BASE_URL || "https://lep-system-341885235510.us-central1.run.app",
   timeout: 10000,
 });
 
