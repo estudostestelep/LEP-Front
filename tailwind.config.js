@@ -41,6 +41,9 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        price: "hsl(var(--price))",
+        rating: "hsl(var(--rating))",
+        time: "hsl(var(--time))",
       },
       borderRadius: {
         lg: "var(--radius)",

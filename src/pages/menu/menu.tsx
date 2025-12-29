@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -17,8 +17,12 @@ import { Product, productService } from "@/api/productService";
 import { Menu, menuService } from "@/api/menuService";
 import { Category, categoryService } from "@/api/categoryService";
 import { Tag, tagService } from "@/api/tagService";
+import type { ProductDisplaySettings } from "@/types/settings";
 import { useAuth } from "@/context/authContext";
 import { CategoryImage } from "@/components/CategoryImage";
+import MenuSelector from "@/components/MenuSelector";
+import { useIsDesktop } from "@/hooks/useMediaQuery";
+import { useDisplaySettings } from "@/hooks/useDisplaySettings";
 
 export default function MenuPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -38,38 +42,47 @@ export default function MenuPage() {
 
   const [expandedProducts, setExpandedProducts] = useState<Set<string>>(new Set());
   const [showFilters, setShowFilters] = useState(true);
-  const { user } = useAuth();
+  const { user, currentProject, currentOrganization } = useAuth();
+
+  // Carregar configurações de exibição (mostra/oculta prep_time e rating)
+  const { settings: displaySettings } = useDisplaySettings();
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [currentProject, currentOrganization]);
 
   const fetchData = async () => {
     try {
       setLoading(true);
+      // ✨ OTIMIZAÇÃO: Carregar produtos com tags em uma única requisição
       const [productsRes, menusRes, categoriesRes, tagsRes] = await Promise.all([
-        productService.getAll(),
+        productService.getAll({ includeTags: true }),
         menuService.getActive(),
         categoryService.getAll(),
         tagService.listActiveTags()
       ]);
 
       setProducts(productsRes.data);
-      setMenus(menusRes.data.filter((m: Menu) => m.active));
+      const activeMenus = menusRes.data.filter((m: Menu) => m.active);
+      setMenus(activeMenus);
       setCategories(categoriesRes.data.filter((c: Category) => c.active));
       setTags(tagsRes.data.filter((t: Tag) => t.active && t.entity_type === 'product'));
 
-      // Carregar tags de cada produto
+      // ✨ OTIMIZAÇÃO: Construir mapa de tags a partir dos dados já carregados
       const tagsMap = new Map<string, Tag[]>();
       for (const product of productsRes.data) {
-        try {
-          const productTagsRes = await productService.getProductTags(product.id);
-          tagsMap.set(product.id, productTagsRes.data);
-        } catch (err) {
-          console.error(`Erro ao carregar tags do produto ${product.id}:`, err);
+        if (product.tags && product.tags.length > 0) {
+          tagsMap.set(product.id, product.tags);
         }
       }
       setProductTags(tagsMap);
+
+      // ✨ SELEÇÃO INTELIGENTE: Selecionar o primeiro menu ativo automaticamente (maior prioridade)
+      if (activeMenus.length > 0) {
+        setSelectedMenu(activeMenus[0].id);
+        setSelectedCategory("all");
+        setSelectedType("all");
+      }
 
     } catch (err) {
       setError("Erro ao carregar o cardápio. Tente novamente mais tarde.");
@@ -146,16 +159,19 @@ export default function MenuPage() {
   };
 
   const clearFilters = () => {
-    setSelectedType("all");
-    setSelectedMenu("all");
+    // Resetar para o primeiro menu ativo (seleção automática)
+    if (menus.length > 0) {
+      setSelectedMenu(menus[0].id);
+    }
     setSelectedCategory("all");
+    setSelectedType("all");
     setSelectedTags(new Set());
   };
 
   const hasActiveFilters = selectedType !== "all" ||
-    selectedMenu !== "all" ||
     selectedCategory !== "all" ||
-    selectedTags.size > 0;
+    selectedTags.size > 0 ||
+    selectedMenu !== (menus.length > 0 ? menus[0].id : "all");
 
   if (loading) {
     return (
@@ -184,26 +200,35 @@ export default function MenuPage() {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center space-x-2 mb-4">
-            <ChefHat className="h-8 w-8 text-foreground" />
-            <h1 className="text-4xl font-bold text-foreground">Cardápio Digital</h1>
+        {/* Título Principal */}
+        <div className="mb-8">
+          <div className="text-center">
+            <div className="flex items-center justify-center space-x-2 mb-4">
+              <ChefHat className="h-8 w-8 text-foreground" />
+              <h1 className="text-4xl font-bold text-foreground">Cardápio Digital</h1>
+            </div>
+            <p className="text-xl text-muted-foreground">
+              Conheça nossos pratos deliciosos
+            </p>
           </div>
-          <p className="text-xl text-muted-foreground">
-            Conheça nossos pratos deliciosos
-          </p>
         </div>
 
         {/* Filters Section */}
         <Card className="mb-8">
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Filter className="h-5 w-5" />
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="flex items-center gap-2 sm:gap-4">
+                <Filter className="h-5 w-5 flex-shrink-0" />
                 <CardTitle className="text-lg">Filtros</CardTitle>
               </div>
-              <div className="flex items-center gap-2">
+
+              {/* MenuSelector discreto dentro dos filtros - mobile first */}
+              <div className="w-full sm:w-auto order-3 sm:order-none">
+                <MenuSelector />
+              </div>
+
+              {/* Botões de controle */}
+              <div className="flex items-center gap-2 order-2 sm:order-none ml-auto sm:ml-0">
                 {hasActiveFilters && (
                   <Button
                     variant="ghost"
@@ -263,38 +288,6 @@ export default function MenuPage() {
                 </div>
               </div>
 
-              {/* Menu (Cardápio) */}
-              {menus.length > 0 && (
-                <div>
-                  <h3 className="text-sm font-medium mb-3">Menu (Cardápio)</h3>
-                  <div className="flex flex-wrap gap-2">
-                    <Button
-                      variant={selectedMenu === "all" ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => {
-                        setSelectedMenu("all");
-                        setSelectedCategory("all");
-                      }}
-                    >
-                      Todos
-                    </Button>
-                    {menus.map(menu => (
-                      <Button
-                        key={menu.id}
-                        variant={selectedMenu === menu.id ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => {
-                          setSelectedMenu(menu.id);
-                          setSelectedCategory("all");
-                        }}
-                      >
-                        {menu.name}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
               {/* Categoria */}
               {filteredCategories.length > 0 && (
                 <div>
@@ -341,6 +334,13 @@ export default function MenuPage() {
                 <div>
                   <h3 className="text-sm font-medium mb-3">Tags</h3>
                   <div className="flex flex-wrap gap-2">
+                    <Button
+                      variant={selectedTags.size === 0 ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setSelectedTags(new Set())}
+                    >
+                      Todas
+                    </Button>
                     {tags.map(tag => (
                       <Button
                         key={tag.id}
@@ -368,137 +368,8 @@ export default function MenuPage() {
           {filteredProducts.length} {filteredProducts.length === 1 ? 'produto encontrado' : 'produtos encontrados'}
         </div>
 
-        {/* Products Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredProducts.map((product) => {
-            const isExpanded = expandedProducts.has(product.id);
-            const hasDetails = product.description && user;
-            const prodTags = productTags.get(product.id) || [];
+        <ProductsDisplay products={filteredProducts} expandedProducts={expandedProducts} toggleProductExpansion={toggleProductExpansion} user={user} productTags={productTags} displaySettings={displaySettings} />
 
-            return (
-              <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                {/* Product Image */}
-                <div className="aspect-video relative overflow-hidden bg-gradient-to-br from-muted/50 to-muted">
-                  {product.image_url ? (
-                    <img
-                      src={product.image_url}
-                      alt={product.name}
-                      className="w-full h-full object-cover transition-all duration-300 hover:scale-105"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                        const placeholder = e.currentTarget.nextElementSibling as HTMLElement;
-                        if (placeholder) {
-                          placeholder.style.display = 'flex';
-                        }
-                      }}
-                    />
-                  ) : null}
-
-                  {/* Placeholder */}
-                  <div
-                    className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ${
-                      product.image_url ? 'hidden' : 'flex'
-                    }`}
-                    style={{ display: product.image_url ? 'none' : 'flex' }}
-                  >
-                    <div className="text-center p-4">
-                      <ImageOff className="h-12 w-12 text-muted-foreground/40 mx-auto mb-2" />
-                      <span className="text-xs text-muted-foreground/60 font-medium block mb-1">
-                        Sem imagem
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Type badge overlay */}
-                  <div className="absolute top-3 left-3">
-                    <Badge variant="secondary" className="capitalize text-xs">
-                      {product.type || 'Produto'}
-                    </Badge>
-                  </div>
-
-                  {/* Price badge overlay */}
-                  <div className="absolute top-3 right-3">
-                    <Badge className="bg-green-600 text-white font-bold">
-                      R$ {product.price_normal.toFixed(2)}
-                    </Badge>
-                  </div>
-                </div>
-
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-lg leading-tight">{product.name}</CardTitle>
-                  <CardDescription className="text-sm text-muted-foreground line-clamp-2">
-                    {product.description}
-                  </CardDescription>
-
-                  {/* Tags do produto */}
-                  {prodTags.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {prodTags.map(tag => (
-                        <Badge
-                          key={tag.id}
-                          variant="outline"
-                          className="text-xs"
-                          style={{
-                            borderColor: tag.color,
-                            color: tag.color
-                          }}
-                        >
-                          {tag.name}
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
-                </CardHeader>
-
-                <CardContent className="pt-0">
-                  {/* Product Info Row */}
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center space-x-1">
-                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                      <span className="text-sm text-muted-foreground">4.8</span>
-                    </div>
-                    {product.prep_time_minutes && (
-                      <div className="flex items-center space-x-1 text-muted-foreground">
-                        <Clock className="h-4 w-4" />
-                        <span className="text-sm">{product.prep_time_minutes} min</span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Expanded Details */}
-                  {isExpanded && hasDetails && (
-                    <div className="mb-4 p-3 bg-muted rounded-lg">
-                      <h4 className="font-medium text-sm mb-2">Detalhes:</h4>
-                      <p className="text-sm text-muted-foreground">{product.description}</p>
-                    </div>
-                  )}
-
-                  {/* Ver mais detalhes button */}
-                  {hasDetails && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => toggleProductExpansion(product.id)}
-                      className="w-full"
-                    >
-                      {isExpanded ? (
-                        <>
-                          <ChevronUp className="h-4 w-4 mr-2" />
-                          Ver menos detalhes
-                        </>
-                      ) : (
-                        <>
-                          <ChevronDown className="h-4 w-4 mr-2" />
-                          Ver mais detalhes
-                        </>
-                      )}
-                    </Button>
-                  )}
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
 
         {filteredProducts.length === 0 && (
           <div className="text-center py-12">
@@ -513,6 +384,271 @@ export default function MenuPage() {
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+/**
+ * Componente responsivo que exibe produtos em:
+ * - Mobile (< lg): Lista horizontal
+ * - Desktop (>= lg): Grid de cards
+ */
+interface ProductsDisplayProps {
+  products: Product[];
+  expandedProducts: Set<string>;
+  toggleProductExpansion: (id: string) => void;
+  user: any;
+  productTags: Map<string, Tag[]>;
+  displaySettings: ProductDisplaySettings;
+}
+
+function ProductsDisplay({
+  products,
+  expandedProducts,
+  toggleProductExpansion,
+  user,
+  productTags,
+  displaySettings,
+}: ProductsDisplayProps) {
+  const isDesktop = useIsDesktop();
+
+  if (isDesktop) {
+    // Desktop: Grid de Cards
+    return (
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+        {products.map((product) => {
+          const isExpanded = expandedProducts.has(product.id);
+          const hasDetails = product.description && user;
+          const prodTags = productTags.get(product.id) || [];
+
+          return (
+            <Card
+              key={product.id}
+              className="flex flex-col overflow-hidden hover:shadow-lg transition-shadow duration-200 cursor-pointer"
+            >
+              {/* Product Image */}
+              <div className="aspect-square overflow-hidden bg-gradient-to-br from-muted/50 to-muted flex-shrink-0">
+                {product.image_url ? (
+                  <img
+                    src={product.image_url}
+                    alt={product.name}
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <ImageOff className="h-8 w-8 text-muted-foreground/40" />
+                  </div>
+                )}
+              </div>
+
+              {/* Product Info */}
+              <CardContent className="flex-1 flex flex-col p-3">
+                {/* Name and Price */}
+                <div className="mb-2">
+                  <h3 className="font-semibold text-sm line-clamp-2 mb-1">{product.name}</h3>
+                  <span className="text-price font-bold text-base">
+                    R$ {product.price_normal.toFixed(2)}
+                  </span>
+                </div>
+
+                {/* Description */}
+                <p className="text-xs text-muted-foreground line-clamp-2 mb-2 flex-1">
+                  {product.description}
+                </p>
+
+                {/* Meta Info: Tags, Time, Rating */}
+                <div className="space-y-1 text-xs text-muted-foreground">
+                  {/* Tags */}
+                  {prodTags.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      {prodTags.slice(0, 2).map((tag) => (
+                        <Badge
+                          key={tag.id}
+                          variant="outline"
+                          className="text-xs py-0"
+                          style={{
+                            borderColor: tag.color,
+                            color: tag.color,
+                          }}
+                        >
+                          {tag.name}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Prep Time and Rating */}
+                  <div className="flex items-center gap-3">
+                    {displaySettings.show_prep_time && product.prep_time_minutes && (
+                      <div className="flex items-center gap-1 text-time">
+                        <Clock className="h-3 w-3" />
+                        <span>{product.prep_time_minutes}min</span>
+                      </div>
+                    )}
+                    {displaySettings.show_rating && (
+                      <div className="flex items-center gap-1 text-rating">
+                        <Star className="h-3 w-3 fill-rating" />
+                        <span>4.8</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+
+              {/* Expanded Details (Desktop) */}
+              {isExpanded && hasDetails && (
+                <div className="border-t border-border p-3 bg-muted/30">
+                  <p className="text-xs text-muted-foreground">{product.description}</p>
+                </div>
+              )}
+
+              {/* Action Button */}
+              {hasDetails && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => toggleProductExpansion(product.id)}
+                  className="w-full rounded-none border-t border-border text-xs h-8"
+                >
+                  {isExpanded ? (
+                    <>
+                      <ChevronUp className="h-3 w-3 mr-1" />
+                      Menos
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown className="h-3 w-3 mr-1" />
+                      Mais
+                    </>
+                  )}
+                </Button>
+              )}
+            </Card>
+          );
+        })}
+      </div>
+    );
+  }
+
+  // Mobile: Lista horizontal (como estava antes)
+  return (
+    <div className="space-y-3 sm:space-y-4">
+      {products.map((product) => {
+        const isExpanded = expandedProducts.has(product.id);
+        const hasDetails = product.description && user;
+        const prodTags = productTags.get(product.id) || [];
+
+        return (
+          <div
+            key={product.id}
+            className="border border-border rounded-lg overflow-hidden hover:bg-accent/50 transition-colors duration-200"
+          >
+            {/* Product Row */}
+            <div className="flex gap-3 sm:gap-4 p-3 sm:p-4">
+              {/* Product Image Thumbnail */}
+              <div className="flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-lg overflow-hidden bg-gradient-to-br from-muted/50 to-muted">
+                {product.image_url ? (
+                  <img
+                    src={product.image_url}
+                    alt={product.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <ImageOff className="h-6 w-6 text-muted-foreground/40" />
+                  </div>
+                )}
+              </div>
+
+              {/* Product Content */}
+              <div className="flex-1 min-w-0 flex flex-col justify-between py-1">
+                {/* Header: Name and Price */}
+                <div className="flex items-start justify-between gap-2 mb-1">
+                  <h3 className="font-semibold text-sm sm:text-base line-clamp-1">
+                    {product.name}
+                  </h3>
+                  <span className="text-price font-bold text-sm sm:text-base flex-shrink-0 whitespace-nowrap">
+                    R$ {product.price_normal.toFixed(2)}
+                  </span>
+                </div>
+
+                {/* Description */}
+                <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 mb-2">
+                  {product.description}
+                </p>
+
+                {/* Tags and Meta Info */}
+                <div className="flex flex-wrap items-center gap-2">
+                  {/* Tags */}
+                  {prodTags.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      {prodTags.slice(0, 2).map((tag) => (
+                        <Badge
+                          key={tag.id}
+                          variant="outline"
+                          className="text-xs py-0"
+                          style={{
+                            borderColor: tag.color,
+                            color: tag.color,
+                          }}
+                        >
+                          {tag.name}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Prep Time */}
+                  {displaySettings.show_prep_time && product.prep_time_minutes && (
+                    <div className="flex items-center gap-1 text-xs text-time">
+                      <Clock className="h-3 w-3" />
+                      <span>{product.prep_time_minutes}min</span>
+                    </div>
+                  )}
+
+                  {/* Rating */}
+                  {displaySettings.show_rating && (
+                    <div className="flex items-center gap-1 text-xs text-rating">
+                      <Star className="h-3 w-3 fill-rating" />
+                      <span>4.8</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Expanded Details */}
+            {isExpanded && hasDetails && (
+              <div className="border-t border-border p-3 sm:p-4 bg-muted/30">
+                <h4 className="font-medium text-sm mb-2">Detalhes:</h4>
+                <p className="text-sm text-muted-foreground">{product.description}</p>
+              </div>
+            )}
+
+            {/* Ver mais detalhes button */}
+            {hasDetails && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => toggleProductExpansion(product.id)}
+                className="w-full rounded-none border-t border-border"
+              >
+                {isExpanded ? (
+                  <>
+                    <ChevronUp className="h-4 w-4 mr-2" />
+                    Ver menos detalhes
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown className="h-4 w-4 mr-2" />
+                    Ver mais detalhes
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }

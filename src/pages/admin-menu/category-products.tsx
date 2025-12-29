@@ -134,7 +134,7 @@ export default function CategoryProducts() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -177,7 +177,7 @@ export default function CategoryProducts() {
             <h1 className="text-3xl font-bold">
               Produtos - {category?.name || "Categoria"}
             </h1>
-            <p className="text-gray-600 mt-1">
+            <p className="text-muted-foreground mt-1">
               Gerencie os produtos desta categoria
             </p>
           </div>
@@ -195,7 +195,7 @@ export default function CategoryProducts() {
         <Card>
           <CardContent className="py-12 text-center">
             <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <p className="text-gray-500 mb-4">Nenhum produto cadastrado</p>
+            <p className="text-muted-foreground mb-4">Nenhum produto cadastrado</p>
             <Button onClick={handleOpenCreateModal}>
               <Plus className="h-4 w-4 mr-2" />
               Criar Primeiro Produto
@@ -231,13 +231,11 @@ export default function CategoryProducts() {
 
                   {/* Status Badge */}
                   <div className="absolute top-3 right-3">
-                    <button
+                    <Button
                       onClick={() => handleToggleStatus(product)}
-                      className={`p-2 rounded-lg transition-colors ${
-                        product.active
-                          ? "bg-green-100 text-green-700 hover:bg-green-200"
-                          : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-                      }`}
+                      variant={product.active ? "default" : "outline"}
+                      size="sm"
+                      className="px-2"
                       title={product.active ? "Pausar" : "Ativar"}
                     >
                       {product.active ? (
@@ -245,7 +243,7 @@ export default function CategoryProducts() {
                       ) : (
                         <PowerOff className="h-4 w-4" />
                       )}
-                    </button>
+                    </Button>
                   </div>
                 </div>
 
@@ -257,12 +255,12 @@ export default function CategoryProducts() {
                         {product.name}
                       </h3>
                       {product.description && (
-                        <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                        <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
                           {product.description}
                         </p>
                       )}
                       <div className="flex items-center gap-2 mt-2">
-                        <Badge className="bg-green-600 text-white">
+                        <Badge className="bg-success text-white">
                           R$ {product.price_normal.toFixed(2)}
                         </Badge>
                         {product.type && (
@@ -274,7 +272,7 @@ export default function CategoryProducts() {
                     </div>
                   </div>
 
-                  <p className="text-xs text-gray-500 mb-3">
+                  <p className="text-xs text-muted-foreground mb-3">
                     Ordem: {product.order}
                   </p>
 

@@ -2,10 +2,25 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, waitFor } from '@testing-library/react'
 import { usePermissions } from '../usePermissions'
 import { AuthProvider } from '@/context/authContext'
-import * as subscriptionService from '@/api/subscriptionService'
+import { subscriptionService } from '@/api/subscriptionService'
 
 // Mock the subscription service
-vi.mock('@/api/subscriptionService')
+vi.mock('@/api/subscriptionService', () => ({
+  subscriptionService: {
+    getPlans: vi.fn(),
+    getPlanById: vi.fn(),
+    getCurrentSubscription: vi.fn(),
+    getUsage: vi.fn(),
+    getLimits: vi.fn(),
+    subscribe: vi.fn(),
+    changePlan: vi.fn(),
+    cancelSubscription: vi.fn(),
+    reactivateSubscription: vi.fn(),
+    getInvoices: vi.fn(),
+    createCheckoutSession: vi.fn(),
+  }
+}))
+
 const mockSubscriptionService = vi.mocked(subscriptionService)
 
 // Mock AuthContext
@@ -27,7 +42,14 @@ vi.mock('@/context/authContext', async () => {
       isAuthenticated: true,
       loading: false,
       login: vi.fn(),
-      logout: vi.fn()
+      logout: vi.fn(),
+      organizations: [],
+      projects: [],
+      currentOrganization: 'org-123',
+      currentProject: 'project-123',
+      selectOrganization: vi.fn(),
+      selectProject: vi.fn(),
+      isMasterAdmin: false
     })
   }
 })

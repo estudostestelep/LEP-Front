@@ -87,7 +87,7 @@ interface User {
 
 ### Configuração da API
 
-- URL Base: `http://localhost:8080` (configurada em `src/api/api.ts`)
+- URL Base: `https://lep-system-341885235510.us-central1.run.app` (produção) ou `http://localhost:8080` (desenvolvimento local)
 - Injeção automática de headers: `X-Lpe-Organization-Id` e `X-Lpe-Project-Id` do localStorage
 - Tratamento centralizado de erros através de interceptors axios
 

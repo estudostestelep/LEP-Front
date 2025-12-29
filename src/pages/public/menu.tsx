@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Modal } from "@/components/ui/modal";
 import {
-  //  Clock,
-  //  Star,
+  Clock,
+  Star,
   ChefHat,
   Loader2,
   AlertCircle,
@@ -19,12 +19,15 @@ import {
   ChevronUp
 } from "lucide-react";
 import { publicService } from "@/api/publicService";
-import { Product, productService } from "@/api/productService";
+import { Product } from "@/api/productService";
 import { Menu, menuService } from "@/api/menuService";
 import { Category, categoryService } from "@/api/categoryService";
 import { Tag, tagService } from "@/api/tagService";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { CategoryImage } from "@/components/CategoryImage";
+import { displaySettingsService } from "@/api/displaySettingsService";
+import type { ProductDisplaySettings } from "@/types/settings";
+import { DEFAULT_DISPLAY_SETTINGS } from "@/types/settings";
 
 export default function PublicMenu() {
   const { orgId, projId } = useParams<{ orgId: string; projId: string }>();
@@ -33,6 +36,7 @@ export default function PublicMenu() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [productTags, setProductTags] = useState<Map<string, Tag[]>>(new Map());
+  const [displaySettings, setDisplaySettings] = useState<ProductDisplaySettings>(DEFAULT_DISPLAY_SETTINGS);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -68,12 +72,13 @@ export default function PublicMenu() {
         setLoading(true);
         setError(null);
 
-        const [productsResponse, projectResponse, menusRes, categoriesRes, tagsRes] = await Promise.all([
+        const [productsResponse, projectResponse, menusRes, categoriesRes, tagsRes, displayRes] = await Promise.all([
           publicService.getMenuProducts(orgId, projId),
           publicService.getProjectInfo(orgId, projId).catch(() => ({ data: { name: "Restaurante" } })),
           menuService.getActive().catch(() => ({ data: [] })),
           categoryService.getAll().catch(() => ({ data: [] })),
-          tagService.listActiveTags().catch(() => ({ data: [] }))
+          tagService.listActiveTags().catch(() => ({ data: [] })),
+          displaySettingsService.getSettings().catch(() => ({ data: DEFAULT_DISPLAY_SETTINGS }))
         ]);
 
         setProducts(productsResponse.data);
@@ -81,15 +86,13 @@ export default function PublicMenu() {
         setMenus(menusRes.data.filter((m: Menu) => m.active));
         setCategories(categoriesRes.data.filter((c: Category) => c.active));
         setTags(tagsRes.data.filter((t: Tag) => t.active && t.entity_type === 'product'));
+        setDisplaySettings(displayRes.data || DEFAULT_DISPLAY_SETTINGS);
 
-        // Carregar tags de cada produto
+        // ✨ OTIMIZAÇÃO: Construir mapa de tags a partir dos dados já carregados
         const tagsMap = new Map<string, Tag[]>();
         for (const product of productsResponse.data) {
-          try {
-            const productTagsRes = await productService.getProductTags(product.id);
-            tagsMap.set(product.id, productTagsRes.data);
-          } catch (err) {
-            console.error(`Erro ao carregar tags do produto ${product.id}:`, err);
+          if (product.tags && product.tags.length > 0) {
+            tagsMap.set(product.id, product.tags);
           }
         }
         setProductTags(tagsMap);
@@ -424,19 +427,19 @@ export default function PublicMenu() {
           {filteredProducts.length} {filteredProducts.length === 1 ? 'produto encontrado' : 'produtos encontrados'}
         </div>
 
-        {/* Products Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {/* Products List */}
+        <div className="space-y-3 sm:space-y-4">
           {filteredProducts.map((product) => {
             const prodTags = productTags.get(product.id) || [];
 
             return (
-              <Card
+              <div
                 key={product.id}
-                className="overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1"
                 onClick={() => handleProductClick(product)}
+                className="flex gap-3 sm:gap-4 p-3 sm:p-4 border border-border rounded-lg hover:bg-accent transition-colors duration-200 cursor-pointer"
               >
-                {/* Product Image - Hero Style */}
-                <div className="aspect-square relative overflow-hidden bg-muted">
+                {/* Product Image Thumbnail */}
+                <div className="flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-lg overflow-hidden bg-muted">
                   {product.image_url ? (
                     <img
                       src={product.image_url}
@@ -445,41 +448,36 @@ export default function PublicMenu() {
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
-                      <ChefHat className="h-16 w-16 text-muted-foreground/50" />
+                      <ChefHat className="h-8 w-8 text-muted-foreground/50" />
                     </div>
                   )}
-
-                  {/* Price overlay */}
-                  <div className="absolute top-4 right-4">
-                    <Badge className="bg-green-600 text-white font-bold text-lg px-3 py-1">
-                      R$ {product.price_normal.toFixed(2)}
-                    </Badge>
-                  </div>
-
-                  {/* Type badge */}
-                  <div className="absolute top-4 left-4">
-                    <Badge variant="secondary" className="capitalize">
-                      {product.type || 'Produto'}
-                    </Badge>
-                  </div>
                 </div>
 
-                <CardContent className="p-4">
-                  <div className="space-y-2">
-                    <h3 className="font-semibold text-lg line-clamp-1">{product.name}</h3>
+                {/* Product Content */}
+                <div className="flex-1 min-w-0 flex flex-col justify-between py-1">
+                  {/* Header: Name and Price */}
+                  <div className="flex items-start justify-between gap-2 mb-1">
+                    <h3 className="font-semibold text-sm sm:text-base line-clamp-1">{product.name}</h3>
+                    <span className="text-price font-bold text-sm sm:text-base flex-shrink-0 whitespace-nowrap">
+                      R$ {product.price_normal.toFixed(2)}
+                    </span>
+                  </div>
 
-                    <p className="text-sm text-muted-foreground line-clamp-2">
-                      {product.description}
-                    </p>
+                  {/* Description */}
+                  <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 mb-2">
+                    {product.description}
+                  </p>
 
-                    {/* Tags do produto */}
+                  {/* Tags and Meta Info */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    {/* Tags */}
                     {prodTags.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-2">
-                        {prodTags.map(tag => (
+                      <div className="flex flex-wrap gap-1">
+                        {prodTags.slice(0, 2).map(tag => (
                           <Badge
                             key={tag.id}
                             variant="outline"
-                            className="text-xs"
+                            className="text-xs py-0"
                             style={{
                               borderColor: tag.color,
                               color: tag.color
@@ -491,8 +489,8 @@ export default function PublicMenu() {
                       </div>
                     )}
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             );
           })}
         </div>
@@ -548,7 +546,7 @@ export default function PublicMenu() {
                     </Badge>
                   </div>
                   <div className="text-right">
-                    <div className="text-3xl font-bold text-green-600">
+                    <div className="text-3xl font-bold text-price">
                       R$ {selectedProduct.price_normal.toFixed(2)}
                     </div>
                   </div>
@@ -557,21 +555,25 @@ export default function PublicMenu() {
                 <p className="text-muted-foreground leading-relaxed">
                   {selectedProduct.description}
                 </p>
-                {/* 
-                <div className="flex items-center space-x-6 pt-4 border-t">
-                  <div className="flex items-center space-x-2">
-                    <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-                    <span className="text-lg">4.8</span>
-                    <span className="text-muted-foreground">(124 avaliações)</span>
-                  </div>
 
-                  {selectedProduct.prep_time_minutes && (
-                    <div className="flex items-center space-x-2 text-muted-foreground">
-                      <Clock className="h-5 w-5" />
-                      <span>Tempo de preparo: {selectedProduct.prep_time_minutes} minutos</span>
-                    </div>
-                  )}
-                </div> */}
+                {(displaySettings.show_rating || displaySettings.show_prep_time) && (
+                  <div className="flex items-center space-x-6 pt-4 border-t">
+                    {displaySettings.show_rating && (
+                      <div className="flex items-center space-x-2">
+                        <Star className="h-5 w-5 fill-warning text-warning" />
+                        <span className="text-lg font-semibold">4.8</span>
+                        <span className="text-muted-foreground">(124 avaliações)</span>
+                      </div>
+                    )}
+
+                    {displaySettings.show_prep_time && selectedProduct.prep_time_minutes && (
+                      <div className="flex items-center space-x-2 text-muted-foreground">
+                        <Clock className="h-5 w-5" />
+                        <span>Tempo de preparo: {selectedProduct.prep_time_minutes} minutos</span>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {/* Action Button */}
                 <div className="pt-4">

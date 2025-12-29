@@ -132,14 +132,18 @@ export interface CreateProductRequest {
 
 export const productService = {
   // CRUD básico
-  getAll: () => api.get<Product[]>("/product"),
-  getAllWithFilters: (filters?: ProductFilters) => {
+  getAll: (options?: { includeTags?: boolean }) =>
+    api.get<Product[]>("/product", {
+      params: options?.includeTags ? { includeTags: "true" } : {},
+    }),
+  getAllWithFilters: (filters?: ProductFilters, options?: { includeTags?: boolean }) => {
     const params = new URLSearchParams();
     if (filters?.category_id) params.append("category_id", filters.category_id);
     if (filters?.subcategory_id) params.append("subcategory_id", filters.subcategory_id);
     if (filters?.tag_id) params.append("tag_id", filters.tag_id);
     if (filters?.type) params.append("type", filters.type);
     if (filters?.active !== undefined) params.append("active", filters.active.toString());
+    if (options?.includeTags) params.append("includeTags", "true");
 
     const queryString = params.toString();
     return api.get<Product[]>(`/product${queryString ? `?${queryString}` : ""}`);

@@ -111,7 +111,7 @@ export default function FormModal({ title, open, onClose, fields, initialValues 
                     <select
                     value={String(values[f.name] ?? '')}
                     onChange={e => handleChange(f.name, e.target.value)}
-                    className="border border-input bg-background text-foreground rounded px-3 py-2 focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                    className="border border-input bg-card text-card-foreground rounded px-3 py-2 focus:ring-2 focus:ring-ring focus:ring-offset-2"
                     required={f.required}
                     >
                     <option value="">Select</option>
@@ -129,7 +129,7 @@ export default function FormModal({ title, open, onClose, fields, initialValues 
                     type={f.type ?? 'text'}
                     value={String(values[f.name] ?? '')}
                     onChange={e => handleChange(f.name, e.target.value)}
-                    className="border border-input bg-background text-foreground rounded px-3 py-2 focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                    className="border border-input bg-card text-card-foreground rounded px-3 py-2 focus:ring-2 focus:ring-ring focus:ring-offset-2"
                     required={f.required}
                   />
                 )}
@@ -143,7 +143,7 @@ export default function FormModal({ title, open, onClose, fields, initialValues 
 
 
           <div className="flex justify-end gap-3 px-6 py-4 border-t border-border">
-            <button type="button" onClick={onClose} className="px-4 py-2 rounded bg-muted text-muted-foreground hover:bg-muted/80">Cancel</button>
+            <button type="button" onClick={onClose} className="px-4 py-2 rounded bg-muted text-foreground hover:bg-muted/80">Cancel</button>
             <button type="submit" className="px-4 py-2 rounded bg-primary text-primary-foreground hover:bg-primary/90" disabled={loading}>{loading ? 'Saving...' : 'Save'}</button>
           </div>
         </form>

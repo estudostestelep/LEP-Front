@@ -140,7 +140,7 @@ export default function Navbar() {
                 </Button>
               </div>
             ) : (
-              <Button asChild variant="default" size="sm">
+              <Button asChild variant="default" size="sm" >
                 <Link to="/login" className="flex items-center space-x-2">
                   <LogIn className="h-4 w-4" />
                   <span>Entrar</span>
@@ -150,6 +150,6 @@ export default function Navbar() {
           </div>
         </div>
       </div>
-    </nav>
+    </nav >
   );
 }

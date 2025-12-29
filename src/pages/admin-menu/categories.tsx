@@ -17,6 +17,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import ConfirmModal from "@/components/confirmModal";
 import FormModal from "@/components/formModal";
 import ImageUpload, { ImageUploadRef } from "@/components/ImageUpload";
@@ -320,7 +321,7 @@ export default function CategoriesPage() {
             <h1 className="text-3xl font-bold">
               Categorias - {menu?.name || "Cardápio"}
             </h1>
-            <p className="text-gray-600 mt-1">
+            <p className="text-muted-foreground mt-1">
               Gerencie as categorias deste cardápio
             </p>
           </div>
@@ -337,7 +338,7 @@ export default function CategoriesPage() {
       {categories.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <p className="text-gray-500 mb-4">Nenhuma categoria cadastrada</p>
+            <p className="text-muted-foreground mb-4">Nenhuma categoria cadastrada</p>
             <Button onClick={handleOpenCreateModal}>
               <Plus className="h-4 w-4 mr-2" />
               Criar Primeira Categoria
@@ -362,23 +363,22 @@ export default function CategoriesPage() {
                     />
                     <div className="flex-1">
                       <h3 className="text-xl font-semibold">{category.name}</h3>
-                      <p className="text-sm text-gray-500 mt-1">
+                      <p className="text-sm text-muted-foreground mt-1">
                         Ordem: {category.order}
                       </p>
                       {category.notes && (
-                        <p className="text-sm text-gray-600 mt-2">
+                        <p className="text-sm text-muted-foreground mt-2">
                           {category.notes}
                         </p>
                       )}
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <button
+                    <Button
                       onClick={() => handleToggleStatus(category)}
-                      className={`p-2 rounded-lg transition-colors ${category.active
-                        ? "bg-green-100 text-green-700 hover:bg-green-200"
-                        : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-                        }`}
+                      variant={category.active ? "default" : "outline"}
+                      size="sm"
+                      className="px-2"
                       title={category.active ? "Pausar" : "Ativar"}
                     >
                       {category.active ? (
@@ -386,7 +386,7 @@ export default function CategoriesPage() {
                       ) : (
                         <PowerOff className="h-4 w-4" />
                       )}
-                    </button>
+                    </Button>
                   </div>
                 </div>
 
@@ -461,7 +461,7 @@ export default function CategoriesPage() {
       >
         <div className="space-y-4">
           {formErrors.length > 0 && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+            <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded">
               <ul className="list-disc list-inside">
                 {formErrors.map((error, index) => (
                   <li key={index}>{error}</li>
@@ -543,18 +543,16 @@ export default function CategoriesPage() {
             />
           </div>
 
-          <div className="flex items-center">
-            <input
-              type="checkbox"
+          <div className="flex items-center gap-2">
+            <Checkbox
               id="active"
               checked={formData.active}
-              onChange={(e) =>
-                setFormData({ ...formData, active: e.target.checked })
+              onCheckedChange={(checked) =>
+                setFormData({ ...formData, active: checked as boolean })
               }
               disabled={isSaving}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
             />
-            <label htmlFor="active" className="ml-2 block text-sm text-gray-700">
+            <label htmlFor="active" className="text-sm font-medium text-foreground cursor-pointer">
               Categoria ativa
             </label>
           </div>

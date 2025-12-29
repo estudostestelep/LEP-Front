@@ -364,7 +364,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.log('Recarregando acessos do usuário...');
 
       // Buscar acessos atualizados do backend
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://lep-system-516622888070.us-central1.run.app'}/user/${user.id}/organizations-projects`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://lep-system-341885235510.us-central1.run.app'}/user/${user.id}/organizations-projects`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'X-Lpe-Organization-Id': currentOrganization || '',

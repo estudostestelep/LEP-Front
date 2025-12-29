@@ -87,9 +87,9 @@ export default function CreateOrganization() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-                <h3 className="font-medium text-green-800 mb-2">Dados da sua organização:</h3>
-                <div className="space-y-2 text-sm text-green-700">
+              <div className="bg-success/10 p-4 rounded-lg border border-success/20">
+                <h3 className="font-medium text-success mb-2">Dados da sua organização:</h3>
+                <div className="space-y-2 text-sm text-success">
                   <div><strong>Organização:</strong> {success.organization.name}</div>
                   <div><strong>Email da Org:</strong> {success.organization.email}</div>
                   <div><strong>Projeto:</strong> {success.project.name}</div>
@@ -99,8 +99,8 @@ export default function CreateOrganization() {
                 </div>
               </div>
 
-              <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
-                <p className="text-sm text-blue-700 text-center">
+              <div className="bg-primary/10 p-3 rounded-lg border border-primary/20">
+                <p className="text-sm text-primary text-center">
                   Você será redirecionado para a página de login em alguns segundos...
                 </p>
               </div>

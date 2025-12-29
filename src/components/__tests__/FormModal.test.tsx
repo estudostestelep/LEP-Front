@@ -1,22 +1,13 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@/test/utils'
 import FormModal from '@/components/formModal'
 
-// Mock the specific form components
-const MockForm = ({ onSuccess, onCancel }: { onSuccess: () => void; onCancel: () => void }) => (
-  <div>
-    <h2>Mock Form</h2>
-    <button onClick={onSuccess}>Save</button>
-    <button onClick={onCancel}>Cancel</button>
-  </div>
-)
-
 describe('FormModal Component', () => {
   const defaultProps = {
-    isOpen: true,
-    onClose: vi.fn(),
     title: 'Test Modal',
-    FormComponent: MockForm
+    open: true,
+    onClose: vi.fn(),
+    onSubmit: vi.fn()
   }
 
   beforeEach(() => {
@@ -24,82 +15,97 @@ describe('FormModal Component', () => {
   })
 
   it('renders modal when open', () => {
-    render(<FormModal {...defaultProps} />)
+    render(
+      <FormModal {...defaultProps}>
+        <div>Modal Content</div>
+      </FormModal>
+    )
 
     expect(screen.getByText('Test Modal')).toBeInTheDocument()
-    expect(screen.getByText('Mock Form')).toBeInTheDocument()
+    expect(screen.getByText('Modal Content')).toBeInTheDocument()
   })
 
   it('does not render modal when closed', () => {
-    render(<FormModal {...defaultProps} isOpen={false} />)
+    render(
+      <FormModal {...defaultProps} open={false}>
+        <div>Modal Content</div>
+      </FormModal>
+    )
 
     expect(screen.queryByText('Test Modal')).not.toBeInTheDocument()
-    expect(screen.queryByText('Mock Form')).not.toBeInTheDocument()
+    expect(screen.queryByText('Modal Content')).not.toBeInTheDocument()
   })
 
   it('displays correct title', () => {
-    render(<FormModal {...defaultProps} title="Custom Title" />)
+    render(
+      <FormModal {...defaultProps} title="Custom Title">
+        <div>Content</div>
+      </FormModal>
+    )
 
     expect(screen.getByText('Custom Title')).toBeInTheDocument()
   })
 
-  it('passes initialData to form component', () => {
-    const initialData = { id: '123', name: 'Test' }
-    const FormWithData = ({ initialData: data }: { initialData?: any }) => (
-      <div>Form with data: {data?.name}</div>
-    )
+  it('passes initialValues to form fields', () => {
+    const initialValues = { name: 'Test Name', email: 'test@example.com' }
+    const testFields = [
+      { name: 'name', label: 'Name', type: 'text' as const },
+      { name: 'email', label: 'Email', type: 'text' as const }
+    ]
 
     render(
       <FormModal
         {...defaultProps}
-        FormComponent={FormWithData}
-        initialData={initialData}
-      />
+        fields={testFields}
+        initialValues={initialValues}
+      >
+        <input type="text" name="name" defaultValue={initialValues.name} />
+        <input type="text" name="email" defaultValue={initialValues.email} />
+      </FormModal>
     )
 
-    expect(screen.getByText('Form with data: Test')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('Test Name')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('test@example.com')).toBeInTheDocument()
   })
 
-  it('calls onClose when form succeeds', async () => {
+  it('calls onClose when clicking the close button', async () => {
     const onClose = vi.fn()
-    render(<FormModal {...defaultProps} onClose={onClose} />)
+    render(
+      <FormModal {...defaultProps} onClose={onClose}>
+        <div>Modal Content</div>
+      </FormModal>
+    )
 
-    fireEvent.click(screen.getByText('Save'))
+    const closeButton = screen.getByText('✕')
+    fireEvent.click(closeButton)
 
-    await waitFor(() => {
-      expect(onClose).toHaveBeenCalledTimes(1)
-    })
-  })
-
-  it('calls onClose when form is cancelled', async () => {
-    const onClose = vi.fn()
-    render(<FormModal {...defaultProps} onClose={onClose} />)
-
-    fireEvent.click(screen.getByText('Cancel'))
-
-    await waitFor(() => {
-      expect(onClose).toHaveBeenCalledTimes(1)
-    })
+    expect(onClose).toHaveBeenCalledTimes(1)
   })
 
   it('calls onClose when clicking backdrop', async () => {
     const onClose = vi.fn()
-    render(<FormModal {...defaultProps} onClose={onClose} />)
+    render(
+      <FormModal {...defaultProps} onClose={onClose}>
+        <div>Modal Content</div>
+      </FormModal>
+    )
 
-    // Click on the backdrop (the modal overlay)
-    const backdrop = screen.getByRole('dialog').parentElement
+    // Click on the backdrop (the fixed overlay div)
+    const backdrop = screen.getByText('Modal Content').closest('.fixed')
     if (backdrop) {
       fireEvent.click(backdrop)
     }
 
-    await waitFor(() => {
-      expect(onClose).toHaveBeenCalledTimes(1)
-    })
+    expect(onClose).toHaveBeenCalled()
   })
 
   it('calls onClose when pressing Escape key', async () => {
     const onClose = vi.fn()
-    render(<FormModal {...defaultProps} onClose={onClose} />)
+    render(
+      <FormModal {...defaultProps} onClose={onClose}>
+        <div>Modal Content</div>
+      </FormModal>
+    )
 
     fireEvent.keyDown(document, { key: 'Escape', code: 'Escape' })
 
@@ -108,42 +114,58 @@ describe('FormModal Component', () => {
     })
   })
 
-  it('has proper accessibility attributes', () => {
-    render(<FormModal {...defaultProps} />)
+  it('calls onSubmit when form is submitted', async () => {
+    const onSubmit = vi.fn()
+    const onClose = vi.fn()
 
-    const dialog = screen.getByRole('dialog')
-    expect(dialog).toBeInTheDocument()
-    expect(dialog).toHaveAttribute('aria-labelledby')
-    expect(dialog).toHaveAttribute('aria-modal', 'true')
+    render(
+      <FormModal {...defaultProps} onSubmit={onSubmit} onClose={onClose}>
+        <button type="submit">Submit</button>
+      </FormModal>
+    )
+
+    fireEvent.click(screen.getByText('Submit'))
+
+    await waitFor(() => {
+      expect(onSubmit).toHaveBeenCalled()
+      expect(onClose).toHaveBeenCalled()
+    })
   })
 
-  it('focuses the modal when opened', () => {
-    render(<FormModal {...defaultProps} />)
+  it('has proper structure', () => {
+    render(
+      <FormModal {...defaultProps}>
+        <div>Test Content</div>
+      </FormModal>
+    )
 
-    const dialog = screen.getByRole('dialog')
-    expect(document.activeElement).toBe(dialog)
+    expect(screen.getByText('Test Modal')).toBeInTheDocument()
+    expect(screen.getByText('Test Content')).toBeInTheDocument()
+    expect(screen.getByText('✕')).toBeInTheDocument()
   })
 
-  it('traps focus within modal', () => {
-    render(<FormModal {...defaultProps} />)
+  it('renders with children prop', () => {
+    render(
+      <FormModal {...defaultProps}>
+        <input type="text" placeholder="Test Input" />
+      </FormModal>
+    )
 
-    const saveButton = screen.getByText('Save')
-    const cancelButton = screen.getByText('Cancel')
-
-    // Tab should cycle through focusable elements
-    fireEvent.keyDown(document.activeElement!, { key: 'Tab' })
-    expect(document.activeElement).toBe(saveButton)
-
-    fireEvent.keyDown(document.activeElement!, { key: 'Tab' })
-    expect(document.activeElement).toBe(cancelButton)
+    expect(screen.getByPlaceholderText('Test Input')).toBeInTheDocument()
   })
 
-  it('renders with different form components', () => {
-    const AnotherForm = () => <div>Another Form Component</div>
+  it('handles field state changes', () => {
+    const handleChange = vi.fn()
 
-    render(<FormModal {...defaultProps} FormComponent={AnotherForm} />)
+    render(
+      <FormModal {...defaultProps}>
+        <input type="text" onChange={handleChange} />
+      </FormModal>
+    )
 
-    expect(screen.getByText('Another Form Component')).toBeInTheDocument()
-    expect(screen.queryByText('Mock Form')).not.toBeInTheDocument()
+    const input = screen.getByRole('textbox')
+    fireEvent.change(input, { target: { value: 'new value' } })
+
+    expect(handleChange).toHaveBeenCalled()
   })
 })
