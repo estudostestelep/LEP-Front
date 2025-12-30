@@ -37,7 +37,8 @@
       "Bash(src/lib/color-utils.ts )",
       "Bash(src/lib/color-impact.ts )",
       "Bash(src/hooks/useTheme.ts)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(npm search:*)"
     ],
     "deny": [],
     "ask": []
