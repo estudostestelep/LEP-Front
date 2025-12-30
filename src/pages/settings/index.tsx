@@ -1,6 +1,7 @@
 import { lazy } from "react";
 import ProductDisplaySettings from "@/components/ProductDisplaySettings";
-import { Settings as SettingsIcon, Package } from "lucide-react";
+import { OnboardingGuide } from "@/components/OnboardingGuide";
+import { Settings as SettingsIcon, Package, Info } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/context/authContext";
 
@@ -24,9 +25,19 @@ export default function Settings() {
         </div>
 
         {/* Settings Tabs */}
-        <Tabs defaultValue="display" className="w-full">
-          <TabsList className={`grid w-full ${isMasterAdmin ? 'max-w-2xl grid-cols-2' : 'max-w-xl grid-cols-1'}`}>
-            <TabsTrigger value="display">Exibição de Produtos</TabsTrigger>
+        <Tabs defaultValue="info" className="w-full">
+          <TabsList className={`grid w-full ${isMasterAdmin ? 'max-w-3xl grid-cols-3' : 'max-w-2xl grid-cols-2'}`}>
+            {/* Informações Tab - Visível para todos */}
+            <TabsTrigger value="info" className="flex items-center gap-2">
+              <Info className="h-4 w-4" />
+              <span className="hidden sm:inline">Informações</span>
+              <span className="sm:hidden">Info</span>
+            </TabsTrigger>
+
+            <TabsTrigger value="display">
+              <span className="hidden sm:inline">Exibição de Produtos</span>
+              <span className="sm:hidden">Exibição</span>
+            </TabsTrigger>
 
             {/* Master Admin Only Tabs */}
             {isMasterAdmin && (
@@ -37,6 +48,11 @@ export default function Settings() {
               </TabsTrigger>
             )}
           </TabsList>
+
+          {/* Informações Tab - Visível para todos */}
+          <TabsContent value="info" className="mt-6">
+            <OnboardingGuide />
+          </TabsContent>
 
           {/* Display Settings Tab */}
           <TabsContent value="display" className="mt-6">
