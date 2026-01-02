@@ -1,7 +1,8 @@
 import { lazy } from "react";
 import ProductDisplaySettings from "@/components/ProductDisplaySettings";
 import ThemeCustomizationTab from "@/components/ThemeCustomizationTab";
-import { Settings as SettingsIcon, Palette, Package, Lock } from "lucide-react";
+import { OnboardingGuide } from "@/components/OnboardingGuide";
+import { Settings as SettingsIcon, Palette, Package, Lock, Info } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/context/authContext";
 
@@ -26,8 +27,15 @@ export default function Settings() {
         </div>
 
         {/* Settings Tabs */}
-        <Tabs defaultValue="display" className="w-full">
-          <TabsList className={`grid w-full ${isMasterAdmin ? 'max-w-4xl grid-cols-4' : 'max-w-2xl grid-cols-2'}`}>
+        <Tabs defaultValue="info" className="w-full">
+          <TabsList className={`grid w-full ${isMasterAdmin ? 'max-w-5xl grid-cols-5' : 'max-w-3xl grid-cols-3'}`}>
+            {/* Informações Tab - Primeira aba, visível para todos */}
+            <TabsTrigger value="info" className="flex items-center gap-2">
+              <Info className="h-4 w-4" />
+              <span className="hidden sm:inline">Informações</span>
+              <span className="sm:hidden">Info</span>
+            </TabsTrigger>
+
             <TabsTrigger value="display">Exibição de Produtos</TabsTrigger>
             <TabsTrigger value="theme">Tema e Cores</TabsTrigger>
 
@@ -47,6 +55,11 @@ export default function Settings() {
               </>
             )}
           </TabsList>
+
+          {/* Informações Tab */}
+          <TabsContent value="info" className="mt-6">
+            <OnboardingGuide />
+          </TabsContent>
 
           {/* Display Settings Tab */}
           <TabsContent value="display" className="mt-6">
