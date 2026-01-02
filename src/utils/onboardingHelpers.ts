@@ -1,4 +1,4 @@
-import type { OnboardingLevel, OnboardingProgress } from '@/types/onboarding';
+import type { OnboardingLevel, OnboardingProgress, DiagramNodeRoute } from '@/types/onboarding';
 
 /**
  * Calcula o progresso do onboarding baseado nos níveis e etapas
@@ -84,4 +84,15 @@ export function getNextRecommendedStep(levels: OnboardingLevel[]) {
     step.status === 'recommended' &&
     !isStepBlocked(step.id, levels)
   );
+}
+
+/**
+ * Obtém a rota a partir do nodeId do diagrama
+ */
+export function getRouteFromNodeId(
+  nodeId: string,
+  routes: DiagramNodeRoute[]
+): string | null {
+  const mapping = routes.find(r => r.nodeId === nodeId && r.clickable);
+  return mapping ? mapping.route : null;
 }

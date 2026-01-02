@@ -14,7 +14,7 @@ import {
   ShoppingBag,
   UsersRound,
 } from 'lucide-react';
-import type { OnboardingLevel } from '@/types/onboarding';
+import type { OnboardingLevel, DiagramNodeRoute } from '@/types/onboarding';
 
 export const onboardingLevels: OnboardingLevel[] = [
   {
@@ -192,4 +192,25 @@ export const onboardingLevels: OnboardingLevel[] = [
       }
     ]
   }
+];
+
+// Mapeamento de nodes do diagrama para rotas
+export const diagramNodeRoutes: DiagramNodeRoute[] = [
+  // Fundações
+  { nodeId: 'A', route: '/', requiresParams: false, clickable: false }, // Org/Project (já configurado)
+  { nodeId: 'B', route: '/users', requiresParams: false, clickable: true },
+
+  // Estrutura Base
+  { nodeId: 'C', route: '/tables', requiresParams: false, clickable: true },
+  { nodeId: 'D', route: '/customers', requiresParams: false, clickable: true },
+  { nodeId: 'E', route: '/admin-menu', requiresParams: false, clickable: true },
+
+  // Cardápio
+  { nodeId: 'F', route: '/admin-menu', requiresParams: false, clickable: true }, // Categories
+  { nodeId: 'G', route: '/products', requiresParams: false, clickable: true },
+
+  // Operações
+  { nodeId: 'H', route: '/reservations', requiresParams: false, clickable: true },
+  { nodeId: 'I', route: '/orders', requiresParams: false, clickable: true },
+  { nodeId: 'J', route: '/', requiresParams: false, clickable: false }, // Waitlist (sem rota dedicada)
 ];

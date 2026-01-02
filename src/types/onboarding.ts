@@ -27,3 +27,11 @@ export interface OnboardingProgress {
   completed: number;
   percentage: number;
 }
+
+// Mapeamento de IDs de nodes do diagrama para rotas
+export interface DiagramNodeRoute {
+  nodeId: string;       // ID no diagrama Mermaid
+  route: string;        // Rota do React Router
+  requiresParams?: boolean; // Se precisa de parâmetros dinâmicos
+  clickable: boolean;   // Se deve ser clicável
+}
