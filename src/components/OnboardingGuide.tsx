@@ -133,7 +133,7 @@ export function OnboardingGuide() {
           <DialogHeader>
             <DialogTitle>Diagrama de Dependências do Sistema</DialogTitle>
           </DialogHeader>
-          <MermaidDiagram />
+          {showDiagram && <MermaidDiagram key={showDiagram.toString()} />}
         </DialogContent>
       </Dialog>
     </div>
