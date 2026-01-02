@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import mermaid from 'mermaid';
 import { diagramNodeRoutes } from '@/data/onboardingData';
@@ -7,11 +7,12 @@ import { getRouteFromNodeId } from '@/utils/onboardingHelpers';
 export function MermaidDiagram() {
   const containerRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const [diagramId] = useState(() => `mermaid-${Math.random().toString(36).substr(2, 9)}`);
 
   useEffect(() => {
     // Configurar Mermaid com securityLevel loose para permitir callbacks
     mermaid.initialize({
-      startOnLoad: true,
+      startOnLoad: false,
       theme: 'default',
       securityLevel: 'loose', // CRÍTICO: permite callbacks
       fontFamily: 'inherit',
@@ -19,8 +20,10 @@ export function MermaidDiagram() {
 
     // Definir callback global para navegação
     (window as any).navigateToEntity = (nodeId: string) => {
+      console.log('Click detectado no node:', nodeId);
       const route = getRouteFromNodeId(nodeId, diagramNodeRoutes);
       if (route) {
+        console.log('Navegando para:', route);
         navigate(route);
       } else {
         console.warn(`No route defined for node: ${nodeId}`);
@@ -28,15 +31,29 @@ export function MermaidDiagram() {
     };
 
     // Renderizar diagrama
-    if (containerRef.current) {
-      mermaid.contentLoaded();
-    }
+    const renderDiagram = async () => {
+      if (containerRef.current) {
+        try {
+          const element = containerRef.current.querySelector('.mermaid');
+          if (element) {
+            element.removeAttribute('data-processed');
+            await mermaid.run({
+              nodes: [element as HTMLElement]
+            });
+          }
+        } catch (error) {
+          console.error('Erro ao renderizar diagrama Mermaid:', error);
+        }
+      }
+    };
+
+    renderDiagram();
 
     // Cleanup: remover callback global ao desmontar
     return () => {
       delete (window as any).navigateToEntity;
     };
-  }, [navigate]);
+  }, [navigate, diagramId]);
 
   const diagram = `
     graph TD
