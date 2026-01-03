@@ -40,6 +40,44 @@ export function MermaidDiagram() {
             await mermaid.run({
               nodes: [element as HTMLElement]
             });
+
+            // Aguardar um pouco para garantir que o SVG foi renderizado
+            setTimeout(() => {
+              // Adicionar event listeners manualmente como fallback
+              const svg = containerRef.current?.querySelector('svg');
+              if (svg) {
+                // Mapear IDs dos nodes para rotas
+                const nodeMapping: Record<string, string> = {
+                  'flowchart-B-': 'B',
+                  'flowchart-C-': 'C',
+                  'flowchart-D-': 'D',
+                  'flowchart-E-': 'E',
+                  'flowchart-F-': 'F',
+                  'flowchart-G-': 'G',
+                  'flowchart-H-': 'H',
+                  'flowchart-I-': 'I',
+                };
+
+                // Encontrar todos os grupos de nodes
+                const nodes = svg.querySelectorAll('g.node');
+                nodes.forEach((node) => {
+                  const nodeId = node.id;
+                  // Verificar se o ID do node corresponde a algum mapeamento
+                  for (const [prefix, letter] of Object.entries(nodeMapping)) {
+                    if (nodeId.includes(prefix)) {
+                      console.log(`Adicionando listener para node ${letter} (ID: ${nodeId})`);
+                      node.addEventListener('click', () => {
+                        console.log(`Click manual detectado no node ${letter}`);
+                        (window as any).navigateToEntity(letter);
+                      });
+                      // Adicionar cursor pointer
+                      (node as HTMLElement).style.cursor = 'pointer';
+                      break;
+                    }
+                  }
+                });
+              }
+            }, 100);
           }
         } catch (error) {
           console.error('Erro ao renderizar diagrama Mermaid:', error);
